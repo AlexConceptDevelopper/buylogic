@@ -1,0 +1,205 @@
+[
+  {
+    "productReference": "FILTRE-001",
+    "movementType": "PURCHASE",
+    "quantity": 100,
+    "reference": "CMD-AD-001",
+    "movementDate": "2026-07-16T09:00:00"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "movementType": "SALE",
+    "quantity": -65,
+    "reference": "VENTE-AD-010",
+    "movementDate": "2026-07-22T14:00:00"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "movementType": "PURCHASE",
+    "quantity": 80,
+    "reference": "CMD-AD-014",
+    "movementDate": "2026-07-30T10:00:00"
+  },
+  {
+    "productReference": "ROUL-6204",
+    "movementType": "PURCHASE",
+    "quantity": 50,
+    "reference": "CMD-AD-020",
+    "movementDate": "2026-07-20T10:00:00"
+  },
+  {
+    "productReference": "ROUL-6204",
+    "movementType": "SALE",
+    "quantity": -38,
+    "reference": "VENTE-AD-022",
+    "movementDate": "2026-08-05T15:00:00"
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "movementType": "PURCHASE",
+    "quantity": 200,
+    "reference": "CMD-AD-031",
+    "movementDate": "2026-07-25T09:00:00"
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "movementType": "SALE",
+    "quantity": -115,
+    "reference": "VENTE-AD-040",
+    "movementDate": "2026-08-05T16:00:00"
+  },
+  {
+    "productReference": "HUILE-5W30",
+    "movementType": "PURCHASE",
+    "quantity": 80,
+    "reference": "CMD-AD-042",
+    "movementDate": "2026-07-29T11:00:00"
+  },
+  {
+    "productReference": "HUILE-5W30",
+    "movementType": "SALE",
+    "quantity": -40,
+    "reference": "VENTE-AD-050",
+    "movementDate": "2026-08-06T11:00:00"
+  },
+  {
+    "productReference": "CART-001",
+    "movementType": "PURCHASE",
+    "quantity": 30,
+    "reference": "CMD-AD-060",
+    "movementDate": "2026-08-04T09:00:00"
+  },
+  {
+    "productReference": "CART-001",
+    "movementType": "SALE",
+    "quantity": -25,
+    "reference": "VENTE-AD-061",
+    "movementDate": "2026-08-10T10:00:00"
+  },
+  {
+    "productReference": "PLAQUETTE-001",
+    "movementType": "PURCHASE",
+    "quantity": 30,
+    "reference": "CMD-MP-001",
+    "movementDate": "2026-07-25T10:00:00"
+  },
+  {
+    "productReference": "PLAQUETTE-001",
+    "movementType": "SALE",
+    "quantity": -22,
+    "reference": "VENTE-MP-010",
+    "movementDate": "2026-08-10T14:00:00"
+  },
+  {
+    "productReference": "DISQUE-001",
+    "movementType": "PURCHASE",
+    "quantity": 20,
+    "reference": "CMD-MP-002",
+    "movementDate": "2026-07-28T09:00:00"
+  },
+  {
+    "productReference": "DISQUE-001",
+    "movementType": "SALE",
+    "quantity": -12,
+    "reference": "VENTE-MP-015",
+    "movementDate": "2026-08-09T15:00:00"
+  },
+  {
+    "productReference": "POMPE-001",
+    "movementType": "PURCHASE",
+    "quantity": 8,
+    "reference": "CMD-HT-001",
+    "movementDate": "2026-07-18T09:00:00"
+  },
+  {
+    "productReference": "POMPE-001",
+    "movementType": "SALE",
+    "quantity": -5,
+    "reference": "VENTE-HT-006",
+    "movementDate": "2026-08-08T11:00:00"
+  },
+  {
+    "productReference": "BAT-001",
+    "movementType": "PURCHASE",
+    "quantity": 25,
+    "reference": "CMD-GM-001",
+    "movementDate": "2026-08-01T10:00:00"
+  },
+  {
+    "productReference": "BAT-001",
+    "movementType": "SALE",
+    "quantity": -18,
+    "reference": "VENTE-GM-010",
+    "movementDate": "2026-08-12T15:00:00"
+  },
+  {
+    "productReference": "FILTRE-HUILE",
+    "movementType": "PURCHASE",
+    "quantity": 60,
+    "reference": "CMD-GM-005",
+    "movementDate": "2026-08-02T09:00:00"
+  },
+  {
+    "productReference": "FILTRE-HUILE",
+    "movementType": "SALE",
+    "quantity": -36,
+    "reference": "VENTE-GM-020",
+    "movementDate": "2026-08-13T14:00:00"
+  },
+  {
+    "productReference": "DEMO-FILTRE-01",
+    "movementType": "PURCHASE",
+    "quantity": 20,
+    "movementDate": "2026-08-01T09:00:00",
+    "reference": "DEMO-ENTREE-001"
+  },
+  {
+    "productReference": "DEMO-FILTRE-01",
+    "movementType": "SALE",
+    "quantity": -16,
+    "movementDate": "2026-08-10T10:00:00",
+    "reference": "DEMO-SORTIE-001"
+  },
+  {
+    "productReference": "DEMO-ROULEMENT-01",
+    "movementType": "PURCHASE",
+    "quantity": 30,
+    "movementDate": "2026-08-02T09:00:00",
+    "reference": "DEMO-ENTREE-002"
+  },
+  {
+    "productReference": "DEMO-ROULEMENT-01",
+    "movementType": "SALE",
+    "quantity": -28,
+    "movementDate": "2026-08-11T10:00:00",
+    "reference": "DEMO-SORTIE-002"
+  },
+  {
+    "productReference": "DEMO-GANTS-01",
+    "movementType": "PURCHASE",
+    "quantity": 10,
+    "movementDate": "2026-08-03T09:00:00",
+    "reference": "DEMO-ENTREE-003"
+  },
+  {
+    "productReference": "DEMO-GANTS-01",
+    "movementType": "SALE",
+    "quantity": -10,
+    "movementDate": "2026-08-12T10:00:00",
+    "reference": "DEMO-SORTIE-003"
+  },
+  {
+    "productReference": "DEMO-HUILE-01",
+    "movementType": "PURCHASE",
+    "quantity": 12,
+    "movementDate": "2026-08-04T09:00:00",
+    "reference": "DEMO-ENTREE-004"
+  },
+  {
+    "productReference": "DEMO-HUILE-01",
+    "movementType": "SALE",
+    "quantity": -5,
+    "movementDate": "2026-08-13T10:00:00",
+    "reference": "DEMO-SORTIE-004"
+  }
+]

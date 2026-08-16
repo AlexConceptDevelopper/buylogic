@@ -1,0 +1,102 @@
+[
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "email": "admin@atelier-dupont.test",
+    "password": "admin123",
+    "firstName": "Jean",
+    "lastName": "Dupont",
+    "role": "OWNER",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "email": "acheteur@atelier-dupont.test",
+    "password": "acheteur123",
+    "firstName": "Marc",
+    "lastName": "Martin",
+    "role": "USER",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@mecapro.test",
+    "email": "admin@mecapro.test",
+    "password": "admin123",
+    "firstName": "Sophie",
+    "lastName": "Mercier",
+    "role": "OWNER",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@mecapro.test",
+    "email": "user@mecapro.test",
+    "password": "user123",
+    "firstName": "Thomas",
+    "lastName": "Roux",
+    "role": "USER",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@hydrotech.test",
+    "email": "admin@hydrotech.test",
+    "password": "admin123",
+    "firstName": "Claire",
+    "lastName": "Bernard",
+    "role": "OWNER",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@hydrotech.test",
+    "email": "user@hydrotech.test",
+    "password": "user123",
+    "firstName": "Lucas",
+    "lastName": "Robert",
+    "role": "USER",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@garage-martin.test",
+    "email": "admin@garage-martin.test",
+    "password": "admin123",
+    "firstName": "Paul",
+    "lastName": "Martin",
+    "role": "OWNER",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@garage-martin.test",
+    "email": "user@garage-martin.test",
+    "password": "user123",
+    "firstName": "Emma",
+    "lastName": "Martin",
+    "role": "USER",
+    "active": true
+  },
+
+  {
+    "companyEmail": "contact@buylogic.test",
+    "email": "alexandre.cubizolle@hotmail.fr",
+    "password": "Djaltek30",
+    "firstName": "Alexandre",
+    "lastName": "Cubizolle",
+    "role": "SUPER_ADMIN",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "email": "demo.owner@buylogic.test",
+    "password": "DemoOwner123!",
+    "firstName": "Demo",
+    "lastName": "Owner",
+    "role": "OWNER",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "email": "demo.user@buylogic.test",
+    "password": "DemoUser123!",
+    "firstName": "Demo",
+    "lastName": "User",
+    "role": "USER",
+    "active": true
+  }
+]

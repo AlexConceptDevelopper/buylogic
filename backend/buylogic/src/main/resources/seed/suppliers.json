@@ -1,0 +1,65 @@
+[
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "name": "Fournisseur Alpha",
+    "email": "contact@alpha.test",
+    "phone": "0500000001",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "name": "Fournisseur Beta",
+    "email": "contact@beta.test",
+    "phone": "0500000002",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "name": "Fournisseur Gamma",
+    "email": "contact@gamma.test",
+    "phone": "0500000003",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@mecapro.test",
+    "name": "Meca Fournitures",
+    "email": "contact@meca-fournitures.test",
+    "phone": "0500000010",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@hydrotech.test",
+    "name": "Hydro Parts",
+    "email": "contact@hydroparts.test",
+    "phone": "0500000020",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@garage-martin.test",
+    "name": "Auto Distribution",
+    "email": "contact@auto-distribution.test",
+    "phone": "0500000030",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "name": "Demo Supply Pro",
+    "email": "contact@demosupply.test",
+    "phone": "05 00 00 00 01",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "name": "Demo Industrial Parts",
+    "email": "contact@demoindustrial.test",
+    "phone": "05 00 00 00 02",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "name": "Demo Stock Services",
+    "email": "contact@demostock.test",
+    "phone": "05 00 00 00 03",
+    "active": true
+  }
+]

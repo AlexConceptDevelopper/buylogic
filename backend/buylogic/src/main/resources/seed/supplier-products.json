@@ -1,0 +1,227 @@
+[
+  {
+    "productReference": "FILTRE-001",
+    "supplierName": "Fournisseur Alpha",
+    "supplierReference": "FH-4582",
+    "unitPrice": 18.5,
+    "minimumOrderQuantity": 50,
+    "expectedLeadTimeDays": 5,
+    "active": true
+  },
+  {
+    "productReference": "FILTRE-001",
+    "supplierName": "Fournisseur Beta",
+    "supplierReference": "FH-4582-B",
+    "unitPrice": 16.9,
+    "minimumOrderQuantity": 100,
+    "expectedLeadTimeDays": 9,
+    "active": true
+  },
+  {
+    "productReference": "FILTRE-001",
+    "supplierName": "Fournisseur Gamma",
+    "supplierReference": "FH-4582-G",
+    "unitPrice": 20.1,
+    "minimumOrderQuantity": 25,
+    "expectedLeadTimeDays": 3,
+    "active": true
+  },
+  {
+    "productReference": "ROUL-6204",
+    "supplierName": "Fournisseur Alpha",
+    "supplierReference": "6204-A",
+    "unitPrice": 4.2,
+    "minimumOrderQuantity": 20,
+    "expectedLeadTimeDays": 4,
+    "active": true
+  },
+  {
+    "productReference": "ROUL-6204",
+    "supplierName": "Fournisseur Beta",
+    "supplierReference": "6204-B",
+    "unitPrice": 3.8,
+    "minimumOrderQuantity": 50,
+    "expectedLeadTimeDays": 7,
+    "active": true
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "supplierName": "Fournisseur Alpha",
+    "supplierReference": "NIT-100-A",
+    "unitPrice": 7.5,
+    "minimumOrderQuantity": 10,
+    "expectedLeadTimeDays": 3,
+    "active": true
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "supplierName": "Fournisseur Gamma",
+    "supplierReference": "NIT-100-G",
+    "unitPrice": 6.9,
+    "minimumOrderQuantity": 20,
+    "expectedLeadTimeDays": 6,
+    "active": true
+  },
+  {
+    "productReference": "HUILE-5W30",
+    "supplierName": "Fournisseur Alpha",
+    "supplierReference": "5W30-A",
+    "unitPrice": 34.9,
+    "minimumOrderQuantity": 5,
+    "expectedLeadTimeDays": 4,
+    "active": true
+  },
+  {
+    "productReference": "HUILE-5W30",
+    "supplierName": "Fournisseur Beta",
+    "supplierReference": "5W30-B",
+    "unitPrice": 32.5,
+    "minimumOrderQuantity": 10,
+    "expectedLeadTimeDays": 7,
+    "active": true
+  },
+  {
+    "productReference": "CART-001",
+    "supplierName": "Fournisseur Gamma",
+    "supplierReference": "CART-G",
+    "unitPrice": 11.9,
+    "minimumOrderQuantity": 10,
+    "expectedLeadTimeDays": 8,
+    "active": true
+  },
+  {
+    "productReference": "PLAQUETTE-001",
+    "supplierName": "Meca Fournitures",
+    "supplierReference": "PLAQ-001",
+    "unitPrice": 42.9,
+    "minimumOrderQuantity": 5,
+    "expectedLeadTimeDays": 3,
+    "active": true
+  },
+  {
+    "productReference": "DISQUE-001",
+    "supplierName": "Meca Fournitures",
+    "supplierReference": "DISC-001",
+    "unitPrice": 58.5,
+    "minimumOrderQuantity": 2,
+    "expectedLeadTimeDays": 4,
+    "active": true
+  },
+  {
+    "productReference": "POMPE-001",
+    "supplierName": "Hydro Parts",
+    "supplierReference": "PMP-001",
+    "unitPrice": 480.0,
+    "minimumOrderQuantity": 1,
+    "expectedLeadTimeDays": 12,
+    "active": true
+  },
+  {
+    "productReference": "TUYAU-001",
+    "supplierName": "Hydro Parts",
+    "supplierReference": "FLEX-001",
+    "unitPrice": 72.0,
+    "minimumOrderQuantity": 5,
+    "expectedLeadTimeDays": 7,
+    "active": true
+  },
+  {
+    "productReference": "BAT-001",
+    "supplierName": "Auto Distribution",
+    "supplierReference": "BAT-70",
+    "unitPrice": 109.9,
+    "minimumOrderQuantity": 2,
+    "expectedLeadTimeDays": 2,
+    "active": true
+  },
+  {
+    "productReference": "PLAQUE-001",
+    "supplierName": "Auto Distribution",
+    "supplierReference": "PLAQ-S",
+    "unitPrice": 31.5,
+    "minimumOrderQuantity": 5,
+    "expectedLeadTimeDays": 3,
+    "active": true
+  },
+  {
+    "productReference": "FILTRE-HUILE",
+    "supplierName": "Auto Distribution",
+    "supplierReference": "FH-OIL",
+    "unitPrice": 8.9,
+    "minimumOrderQuantity": 10,
+    "expectedLeadTimeDays": 2,
+    "active": true
+  },
+  {
+    "productReference": "DEMO-FILTRE-01",
+    "supplierName": "Demo Supply Pro",
+    "supplierReference": "DSP-FILTRE-01",
+    "unitPrice": 18.5,
+    "minimumOrderQuantity": 5,
+    "expectedLeadTimeDays": 3,
+    "active": true
+  },
+  {
+    "productReference": "DEMO-FILTRE-01",
+    "supplierName": "Demo Industrial Parts",
+    "supplierReference": "DIP-FILTRE-01",
+    "unitPrice": 16.9,
+    "minimumOrderQuantity": 10,
+    "expectedLeadTimeDays": 5,
+    "active": true
+  },
+  {
+    "productReference": "DEMO-ROULEMENT-01",
+    "supplierName": "Demo Supply Pro",
+    "supplierReference": "DSP-ROUL-01",
+    "unitPrice": 7.8,
+    "minimumOrderQuantity": 10,
+    "expectedLeadTimeDays": 2,
+    "active": true
+  },
+  {
+    "productReference": "DEMO-ROULEMENT-01",
+    "supplierName": "Demo Industrial Parts",
+    "supplierReference": "DIP-ROUL-01",
+    "unitPrice": 6.95,
+    "minimumOrderQuantity": 20,
+    "expectedLeadTimeDays": 4,
+    "active": true
+  },
+  {
+    "productReference": "DEMO-GANTS-01",
+    "supplierName": "Demo Stock Services",
+    "supplierReference": "DSS-GANTS-01",
+    "unitPrice": 11.5,
+    "minimumOrderQuantity": 5,
+    "expectedLeadTimeDays": 2,
+    "active": true
+  },
+  {
+    "productReference": "DEMO-HUILE-01",
+    "supplierName": "Demo Supply Pro",
+    "supplierReference": "DSP-HUILE-01",
+    "unitPrice": 32.0,
+    "minimumOrderQuantity": 4,
+    "expectedLeadTimeDays": 3,
+    "active": true
+  },
+  {
+    "productReference": "DEMO-JOINT-01",
+    "supplierName": "Demo Industrial Parts",
+    "supplierReference": "DIP-JOINT-01",
+    "unitPrice": 2.4,
+    "minimumOrderQuantity": 20,
+    "expectedLeadTimeDays": 4,
+    "active": true
+  },
+  {
+    "productReference": "DEMO-VIS-01",
+    "supplierName": "Demo Stock Services",
+    "supplierReference": "DSS-VIS-01",
+    "unitPrice": 14.8,
+    "minimumOrderQuantity": 10,
+    "expectedLeadTimeDays": 2,
+    "active": true
+  }
+]

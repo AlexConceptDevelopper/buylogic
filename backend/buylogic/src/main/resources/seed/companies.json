@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Atelier Dupont Industrie",
+    "email": "contact@atelier-dupont.test",
+    "active": true
+  },
+  {
+    "name": "MecaPro Services",
+    "email": "contact@mecapro.test",
+    "active": true
+  },
+  {
+    "name": "HydroTech Solutions",
+    "email": "contact@hydrotech.test",
+    "active": true
+  },
+  {
+    "name": "Garage Martin & Fils",
+    "email": "contact@garage-martin.test",
+    "active": true
+  },
+  {
+    "name": "BuyLogic",
+    "email": "contact@buylogic.test",
+    "active": true
+  },
+  {
+    "name": "BuyLogic Demo",
+    "email": "contact@buylogic-demo.test",
+    "active": true
+  }
+]

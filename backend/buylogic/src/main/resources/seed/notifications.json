@@ -1,0 +1,68 @@
+[
+  {
+    "userEmail": "admin@atelier-dupont.test",
+    "type": "PURCHASE_RECOMMENDED",
+    "title": "Commande recommandée",
+    "message": "Le produit FILTRE-001 présente un risque de rupture.",
+    "productReference": "FILTRE-001"
+  },
+  {
+    "userEmail": "acheteur@atelier-dupont.test",
+    "type": "STOCKOUT_RISK",
+    "title": "Risque de rupture",
+    "message": "Le stock de CART-001 est actuellement sous le seuil recommandé.",
+    "productReference": "CART-001"
+  },
+  {
+    "userEmail": "admin@mecapro.test",
+    "type": "PURCHASE_RECOMMENDED",
+    "title": "Réapprovisionnement nécessaire",
+    "message": "Une commande est recommandée pour PLAQUETTE-001.",
+    "productReference": "PLAQUETTE-001"
+  },
+  {
+    "userEmail": "admin@hydrotech.test",
+    "type": "SUPPLIER_DELAY",
+    "title": "Délai fournisseur élevé",
+    "message": "POMPE-001 nécessite une anticipation du réapprovisionnement.",
+    "productReference": "POMPE-001"
+  },
+  {
+    "userEmail": "admin@garage-martin.test",
+    "type": "STOCKOUT_RISK",
+    "title": "Stock à surveiller",
+    "message": "Le stock de BAT-001 approche du seuil de commande.",
+    "productReference": "BAT-001"
+  },
+  {
+    "userEmail": "user@garage-martin.test",
+    "type": "PURCHASE_RECOMMENDED",
+    "title": "Nouvelle recommandation",
+    "message": "Une nouvelle recommandation d'achat est disponible.",
+    "productReference": "BAT-001"
+  },
+  {
+    "userEmail": "demo.owner@buylogic.test",
+    "productReference": "DEMO-GANTS-01",
+    "type": "STOCKOUT_RISK",
+    "title": "Risque de rupture",
+    "message": "Le stock de gants nitrile est actuellement nul.",
+    "readAt": null
+  },
+  {
+    "userEmail": "demo.owner@buylogic.test",
+    "productReference": "DEMO-ROULEMENT-01",
+    "type": "PURCHASE_RECOMMENDED",
+    "title": "Nouvelle recommandation",
+    "message": "BuyLogic recommande de réapprovisionner les roulements industriels.",
+    "readAt": null
+  },
+  {
+    "userEmail": "demo.user@buylogic.test",
+    "productReference": "DEMO-FILTRE-01",
+    "type": "STOCKOUT_RISK",
+    "title": "Stock faible",
+    "message": "Le stock du filtre hydraulique approche du point de commande.",
+    "readAt": null
+  }
+]

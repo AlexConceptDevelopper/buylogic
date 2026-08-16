@@ -1,0 +1,92 @@
+[
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "supplierName": "Fournisseur Alpha",
+    "orderNumber": "PO-AD-001",
+    "status": "ORDERED",
+    "orderedAt": "2026-08-11T09:00:00",
+    "expectedDeliveryDate": "2026-08-16",
+    "receivedAt": null,
+    "totalAmount": 925.0
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "supplierName": "Fournisseur Beta",
+    "orderNumber": "PO-AD-002",
+    "status": "RECEIVED",
+    "orderedAt": "2026-08-05T10:00:00",
+    "expectedDeliveryDate": "2026-08-12",
+    "receivedAt": "2026-08-12T14:00:00",
+    "totalAmount": 380.0
+  },
+  {
+    "companyEmail": "contact@mecapro.test",
+    "supplierName": "Meca Fournitures",
+    "orderNumber": "PO-MP-001",
+    "status": "ORDERED",
+    "orderedAt": "2026-08-10T11:00:00",
+    "expectedDeliveryDate": "2026-08-13",
+    "receivedAt": null,
+    "totalAmount": 429.0
+  },
+  {
+    "companyEmail": "contact@hydrotech.test",
+    "supplierName": "Hydro Parts",
+    "orderNumber": "PO-HT-001",
+    "status": "ORDERED",
+    "orderedAt": "2026-08-08T09:00:00",
+    "expectedDeliveryDate": "2026-08-20",
+    "receivedAt": null,
+    "totalAmount": 480.0
+  },
+  {
+    "companyEmail": "contact@garage-martin.test",
+    "supplierName": "Auto Distribution",
+    "orderNumber": "PO-GM-001",
+    "status": "RECEIVED",
+    "orderedAt": "2026-08-05T09:00:00",
+    "expectedDeliveryDate": "2026-08-07",
+    "receivedAt": "2026-08-07T15:00:00",
+    "totalAmount": 549.5
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "supplierName": "Demo Supply Pro",
+    "orderNumber": "DEMO-PO-001",
+    "status": "ORDERED",
+    "orderedAt": "2026-08-12T09:00:00",
+    "expectedDeliveryDate": "2026-08-16",
+    "receivedAt": null,
+    "totalAmount": 185.0
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "supplierName": "Demo Industrial Parts",
+    "orderNumber": "DEMO-PO-002",
+    "status": "PARTIALLY_RECEIVED",
+    "orderedAt": "2026-08-09T09:00:00",
+    "expectedDeliveryDate": "2026-08-14",
+    "receivedAt": null,
+    "totalAmount": 240.0
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "supplierName": "Demo Stock Services",
+    "orderNumber": "DEMO-PO-003",
+    "status": "RECEIVED",
+    "orderedAt": "2026-08-01T09:00:00",
+    "expectedDeliveryDate": "2026-08-04",
+    "receivedAt": "2026-08-04T15:00:00",
+    "totalAmount": 95.0
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "supplierName": "Demo Supply Pro",
+    "orderNumber": "DEMO-PO-004",
+    "status": "DRAFT",
+    "orderedAt": null,
+    "expectedDeliveryDate": null,
+    "receivedAt": null,
+    "totalAmount": 120.0
+  }
+]

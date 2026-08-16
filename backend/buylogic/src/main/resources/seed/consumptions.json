@@ -1,0 +1,342 @@
+[
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 8,
+    "consumptionDate": "2026-07-20",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 9,
+    "consumptionDate": "2026-07-21",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 10,
+    "consumptionDate": "2026-07-22",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 11,
+    "consumptionDate": "2026-07-23",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 12,
+    "consumptionDate": "2026-07-24",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 13,
+    "consumptionDate": "2026-07-25",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 14,
+    "consumptionDate": "2026-07-26",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 15,
+    "consumptionDate": "2026-07-27",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 16,
+    "consumptionDate": "2026-07-28",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 17,
+    "consumptionDate": "2026-07-29",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 18,
+    "consumptionDate": "2026-07-30",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 20,
+    "consumptionDate": "2026-07-31",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 19,
+    "consumptionDate": "2026-08-01",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 21,
+    "consumptionDate": "2026-08-02",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 22,
+    "consumptionDate": "2026-08-03",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 24,
+    "consumptionDate": "2026-08-04",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 23,
+    "consumptionDate": "2026-08-05",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 25,
+    "consumptionDate": "2026-08-06",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 26,
+    "consumptionDate": "2026-08-07",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "FILTRE-001",
+    "quantity": 24,
+    "consumptionDate": "2026-08-08",
+    "source": "MANUAL"
+  },
+
+  {
+    "productReference": "ROUL-6204",
+    "quantity": 2,
+    "consumptionDate": "2026-08-01",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "ROUL-6204",
+    "quantity": 3,
+    "consumptionDate": "2026-08-02",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "ROUL-6204",
+    "quantity": 2,
+    "consumptionDate": "2026-08-03",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "ROUL-6204",
+    "quantity": 4,
+    "consumptionDate": "2026-08-04",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "ROUL-6204",
+    "quantity": 5,
+    "consumptionDate": "2026-08-05",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "ROUL-6204",
+    "quantity": 4,
+    "consumptionDate": "2026-08-06",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "ROUL-6204",
+    "quantity": 5,
+    "consumptionDate": "2026-08-07",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "ROUL-6204",
+    "quantity": 6,
+    "consumptionDate": "2026-08-08",
+    "source": "MANUAL"
+  },
+
+  {
+    "productReference": "GANT-NITRILE",
+    "quantity": 12,
+    "consumptionDate": "2026-08-01",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "quantity": 14,
+    "consumptionDate": "2026-08-02",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "quantity": 16,
+    "consumptionDate": "2026-08-03",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "quantity": 18,
+    "consumptionDate": "2026-08-04",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "quantity": 19,
+    "consumptionDate": "2026-08-05",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "quantity": 21,
+    "consumptionDate": "2026-08-06",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "quantity": 24,
+    "consumptionDate": "2026-08-07",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "GANT-NITRILE",
+    "quantity": 22,
+    "consumptionDate": "2026-08-08",
+    "source": "MANUAL"
+  },
+
+  {
+    "productReference": "PLAQUETTE-001",
+    "quantity": 2,
+    "consumptionDate": "2026-08-01",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "PLAQUETTE-001",
+    "quantity": 3,
+    "consumptionDate": "2026-08-02",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "PLAQUETTE-001",
+    "quantity": 2,
+    "consumptionDate": "2026-08-03",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "PLAQUETTE-001",
+    "quantity": 4,
+    "consumptionDate": "2026-08-04",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "PLAQUETTE-001",
+    "quantity": 3,
+    "consumptionDate": "2026-08-05",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "PLAQUETTE-001",
+    "quantity": 4,
+    "consumptionDate": "2026-08-06",
+    "source": "MANUAL"
+  },
+
+  {
+    "productReference": "BAT-001",
+    "quantity": 1,
+    "consumptionDate": "2026-08-01",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "BAT-001",
+    "quantity": 2,
+    "consumptionDate": "2026-08-03",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "BAT-001",
+    "quantity": 1,
+    "consumptionDate": "2026-08-05",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "BAT-001",
+    "quantity": 2,
+    "consumptionDate": "2026-08-07",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "BAT-001",
+    "quantity": 3,
+    "consumptionDate": "2026-08-09",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "BAT-001",
+    "quantity": 2,
+    "consumptionDate": "2026-08-11",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "DEMO-FILTRE-01",
+    "quantity": 2,
+    "consumptionDate": "2026-08-05",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "DEMO-FILTRE-01",
+    "quantity": 3,
+    "consumptionDate": "2026-08-08",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "DEMO-FILTRE-01",
+    "quantity": 2,
+    "consumptionDate": "2026-08-12",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "DEMO-ROULEMENT-01",
+    "quantity": 4,
+    "consumptionDate": "2026-08-05",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "DEMO-ROULEMENT-01",
+    "quantity": 3,
+    "consumptionDate": "2026-08-09",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "DEMO-GANTS-01",
+    "quantity": 2,
+    "consumptionDate": "2026-08-06",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "DEMO-GANTS-01",
+    "quantity": 3,
+    "consumptionDate": "2026-08-10",
+    "source": "MANUAL"
+  },
+  {
+    "productReference": "DEMO-HUILE-01",
+    "quantity": 1,
+    "consumptionDate": "2026-08-07",
+    "source": "MANUAL"
+  }
+]

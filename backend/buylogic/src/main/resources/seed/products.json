@@ -1,0 +1,185 @@
+[
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "reference": "FILTRE-001",
+    "name": "Filtre hydraulique",
+    "description": "Filtre haute pression",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "reference": "ROUL-6204",
+    "name": "Roulement 6204",
+    "description": "Roulement industriel",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "reference": "GANT-NITRILE",
+    "name": "Gants nitrile",
+    "description": "Boîte de gants nitrile",
+    "unit": "BOX",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "reference": "HUILE-5W30",
+    "name": "Huile moteur 5W30",
+    "description": "Bidon 5 litres",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "reference": "CART-001",
+    "name": "Cartouche filtrante",
+    "description": "Cartouche filtration industrielle",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "reference": "COUR-001",
+    "name": "Courroie industrielle",
+    "description": "Courroie de transmission",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "reference": "JOINT-045",
+    "name": "Joint torique",
+    "description": "Joint industriel",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@atelier-dupont.test",
+    "reference": "VIS-M10",
+    "name": "Vis M10",
+    "description": "Visserie industrielle",
+    "unit": "BOX",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@mecapro.test",
+    "reference": "PLAQUETTE-001",
+    "name": "Plaquettes de frein",
+    "description": "Jeu de plaquettes de frein",
+    "unit": "SET",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@mecapro.test",
+    "reference": "DISQUE-001",
+    "name": "Disque de frein",
+    "description": "Disque avant ventilé",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@hydrotech.test",
+    "reference": "POMPE-001",
+    "name": "Pompe hydraulique",
+    "description": "Pompe hydraulique industrielle",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@hydrotech.test",
+    "reference": "TUYAU-001",
+    "name": "Flexible hydraulique",
+    "description": "Flexible haute pression",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@garage-martin.test",
+    "reference": "BAT-001",
+    "name": "Batterie 70Ah",
+    "description": "Batterie automobile",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@garage-martin.test",
+    "reference": "PLAQUE-001",
+    "name": "Plaquettes standard",
+    "description": "Plaquettes frein avant",
+    "unit": "SET",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@garage-martin.test",
+    "reference": "FILTRE-HUILE",
+    "name": "Filtre à huile",
+    "description": "Filtre moteur universel",
+    "unit": "UNIT",
+    "currentStock": 0,
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "reference": "DEMO-FILTRE-01",
+    "name": "Filtre hydraulique standard",
+    "description": "Filtre hydraulique pour équipements industriels.",
+    "unit": "UNIT",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "reference": "DEMO-ROULEMENT-01",
+    "name": "Roulement industriel 6204",
+    "description": "Roulement standard pour maintenance.",
+    "unit": "UNIT",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "reference": "DEMO-GANTS-01",
+    "name": "Gants nitrile",
+    "description": "Boîte de gants nitrile pour atelier.",
+    "unit": "BOX",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "reference": "DEMO-HUILE-01",
+    "name": "Huile moteur 5W30",
+    "description": "Bidon d'huile moteur 5W30.",
+    "unit": "UNIT",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "reference": "DEMO-JOINT-01",
+    "name": "Joint torique renforcé",
+    "description": "Joint pour maintenance industrielle.",
+    "unit": "UNIT",
+    "active": true
+  },
+  {
+    "companyEmail": "contact@buylogic-demo.test",
+    "reference": "DEMO-VIS-01",
+    "name": "Vis M10",
+    "description": "Visserie standard pour atelier.",
+    "unit": "BOX",
+    "active": true
+  }
+]
