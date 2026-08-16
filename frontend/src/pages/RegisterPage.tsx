@@ -3,9 +3,18 @@ import type { SubmitEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { register } from "../api/auth.api";
+import type {
+  ConsumptionMode,
+  ConsumptionSource,
+  ProductManagementMode,
+} from "../types/companyConfiguration";
+
+type OnboardingStep = 1 | 2 | 3 | 4;
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+
+  const [step, setStep] = useState<OnboardingStep>(1);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -13,13 +22,100 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [productManagementMode, setProductManagementMode] =
+    useState<ProductManagementMode | null>(null);
+
+  const [consumptionMode, setConsumptionMode] =
+    useState<ConsumptionMode | null>(null);
+
+  const [consumptionSource, setConsumptionSource] =
+    useState<ConsumptionSource | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(
-    event: SubmitEvent<HTMLFormElement>,
-  ) {
+  const stepLabels = ["Compte", "Produits", "Stock", "Données"];
+
+  const optionClassName = (selected: boolean) =>
+    [
+      "w-full cursor-pointer rounded-2xl border p-5 text-left transition",
+      selected
+        ? "border-cyan-400/30 bg-cyan-400/10 shadow-lg shadow-cyan-400/5"
+        : "border-white/10 bg-slate-950/50 hover:border-white/20 hover:bg-white/5",
+    ].join(" ");
+
+  const validateCurrentStep = () => {
+    setError("");
+
+    if (step === 1) {
+      if (
+        !firstName.trim() ||
+        !lastName.trim() ||
+        !companyName.trim() ||
+        !email.trim() ||
+        !password
+      ) {
+        setError("Veuillez compléter tous les champs obligatoires.");
+        return false;
+      }
+
+      if (password.length < 8) {
+        setError("Le mot de passe doit contenir au moins 8 caractères.");
+        return false;
+      }
+    }
+
+    if (step === 2 && !productManagementMode) {
+      setError(
+        "Sélectionnez le fonctionnement qui correspond à votre entreprise.",
+      );
+      return false;
+    }
+
+    if (step === 3 && !consumptionMode) {
+      setError("Sélectionnez la manière dont vos ventes impactent le stock.");
+      return false;
+    }
+
+    if (step === 4 && !consumptionSource) {
+      setError(
+        "Sélectionnez la manière dont vous souhaitez renseigner vos consommations.",
+      );
+      return false;
+    }
+
+    return true;
+  };
+
+  const goNext = () => {
+    if (!validateCurrentStep()) {
+      return;
+    }
+
+    if (step < 4) {
+      setStep((current) => (current + 1) as OnboardingStep);
+    }
+  };
+
+  const goBack = () => {
+    setError("");
+
+    if (step > 1) {
+      setStep((current) => (current - 1) as OnboardingStep);
+    }
+  };
+
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!validateCurrentStep()) {
+      return;
+    }
+
+    if (!productManagementMode || !consumptionMode || !consumptionSource) {
+      setError("Veuillez compléter la configuration de votre entreprise.");
+      return;
+    }
 
     setError("");
     setLoading(true);
@@ -31,6 +127,9 @@ export default function RegisterPage() {
         companyName,
         email,
         password,
+        productManagementMode,
+        consumptionMode,
+        consumptionSource,
       });
 
       navigate("/login");
@@ -86,128 +185,344 @@ export default function RegisterPage() {
                 </h1>
 
                 <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400">
-                  Votre compte crée automatiquement votre entreprise,
-                  votre espace de travail et votre période d'essai de
-                  30 jours.
+                  Votre compte crée automatiquement votre entreprise, votre
+                  espace de travail et votre configuration BuyLogic.
                 </p>
               </div>
 
-              <form
-                onSubmit={handleSubmit}
-                className="mt-8 space-y-5"
-              >
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="firstName"
-                      className="mb-2 block text-sm font-medium text-slate-300"
-                    >
-                      Prénom
-                    </label>
+              <div className="mt-8 grid grid-cols-4 gap-2">
+                {stepLabels.map((label, index) => {
+                  const currentStep = (index + 1) as OnboardingStep;
 
-                    <input
-                      id="firstName"
-                      type="text"
-                      value={firstName}
-                      onChange={(event) =>
-                        setFirstName(event.target.value)
-                      }
-                      autoComplete="given-name"
-                      required
-                      className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
-                      placeholder="Alex"
-                    />
+                  const active = currentStep === step;
+
+                  const completed = currentStep < step;
+
+                  return (
+                    <div key={label}>
+                      <div
+                        className={[
+                          "h-1.5 rounded-full transition",
+                          active || completed ? "bg-cyan-400" : "bg-white/10",
+                        ].join(" ")}
+                      />
+
+                      <p
+                        className={[
+                          "mt-2 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                          active
+                            ? "text-cyan-300"
+                            : completed
+                              ? "text-slate-300"
+                              : "text-slate-600",
+                        ].join(" ")}
+                      >
+                        {label}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                {step === 1 && (
+                  <div className="space-y-5">
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="firstName"
+                          className="mb-2 block text-sm font-medium text-slate-300"
+                        >
+                          Prénom
+                        </label>
+
+                        <input
+                          id="firstName"
+                          type="text"
+                          value={firstName}
+                          onChange={(event) => setFirstName(event.target.value)}
+                          autoComplete="given-name"
+                          required
+                          className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
+                          placeholder="Alex"
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="lastName"
+                          className="mb-2 block text-sm font-medium text-slate-300"
+                        >
+                          Nom
+                        </label>
+
+                        <input
+                          id="lastName"
+                          type="text"
+                          value={lastName}
+                          onChange={(event) => setLastName(event.target.value)}
+                          autoComplete="family-name"
+                          required
+                          className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
+                          placeholder="Dupont"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="companyName"
+                        className="mb-2 block text-sm font-medium text-slate-300"
+                      >
+                        Nom de l'entreprise
+                      </label>
+
+                      <input
+                        id="companyName"
+                        type="text"
+                        value={companyName}
+                        onChange={(event) => setCompanyName(event.target.value)}
+                        autoComplete="organization"
+                        required
+                        className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
+                        placeholder="Boulangerie Dupont"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="mb-2 block text-sm font-medium text-slate-300"
+                      >
+                        Adresse e-mail
+                      </label>
+
+                      <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        autoComplete="email"
+                        required
+                        className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
+                        placeholder="vous@entreprise.fr"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="password"
+                        className="mb-2 block text-sm font-medium text-slate-300"
+                      >
+                        Mot de passe
+                      </label>
+
+                      <input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        autoComplete="new-password"
+                        minLength={8}
+                        required
+                        className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
+                        placeholder="8 caractères minimum"
+                      />
+                    </div>
                   </div>
+                )}
 
+                {step === 2 && (
                   <div>
-                    <label
-                      htmlFor="lastName"
-                      className="mb-2 block text-sm font-medium text-slate-300"
-                    >
-                      Nom
-                    </label>
+                    <p className="text-sm font-semibold text-white">
+                      Comment gérez-vous principalement vos produits ?
+                    </p>
 
-                    <input
-                      id="lastName"
-                      type="text"
-                      value={lastName}
-                      onChange={(event) =>
-                        setLastName(event.target.value)
-                      }
-                      autoComplete="family-name"
-                      required
-                      className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
-                      placeholder="Dupont"
-                    />
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      Cette réponse aide BuyLogic à comprendre comment vos
+                      produits entrent et sortent de votre stock.
+                    </p>
+
+                    <div className="mt-6 space-y-3">
+                      <button
+                        type="button"
+                        onClick={() => setProductManagementMode("RESALE")}
+                        className={optionClassName(
+                          productManagementMode === "RESALE",
+                        )}
+                      >
+                        <p className="text-sm font-bold text-white">
+                          Je revends les produits tels que je les achète
+                        </p>
+
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          Un produit acheté auprès d'un fournisseur est ensuite
+                          vendu sans transformation notable.
+                        </p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setProductManagementMode("PRODUCTION")}
+                        className={optionClassName(
+                          productManagementMode === "PRODUCTION",
+                        )}
+                      >
+                        <p className="text-sm font-bold text-white">
+                          Je fabrique ou assemble mes produits
+                        </p>
+
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          Un produit vendu peut nécessiter plusieurs autres
+                          produits ou composants.
+                        </p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setProductManagementMode("MIXED")}
+                        className={optionClassName(
+                          productManagementMode === "MIXED",
+                        )}
+                      >
+                        <p className="text-sm font-bold text-white">
+                          Je fais les deux
+                        </p>
+
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          Certains produits sont revendus tels quels et d'autres
+                          sont fabriqués ou assemblés.
+                        </p>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div>
-                  <label
-                    htmlFor="companyName"
-                    className="mb-2 block text-sm font-medium text-slate-300"
-                  >
-                    Nom de l'entreprise
-                  </label>
+                {step === 3 && (
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      Lorsqu'un produit est vendu, comment votre stock
+                      évolue-t-il ?
+                    </p>
 
-                  <input
-                    id="companyName"
-                    type="text"
-                    value={companyName}
-                    onChange={(event) =>
-                      setCompanyName(event.target.value)
-                    }
-                    autoComplete="organization"
-                    required
-                    className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
-                    placeholder="Atelier Dupont Industrie"
-                  />
-                </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      BuyLogic utilise cette information pour déterminer ce qui
+                      doit réellement être déduit du stock.
+                    </p>
 
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="mb-2 block text-sm font-medium text-slate-300"
-                  >
-                    Adresse e-mail
-                  </label>
+                    <div className="mt-6 space-y-3">
+                      <button
+                        type="button"
+                        onClick={() => setConsumptionMode("DIRECT_STOCK_OUT")}
+                        className={optionClassName(
+                          consumptionMode === "DIRECT_STOCK_OUT",
+                        )}
+                      >
+                        <p className="text-sm font-bold text-white">
+                          Le produit vendu sort directement du stock
+                        </p>
 
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(event) =>
-                      setEmail(event.target.value)
-                    }
-                    autoComplete="email"
-                    required
-                    className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
-                    placeholder="vous@entreprise.fr"
-                  />
-                </div>
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          Exemple : vous revendez directement un produit acheté
+                          auprès d'un fournisseur.
+                        </p>
+                      </button>
 
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="mb-2 block text-sm font-medium text-slate-300"
-                  >
-                    Mot de passe
-                  </label>
+                      <button
+                        type="button"
+                        onClick={() => setConsumptionMode("COMPOSITION")}
+                        className={optionClassName(
+                          consumptionMode === "COMPOSITION",
+                        )}
+                      >
+                        <p className="text-sm font-bold text-white">
+                          La vente consomme plusieurs produits ou composants
+                        </p>
 
-                  <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(event) =>
-                      setPassword(event.target.value)
-                    }
-                    autoComplete="new-password"
-                    minLength={8}
-                    required
-                    className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
-                    placeholder="8 caractères minimum"
-                  />
-                </div>
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          Exemple : un produit vendu est composé de plusieurs
+                          éléments suivis en stock.
+                        </p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setConsumptionMode("MIXED")}
+                        className={optionClassName(consumptionMode === "MIXED")}
+                      >
+                        <p className="text-sm font-bold text-white">
+                          Les deux selon les produits
+                        </p>
+
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          Certaines ventes sortent directement du stock et
+                          d'autres entraînent la consommation de composants.
+                        </p>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {step === 4 && (
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      Comment renseignez-vous vos consommations ?
+                    </p>
+
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      Cette information permet à BuyLogic d'adapter les écrans
+                      d'import et de saisie à votre organisation.
+                    </p>
+
+                    <div className="mt-6 space-y-3">
+                      <button
+                        type="button"
+                        onClick={() => setConsumptionSource("CSV")}
+                        className={optionClassName(consumptionSource === "CSV")}
+                      >
+                        <p className="text-sm font-bold text-white">
+                          J'importe des fichiers CSV
+                        </p>
+
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          Les données peuvent provenir d'un logiciel de caisse,
+                          de gestion ou d'un export interne.
+                        </p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setConsumptionSource("MANUAL")}
+                        className={optionClassName(
+                          consumptionSource === "MANUAL",
+                        )}
+                      >
+                        <p className="text-sm font-bold text-white">
+                          Je saisis les consommations manuellement
+                        </p>
+
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          J'enregistre directement les sorties dans BuyLogic.
+                        </p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setConsumptionSource("MIXED")}
+                        className={optionClassName(
+                          consumptionSource === "MIXED",
+                        )}
+                      >
+                        <p className="text-sm font-bold text-white">Les deux</p>
+
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          J'utilise le CSV pour certaines données et la saisie
+                          manuelle pour d'autres.
+                        </p>
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {error && (
                   <div
@@ -218,15 +533,41 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full cursor-pointer rounded-xl bg-cyan-400 px-4 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {loading
-                    ? "Création du compte..."
-                    : "Créer mon compte gratuitement"}
-                </button>
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                  {step > 1 ? (
+                    <button
+                      type="button"
+                      onClick={goBack}
+                      disabled={loading}
+                      className="cursor-pointer rounded-xl border border-white/10 px-5 py-3.5 text-sm font-semibold text-slate-300 transition hover:border-white/20 hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Retour
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+
+                  {step < 4 ? (
+                    <button
+                      type="button"
+                      onClick={goNext}
+                      disabled={loading}
+                      className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Continuer
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {loading
+                        ? "Création du compte..."
+                        : "Créer mon compte gratuitement"}
+                    </button>
+                  )}
+                </div>
               </form>
 
               <p className="mt-6 text-center text-sm text-slate-500">
@@ -253,8 +594,8 @@ export default function RegisterPage() {
                 </h2>
 
                 <p className="mt-4 text-sm leading-7 text-slate-400">
-                  Découvrez BuyLogic avec un véritable espace
-                  d'entreprise et vos propres données.
+                  Découvrez BuyLogic avec un véritable espace d'entreprise et
+                  vos propres données.
                 </p>
               </div>
 
