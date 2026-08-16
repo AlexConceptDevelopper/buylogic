@@ -15,6 +15,7 @@ import StockPage from "./pages/StockPage";
 import PurchaseOrdersPage from "./pages/PurchaseOrdersPage";
 import PurchaseOrderDetailPage from "./pages/PurchaseOrderDetailPage";
 import ConsumptionImportPage from "./pages/ConsumptionImportPage";
+import RecommendationsPage from "./pages/RecommendationsPage";
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
               <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
               <Route path="/purchase-orders/:id" element={<PurchaseOrderDetailPage />} />
               <Route path="/consumption-import" element={<ConsumptionImportPage />} />
+              <Route path="/recommendations" element={<RecommendationsPage />} />
             </Route>
           </Route>
         </Routes>

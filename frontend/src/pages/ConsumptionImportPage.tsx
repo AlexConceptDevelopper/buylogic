@@ -18,6 +18,7 @@ type ImportRow = {
 
 function parseCsv(content: string): ImportRow[] {
   const lines = content
+    .replace(/^\uFEFF/, "")
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
@@ -26,29 +27,147 @@ function parseCsv(content: string): ImportRow[] {
     return [];
   }
 
-  const headers = lines[0]
-    .split(",")
-    .map((header) => header.trim().toLowerCase());
+  const firstLine = lines[0];
+  const separatorCandidates = [",", ";", "\t"];
 
-  const dateIndex = headers.indexOf("date");
-  const referenceIndex = headers.indexOf("reference");
-  const quantityIndex = headers.indexOf("quantity");
+  const separator = separatorCandidates.reduce((best, candidate) => {
+    const bestCount = firstLine.split(best).length - 1;
+    const candidateCount = firstLine.split(candidate).length - 1;
 
-  if (dateIndex === -1 || referenceIndex === -1 || quantityIndex === -1) {
-    return [];
+    return candidateCount > bestCount ? candidate : best;
+  }, ",");
+
+  const normalize = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ");
+
+  const parseLine = (line: string) => {
+    const values: string[] = [];
+    let current = "";
+    let quoted = false;
+
+    for (let index = 0; index < line.length; index += 1) {
+      const character = line[index];
+
+      if (character === '"') {
+        if (quoted && line[index + 1] === '"') {
+          current += '"';
+          index += 1;
+          continue;
+        }
+
+        quoted = !quoted;
+        continue;
+      }
+
+      if (character === separator && !quoted) {
+        values.push(current.trim());
+        current = "";
+        continue;
+      }
+
+      current += character;
+    }
+
+    values.push(current.trim());
+
+    return values;
+  };
+
+  const headers = parseLine(lines[0]).map(normalize);
+
+  const aliases = {
+    date: [
+      "date",
+      "date vente",
+      "date de vente",
+      "date of sale",
+      "jour",
+      "sale date",
+      "transaction date",
+    ],
+    reference: [
+      "reference",
+      "ref",
+      "code article",
+      "code produit",
+      "sku",
+      "article code",
+      "product code",
+    ],
+    quantity: [
+      "quantity",
+      "quantite",
+      "qte",
+      "qte vendue",
+      "quantite vendue",
+      "quantite vendues",
+      "ventes",
+      "quantity sold",
+      "qty",
+    ],
+  };
+
+  const findColumn = (columnAliases: string[]) =>
+    headers.findIndex((header) => columnAliases.includes(header));
+
+  const dateIndex = findColumn(aliases.date);
+  const referenceIndex = findColumn(aliases.reference);
+  const quantityIndex = findColumn(aliases.quantity);
+
+  const missingColumns = [
+    dateIndex === -1 ? "date" : null,
+    referenceIndex === -1 ? "référence produit" : null,
+    quantityIndex === -1 ? "quantité vendue" : null,
+  ].filter((value): value is string => value !== null);
+
+  if (missingColumns.length > 0) {
+    throw new Error(
+      `BuyLogic n'a pas pu identifier ${missingColumns.length === 1 ? "la colonne" : "les colonnes"} : ${missingColumns.join(", ")}. Noms de colonnes acceptés : date, date de vente, date of sale, jour ; référence, ref, code article, code produit, SKU ; quantité, qte, quantité vendue, quantity sold, qty.`,
+    );
   }
 
-  return lines.slice(1).map((line) => {
-    const values = line.split(",").map((value) => value.trim());
+  const normalizeDate = (value: string) => {
+    const trimmedValue = value.trim();
 
-    const date = values[dateIndex] ?? "";
-    const reference = values[referenceIndex] ?? "";
-    const quantityValue = Number(values[quantityIndex] ?? "");
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmedValue)) {
+      return trimmedValue;
+    }
+
+    const frenchDateMatch = trimmedValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+
+    if (frenchDateMatch) {
+      const [, day, month, year] = frenchDateMatch;
+
+      return `${year}-${month}-${day}`;
+    }
+
+    const shortFrenchDateMatch = trimmedValue.match(
+      /^(\d{2})\/(\d{2})\/(\d{2})$/,
+    );
+
+    if (shortFrenchDateMatch) {
+      const [, day, month, shortYear] = shortFrenchDateMatch;
+      const year =
+        Number(shortYear) >= 70 ? `19${shortYear}` : `20${shortYear}`;
+
+      return `${year}-${month}-${day}`;
+    }
+
+    return trimmedValue;
+  };
+
+  return lines.slice(1).map((line) => {
+    const values = parseLine(line);
 
     return {
-      date,
-      reference,
-      quantity: quantityValue,
+      date: normalizeDate(values[dateIndex] ?? ""),
+      reference: values[referenceIndex] ?? "",
+      quantity: Number(values[quantityIndex] ?? ""),
       product: null,
     };
   });
@@ -97,70 +216,77 @@ export default function ConsumptionImportPage() {
     setFileName(file.name);
     setSelectedFile(file);
 
-    const content = await file.text();
-    const parsedRows = parseCsv(content);
+    try {
+      const content = await file.text();
+      const parsedRows = parseCsv(content);
 
-    if (parsedRows.length === 0) {
+      if (parsedRows.length === 0) {
+        setImportError("Le fichier ne contient aucune ligne exploitable.");
+        return;
+      }
+
+      const products = await executeProducts(() => getProducts());
+
+      if (!products) {
+        setImportError("Impossible de récupérer les produits BuyLogic.");
+        return;
+      }
+
+      const enrichedRows = parsedRows.map((row) => {
+        const normalizedReference = row.reference.toLowerCase().trim();
+
+        const product =
+          products.find(
+            (item) =>
+              item.reference.toLowerCase().trim() === normalizedReference,
+          ) ?? null;
+
+        if (!product) {
+          return {
+            ...row,
+            product: null,
+            error: "Référence produit inconnue",
+          };
+        }
+
+        if (!Number.isFinite(row.quantity)) {
+          return {
+            ...row,
+            product,
+            error: "Quantité invalide",
+          };
+        }
+
+        if (row.quantity <= 0) {
+          return {
+            ...row,
+            product,
+            error: "La quantité doit être supérieure à 0",
+          };
+        }
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(row.date)) {
+          return {
+            ...row,
+            product,
+            error: "Date invalide",
+          };
+        }
+
+        return {
+          ...row,
+          product,
+        };
+      });
+
+      setRows(enrichedRows);
+    } catch (error) {
       setImportError(
-        "Le fichier ne contient aucune ligne exploitable ou les colonnes attendues sont absentes.",
+        error instanceof Error
+          ? error.message
+          : "Impossible de lire ce fichier CSV.",
       );
-      return;
     }
-
-    const products = await executeProducts(() => getProducts());
-
-    if (!products) {
-      setImportError("Impossible de récupérer les produits BuyLogic.");
-      return;
-    }
-
-    const enrichedRows = parsedRows.map((row) => {
-      const normalizedReference = row.reference.toLowerCase();
-
-      const product =
-        products.find(
-          (item) => item.reference.toLowerCase().trim() === normalizedReference,
-        ) ?? null;
-
-      if (!product) {
-        return {
-          ...row,
-          product: null,
-          error: "Référence produit inconnue",
-        };
-      }
-
-      if (!Number.isFinite(row.quantity)) {
-        return {
-          ...row,
-          product,
-          error: "Quantité invalide",
-        };
-      }
-
-      if (row.quantity <= 0) {
-        return {
-          ...row,
-          product,
-          error: "La quantité doit être supérieure à 0",
-        };
-      }
-
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(row.date)) {
-        return {
-          ...row,
-          product,
-          error: "Date invalide",
-        };
-      }
-
-      return {
-        ...row,
-        product,
-      };
-    });
-
-    setRows(enrichedRows);
   };
 
   const handleImport = async () => {
@@ -249,8 +375,8 @@ export default function ConsumptionImportPage() {
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-          Testez la transformation d'un export de caisse en consommations
-          BuyLogic.
+          BuyLogic détecte automatiquement le séparateur, l'ordre et les noms
+          courants des colonnes nécessaires à l'import.
         </p>
       </div>
 
@@ -262,8 +388,8 @@ export default function ConsumptionImportPage() {
             </p>
 
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Format attendu : CSV avec les colonnes date, reference et
-              quantity.
+              CSV avec une date de vente, une référence produit et une quantité
+              vendue. Leur ordre et leur nom peuvent varier.
             </p>
           </div>
 
@@ -456,7 +582,7 @@ export default function ConsumptionImportPage() {
 
                     {invalidRows.length > 0 && (
                       <p className="mt-1 text-xs text-slate-500">
-                        Les lignes invalides seront ignorées.
+                        Les lignes invalides seront bloquées avant l'import.
                       </p>
                     )}
                   </div>

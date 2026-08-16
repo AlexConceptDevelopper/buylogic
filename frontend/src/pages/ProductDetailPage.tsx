@@ -3,10 +3,12 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { getProductById } from "../api/product.api";
 import { getPurchaseRecommendations } from "../api/purchaseRecommendation.api";
+import { getStockMovements } from "../api/stockMovement.api";
 import useAsync from "../hooks/useAsync";
 
 import type { Product } from "../types/product";
 import type { PurchaseRecommendation } from "../types/purchaseRecommendation";
+import type { StockMovement } from "../types/stockMovement";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +17,10 @@ export default function ProductDetailPage() {
   const productId = Number(id);
 
   const [product, setProduct] = useState<Product | null>(null);
-  const [recommendations, setRecommendations] = useState<PurchaseRecommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<
+    PurchaseRecommendation[]
+  >([]);
+  const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
 
   const {
     loading: productLoading,
@@ -25,6 +30,9 @@ export default function ProductDetailPage() {
 
   const { loading: recommendationsLoading, execute: executeRecommendations } =
     useAsync<PurchaseRecommendation[]>();
+
+  const { loading: stockMovementsLoading, execute: executeStockMovements } =
+    useAsync<StockMovement[]>();
 
   useEffect(() => {
     if (!Number.isInteger(productId)) {
@@ -56,6 +64,18 @@ export default function ProductDetailPage() {
     void loadRecommendations();
   }, [executeRecommendations]);
 
+  useEffect(() => {
+    const loadStockMovements = async () => {
+      const data = await executeStockMovements(() => getStockMovements());
+
+      if (data) {
+        setStockMovements(data);
+      }
+    };
+
+    void loadStockMovements();
+  }, [executeStockMovements]);
+
   const recommendation = useMemo(() => {
     if (!product) {
       return null;
@@ -67,7 +87,8 @@ export default function ProductDetailPage() {
     );
   }, [product, recommendations]);
 
-  const loading = productLoading || recommendationsLoading;
+  const loading =
+    productLoading || recommendationsLoading || stockMovementsLoading;
 
   if (!Number.isInteger(productId)) {
     return (
@@ -135,6 +156,23 @@ export default function ProductDetailPage() {
   const stockCritical = product.currentStock <= 0;
 
   const formattedStock = product.currentStock.toLocaleString("fr-FR");
+
+  const productMovements = stockMovements
+    .filter((movement) => movement.idProduct === product.idProduct)
+    .sort(
+      (a, b) =>
+        new Date(b.movementDate).getTime() - new Date(a.movementDate).getTime(),
+    )
+    .slice(0, 8);
+
+  const movementLabels: Record<string, string> = {
+    PURCHASE: "Commande reçue",
+    SALE: "Vente",
+    RETURN: "Retour",
+    LOSS: "Perte / casse",
+    ADJUSTMENT: "Ajustement",
+    TRANSFER: "Transfert",
+  };
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
@@ -245,6 +283,82 @@ export default function ProductDetailPage() {
                 </p>
               </div>
             </div>
+          </section>
+
+          <section className="rounded-2xl border border-white/5 bg-slate-900/70 p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  Derniers mouvements
+                </p>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Les derniers changements enregistrés sur ce produit.
+                </p>
+              </div>
+
+              <span className="text-xs font-semibold text-slate-600">
+                {productMovements.length}
+              </span>
+            </div>
+
+            {productMovements.length === 0 ? (
+              <div className="mt-6 rounded-xl border border-white/5 bg-white/2 p-5 text-center">
+                <p className="text-sm font-semibold text-slate-300">
+                  Aucun mouvement récent
+                </p>
+
+                <p className="mt-1 text-xs text-slate-600">
+                  Les réceptions, ventes et ajustements apparaîtront ici.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-5 divide-y divide-white/5">
+                {productMovements.map((movement) => {
+                  const quantityIsPositive = movement.quantity > 0;
+
+                  const movementType =
+                    movementLabels[movement.movementType] ??
+                    movement.movementType;
+
+                  return (
+                    <div
+                      key={movement.idStockMovement}
+                      className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-200">
+                          {movementType}
+                        </p>
+
+                        <p className="mt-1 text-xs text-slate-600">
+                          {new Date(movement.movementDate).toLocaleDateString(
+                            "fr-FR",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
+                        </p>
+                      </div>
+
+                      <span
+                        className={[
+                          "shrink-0 text-sm font-bold",
+                          quantityIsPositive
+                            ? "text-emerald-300"
+                            : "text-rose-300",
+                        ].join(" ")}
+                      >
+                        {quantityIsPositive ? "+" : ""}
+                        {movement.quantity.toLocaleString("fr-FR")}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
 
           {recommendation && (

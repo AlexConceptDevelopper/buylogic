@@ -1,6 +1,7 @@
 export interface User {
   idAppUser: number;
   idCompany: number;
+  companyName?: string | null;
   email: string;
   firstName: string;
   lastName: string;

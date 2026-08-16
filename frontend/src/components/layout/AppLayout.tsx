@@ -13,14 +13,10 @@ export default function AppLayout() {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<
-    Notification[]
-  >([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const {
-    loading: notificationsLoading,
-    execute: executeNotifications,
-  } = useAsync<Notification[]>();
+  const { loading: notificationsLoading, execute: executeNotifications } =
+    useAsync<Notification[]>();
 
   const navigation = [
     {
@@ -49,6 +45,11 @@ export default function AppLayout() {
       icon: "◫",
     },
     {
+      label: "Importer les ventes",
+      path: "/consumption-import",
+      icon: "⇩",
+    },
+    {
       label: "Recommandations",
       path: "/recommendations",
       icon: "✦",
@@ -67,9 +68,7 @@ export default function AppLayout() {
     }
 
     const loadNotifications = async () => {
-      const data = await executeNotifications(
-        () => getNotifications(),
-      );
+      const data = await executeNotifications(() => getNotifications());
 
       if (data) {
         setNotifications(data);
@@ -90,9 +89,7 @@ export default function AppLayout() {
       ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
       : "BL";
 
-  const fullName = user
-    ? `${user.firstName} ${user.lastName}`
-    : "Utilisateur";
+  const fullName = user ? `${user.firstName} ${user.lastName}` : "Utilisateur";
 
   const roleLabel = user?.role ?? "";
 
@@ -120,15 +117,11 @@ export default function AppLayout() {
               className="flex cursor-pointer items-center gap-3"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-400/20">
-                <span className="text-lg font-black">
-                  B
-                </span>
+                <span className="text-lg font-black">B</span>
               </div>
 
               <div>
-                <p className="text-lg font-bold tracking-tight">
-                  BuyLogic
-                </p>
+                <p className="text-lg font-bold tracking-tight">BuyLogic</p>
 
                 <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
                   Smart purchasing
@@ -144,8 +137,7 @@ export default function AppLayout() {
             </p>
 
             {navigation.map((item) => {
-              const isActive =
-                location.pathname === item.path;
+              const isActive = location.pathname === item.path;
 
               return (
                 <Link
@@ -180,9 +172,7 @@ export default function AppLayout() {
           <div className="border-t border-white/5 p-4">
             <div className="rounded-xl border border-white/5 bg-white/2 p-3">
               <p className="truncate text-xs font-semibold text-slate-300">
-                {user
-                  ? `Entreprise #${user.idCompany}`
-                  : "Entreprise"}
+                {user?.companyName ?? "Entreprise"}
               </p>
 
               <p className="mt-1 text-[11px] text-slate-500">
@@ -224,16 +214,12 @@ export default function AppLayout() {
                   aria-expanded={notificationsOpen}
                   aria-haspopup="menu"
                   onClick={() => {
-                    setNotificationsOpen(
-                      (value) => !value,
-                    );
+                    setNotificationsOpen((value) => !value);
                     setProfileOpen(false);
                   }}
                   className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
                 >
-                  <span className="text-lg">
-                    ◌
-                  </span>
+                  <span className="text-lg">◌</span>
 
                   {unreadNotifications.length > 0 && (
                     <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-400 px-1 text-[9px] font-black text-slate-950 shadow-lg shadow-rose-400/20">
@@ -258,9 +244,7 @@ export default function AppLayout() {
                         <p className="mt-0.5 text-[11px] text-slate-500">
                           {unreadNotifications.length > 0
                             ? `${unreadNotifications.length} non lue${
-                                unreadNotifications.length > 1
-                                  ? "s"
-                                  : ""
+                                unreadNotifications.length > 1 ? "s" : ""
                               }`
                             : "Tout est à jour"}
                         </p>
@@ -268,9 +252,7 @@ export default function AppLayout() {
 
                       <Link
                         to="/notifications"
-                        onClick={() =>
-                          setNotificationsOpen(false)
-                        }
+                        onClick={() => setNotificationsOpen(false)}
                         className="cursor-pointer text-[11px] font-semibold text-cyan-300 transition hover:text-cyan-200"
                       >
                         Voir tout
@@ -284,8 +266,7 @@ export default function AppLayout() {
                           <div className="h-14 animate-pulse rounded-xl bg-white/5" />
                           <div className="h-14 animate-pulse rounded-xl bg-white/5" />
                         </div>
-                      ) : displayedNotifications.length ===
-                        0 ? (
+                      ) : displayedNotifications.length === 0 ? (
                         <div className="px-4 py-8 text-center">
                           <p className="text-sm font-semibold text-slate-300">
                             Aucune notification
@@ -296,49 +277,40 @@ export default function AppLayout() {
                           </p>
                         </div>
                       ) : (
-                        displayedNotifications.map(
-                          (notification) => (
-                            <div
-                              key={
-                                notification.idNotification
-                              }
-                              className={[
-                                "border-b border-white/5 px-4 py-3 last:border-b-0",
-                                !notification.readAt
-                                  ? "bg-cyan-400/3"
-                                  : "",
-                              ].join(" ")}
-                            >
-                              <div className="flex items-start gap-3">
-                                {!notification.readAt && (
-                                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
-                                )}
+                        displayedNotifications.map((notification) => (
+                          <div
+                            key={notification.idNotification}
+                            className={[
+                              "border-b border-white/5 px-4 py-3 last:border-b-0",
+                              !notification.readAt ? "bg-cyan-400/3" : "",
+                            ].join(" ")}
+                          >
+                            <div className="flex items-start gap-3">
+                              {!notification.readAt && (
+                                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
+                              )}
 
-                                <div>
-                                  <p className="text-sm font-semibold text-slate-200">
-                                    {notification.title}
-                                  </p>
+                              <div>
+                                <p className="text-sm font-semibold text-slate-200">
+                                  {notification.title}
+                                </p>
 
-                                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                                    {notification.message}
-                                  </p>
+                                <p className="mt-1 text-xs leading-5 text-slate-500">
+                                  {notification.message}
+                                </p>
 
-                                  <p className="mt-2 text-[10px] text-slate-600">
-                                    {new Date(
-                                      notification.createdAt,
-                                    ).toLocaleDateString(
-                                      "fr-FR",
-                                      {
-                                        day: "2-digit",
-                                        month: "short",
-                                      },
-                                    )}
-                                  </p>
-                                </div>
+                                <p className="mt-2 text-[10px] text-slate-600">
+                                  {new Date(
+                                    notification.createdAt,
+                                  ).toLocaleDateString("fr-FR", {
+                                    day: "2-digit",
+                                    month: "short",
+                                  })}
+                                </p>
                               </div>
                             </div>
-                          ),
-                        )
+                          </div>
+                        ))
                       )}
                     </div>
                   </div>
@@ -367,17 +339,13 @@ export default function AppLayout() {
                       {fullName}
                     </p>
 
-                    <p className="text-[10px] text-slate-500">
-                      {roleLabel}
-                    </p>
+                    <p className="text-[10px] text-slate-500">{roleLabel}</p>
                   </div>
 
                   <span
                     className={[
                       "text-xs text-slate-600 transition-transform",
-                      profileOpen
-                        ? "rotate-180"
-                        : "",
+                      profileOpen ? "rotate-180" : "",
                     ].join(" ")}
                   >
                     ▾
