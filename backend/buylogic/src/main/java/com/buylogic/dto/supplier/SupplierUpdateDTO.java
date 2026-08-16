@@ -23,6 +23,8 @@ public class SupplierUpdateDTO {
 
     private String phone;
 
+    private String address;
+
     @NotNull
     private Boolean active;
 }

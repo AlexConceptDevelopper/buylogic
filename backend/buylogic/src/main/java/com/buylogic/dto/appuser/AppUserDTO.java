@@ -13,6 +13,7 @@ public class AppUserDTO {
 
     private Integer idUser;
     private Integer idCompany;
+    private String companyName;
     private String email;
     private String firstName;
     private String lastName;

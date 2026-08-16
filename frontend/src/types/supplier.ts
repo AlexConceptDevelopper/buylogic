@@ -4,6 +4,7 @@ export interface Supplier {
   name: string;
   email: string;
   phone: string;
+  address: string;
   active: boolean;
 }
 
@@ -12,11 +13,13 @@ export interface SupplierCreate {
   name: string;
   email?: string;
   phone?: string;
+  address?: string;
 }
 
 export interface SupplierUpdate {
   name?: string;
   email?: string;
   phone?: string;
+  address?: string;
   active?: boolean;
 }

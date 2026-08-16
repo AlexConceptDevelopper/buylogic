@@ -16,11 +16,21 @@ const statusLabels: Record<string, string> = {
 };
 
 function getPriority(recommendation: PurchaseRecommendation) {
-  if (
-    recommendation.currentStock <= 0 ||
-    recommendation.estimatedStockoutDate <=
-      new Date().toISOString().slice(0, 10)
-  ) {
+  const today = new Date();
+  const stockoutDate = new Date(
+    `${recommendation.estimatedStockoutDate}T00:00:00`,
+  );
+
+  const leadTimeDays = Math.max(
+    0,
+    Math.ceil(recommendation.estimatedLeadTimeDays),
+  );
+
+  const reorderDeadline = new Date(today);
+  reorderDeadline.setHours(0, 0, 0, 0);
+  reorderDeadline.setDate(reorderDeadline.getDate() + leadTimeDays);
+
+  if (recommendation.currentStock <= 0 || stockoutDate <= today) {
     return {
       key: "URGENT" as const,
       label: "Urgent",
@@ -28,7 +38,7 @@ function getPriority(recommendation: PurchaseRecommendation) {
     };
   }
 
-  if (recommendation.currentStock <= recommendation.reorderPoint) {
+  if (stockoutDate <= reorderDeadline) {
     return {
       key: "HIGH" as const,
       label: "Prioritaire",

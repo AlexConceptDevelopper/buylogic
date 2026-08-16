@@ -34,6 +34,9 @@ public class Supplier {
     @Column(length = 50)
     private String phone;
 
+    @Column(length = 500)
+    private String address;
+
     @Column(nullable = false)
     private Boolean active = true;
 

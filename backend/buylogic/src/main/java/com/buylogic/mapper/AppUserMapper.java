@@ -18,20 +18,23 @@ public class AppUserMapper {
         dto.setIdUser(user.getIdUser());
 
         dto.setIdCompany(
-            user.getCompany() != null
-                ? user.getCompany().getIdCompany()
-                : null
-        );
+                user.getCompany() != null
+                        ? user.getCompany().getIdCompany()
+                        : null);
+
+        dto.setCompanyName(
+                user.getCompany() != null
+                        ? user.getCompany().getName()
+                        : null);
 
         dto.setEmail(user.getEmail());
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
 
         dto.setRole(
-            user.getRole() != null
-                ? user.getRole().name()
-                : null
-        );
+                user.getRole() != null
+                        ? user.getRole().name()
+                        : null);
 
         dto.setActive(user.getActive());
 

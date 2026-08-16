@@ -29,6 +29,7 @@ public class SupplierMapper {
         dto.setName(supplier.getName());
         dto.setEmail(supplier.getEmail());
         dto.setPhone(supplier.getPhone());
+        dto.setAddress(supplier.getAddress());
         dto.setActive(supplier.getActive());
 
         return dto;
@@ -48,6 +49,7 @@ public class SupplierMapper {
         supplier.setName(dto.getName());
         supplier.setEmail(dto.getEmail());
         supplier.setPhone(dto.getPhone());
+        supplier.setAddress(dto.getAddress());
         supplier.setActive(true);
 
         return supplier;
@@ -62,6 +64,7 @@ public class SupplierMapper {
         supplier.setName(dto.getName());
         supplier.setEmail(dto.getEmail());
         supplier.setPhone(dto.getPhone());
+        supplier.setAddress(dto.getAddress());
         supplier.setActive(dto.getActive());
     }
 }

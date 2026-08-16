@@ -21,4 +21,6 @@ public class SupplierCreateDTO {
     private String email;
 
     private String phone;
+
+    private String address;
 }
