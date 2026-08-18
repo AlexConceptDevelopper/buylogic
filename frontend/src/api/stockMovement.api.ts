@@ -1,5 +1,7 @@
 import { apiFetch } from "./client";
+
 import type {
+  StockAdjustment,
   StockMovement,
   StockMovementCreate,
 } from "../types/stockMovement";
@@ -23,8 +25,24 @@ export function createStockMovement(
   });
 }
 
+export function adjustStock(
+  idProduct: number,
+  data: StockAdjustment,
+) {
+  return apiFetch<StockMovement>(
+    `/stock-movements/${idProduct}/adjust`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
 export function deleteStockMovement(id: number) {
-  return apiFetch<void>(`/stock-movements/${id}`, {
-    method: "DELETE",
-  });
+  return apiFetch<void>(
+    `/stock-movements/${id}`,
+    {
+      method: "DELETE",
+    },
+  );
 }

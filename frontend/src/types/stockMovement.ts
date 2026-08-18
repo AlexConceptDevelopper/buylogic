@@ -23,3 +23,8 @@ export interface StockMovementCreate {
   movementDate?: string;
   reference?: string;
 }
+
+export interface StockAdjustment { 
+  targetStock: number; 
+  reason: string; 
+}

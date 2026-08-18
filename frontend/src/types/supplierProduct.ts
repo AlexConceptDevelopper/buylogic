@@ -1,3 +1,5 @@
+import type { ProductUnit } from "./product";
+
 export interface SupplierProduct {
   idSupplierProduct: number;
   idProduct: number;
@@ -6,6 +8,9 @@ export interface SupplierProduct {
   unitPrice: number;
   minimumOrderQuantity: number;
   expectedLeadTimeDays: number;
+  packagingQuantity: number;
+  packagingUnit: ProductUnit;
+  fractionable: boolean;
   active: boolean;
 }
 
@@ -16,6 +21,9 @@ export interface SupplierProductCreate {
   unitPrice?: number;
   minimumOrderQuantity?: number;
   expectedLeadTimeDays?: number;
+  packagingQuantity?: number;
+  packagingUnit?: ProductUnit;
+  fractionable: boolean;
 }
 
 export interface SupplierProductUpdate {
@@ -25,5 +33,8 @@ export interface SupplierProductUpdate {
   unitPrice?: number;
   minimumOrderQuantity?: number;
   expectedLeadTimeDays?: number;
+  packagingQuantity?: number;
+  packagingUnit?: ProductUnit;
+  fractionable: boolean;
   active: boolean;
 }

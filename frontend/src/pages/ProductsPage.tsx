@@ -7,7 +7,7 @@ import { getSuppliers } from "../api/supplier.api";
 import useAsync from "../hooks/useAsync";
 import { useAuth } from "../context/AuthContext";
 
-import type { Product, ProductCreate } from "../types/product";
+import type { Product, ProductCreate, ProductUnit } from "../types/product";
 import type { Supplier } from "../types/supplier";
 import type { SupplierProduct } from "../types/supplierProduct";
 
@@ -28,6 +28,7 @@ export default function ProductsPage() {
     name: "",
     description: "",
     unit: "UNIT",
+    fractional: false,
   });
 
   const [createError, setCreateError] = useState<string | null>(null);
@@ -102,7 +103,8 @@ export default function ProductsPage() {
       reference: trimmedReference || "",
       name: trimmedName,
       description: trimmedDescription || undefined,
-      unit: form.unit.trim() || "UNIT",
+      unit: form.unit,
+      fractional: form.fractional,
     };
 
     const created = await executeCreate(() => createProduct(payload));
@@ -122,6 +124,7 @@ export default function ProductsPage() {
       name: "",
       description: "",
       unit: "UNIT",
+      fractional: false,
     });
 
     setCreateOpen(false);
@@ -140,6 +143,7 @@ export default function ProductsPage() {
       name: "",
       description: "",
       unit: "UNIT",
+      fractional: false,
     });
 
     setCreateOpen(false);
@@ -505,18 +509,47 @@ export default function ProductsPage() {
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,
-                      unit: event.target.value,
+                      unit: event.target.value as ProductUnit,
                     }))
                   }
                   disabled={creating}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
                 >
                   <option value="UNIT">UNIT — unité</option>
-
                   <option value="BOX">BOX — boîte</option>
-
                   <option value="SET">SET — lot / jeu</option>
+                  <option value="KG">KG — kilogramme</option>
+                  <option value="G">G — gramme</option>
+                  <option value="L">L — litre</option>
+                  <option value="ML">ML — millilitre</option>
                 </select>
+                <div className="rounded-xl border border-white/5 bg-white/2 p-4">
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={form.fractional}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          fractional: event.target.checked,
+                        }))
+                      }
+                      disabled={creating}
+                      className="mt-0.5 h-4 w-4 cursor-pointer rounded border-white/20 bg-slate-950 accent-cyan-400"
+                    />
+
+                    <span>
+                      <span className="block text-sm font-semibold text-slate-200">
+                        Produit fractionnable
+                      </span>
+
+                      <span className="mt-1 block text-xs leading-5 text-slate-500">
+                        Autorise les quantités décimales pour le stock et les
+                        commandes.
+                      </span>
+                    </span>
+                  </label>
+                </div>
 
                 <p className="mt-2 text-[11px] leading-5 text-slate-600">
                   Le stock initial sera créé lors d'une réception, pas ici.
