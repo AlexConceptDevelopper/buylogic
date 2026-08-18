@@ -44,6 +44,9 @@ public class Company {
     @OneToOne(mappedBy = "company")
     private Subscription subscription;
 
+    @OneToOne(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    private CompanyConfiguration configuration;
+
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();

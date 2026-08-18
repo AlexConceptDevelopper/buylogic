@@ -10,15 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(
-    name = "supplier_product",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uq_supplier_product",
-            columnNames = {"id_product", "id_supplier"}
-        )
-    }
-)
+@Table(name = "supplier_product", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_supplier_product", columnNames = { "id_product", "id_supplier" })
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -48,6 +42,15 @@ public class SupplierProduct {
 
     @Column(name = "expected_lead_time_days")
     private Integer expectedLeadTimeDays;
+
+    @Column(name = "packaging_quantity", precision = 14, scale = 3)
+    private BigDecimal packagingQuantity;
+
+    @Column(name = "packaging_unit", length = 10)
+    private String packagingUnit;
+
+    @Column(nullable = false)
+    private Boolean fractionable = false;
 
     @Column(nullable = false)
     private Boolean active = true;

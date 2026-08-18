@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.buylogic.dto.stockmouvement.StockAdjustmentDTO;
 import com.buylogic.dto.stockmouvement.StockMovementCreateDTO;
 import com.buylogic.dto.stockmouvement.StockMovementDTO;
 import com.buylogic.exception.ConflictException;
@@ -31,6 +32,7 @@ public class StockMovementService {
         private final ProductRepository productRepository;
 
         public List<StockMovementDTO> getAll() {
+
                 Integer companyId = getCurrentCompanyId();
 
                 return stockMovementRepository
@@ -41,6 +43,7 @@ public class StockMovementService {
         }
 
         public StockMovementDTO getById(Integer id) {
+
                 Integer companyId = getCurrentCompanyId();
 
                 StockMovement movement = stockMovementRepository
@@ -68,7 +71,8 @@ public class StockMovementService {
                                                 "Product not found with id: "
                                                                 + dto.getIdProduct()));
 
-                String movementType = dto.getMovementType().toUpperCase();
+                String movementType = dto.getMovementType()
+                                .toUpperCase();
 
                 if (!isValidMovementType(movementType)) {
                         throw new ConflictException(
@@ -83,7 +87,9 @@ public class StockMovementService {
                 BigDecimal newStock = product.getCurrentStock()
                                 .add(dto.getQuantity());
 
-                if (newStock.compareTo(BigDecimal.ZERO) < 0) {
+                if (newStock.compareTo(
+                                BigDecimal.ZERO) < 0) {
+
                         throw new ConflictException(
                                         "Insufficient stock for product: "
                                                         + product.getName());
@@ -93,7 +99,8 @@ public class StockMovementService {
                                 dto,
                                 product);
 
-                StockMovement savedMovement = stockMovementRepository.save(movement);
+                StockMovement savedMovement = stockMovementRepository.save(
+                                movement);
 
                 product.setCurrentStock(newStock);
 
@@ -104,7 +111,55 @@ public class StockMovementService {
         }
 
         @Transactional
+        public StockMovementDTO adjustStock(
+                        Integer idProduct,
+                        StockAdjustmentDTO dto) {
+
+                assertOwner();
+
+                Integer companyId = getCurrentCompanyId();
+
+                Product product = productRepository
+                                .findByIdProductAndCompany_IdCompany(
+                                                idProduct,
+                                                companyId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Product not found with id: "
+                                                                + idProduct));
+
+                BigDecimal currentStock = product.getCurrentStock();
+
+                BigDecimal targetStock = dto.getTargetStock();
+
+                BigDecimal difference = targetStock.subtract(currentStock);
+
+                if (difference.compareTo(
+                                BigDecimal.ZERO) == 0) {
+
+                        throw new ConflictException(
+                                        "The target stock is the same as the current stock.");
+                }
+
+                StockMovementCreateDTO movementDTO = new StockMovementCreateDTO();
+
+                movementDTO.setIdProduct(
+                                product.getIdProduct());
+
+                movementDTO.setMovementType(
+                                "ADJUSTMENT");
+
+                movementDTO.setQuantity(
+                                difference);
+
+                movementDTO.setReference(
+                                dto.getReason().trim());
+
+                return create(movementDTO);
+        }
+
+        @Transactional
         public void delete(Integer id) {
+
                 Integer companyId = getCurrentCompanyId();
 
                 StockMovement movement = stockMovementRepository
@@ -118,9 +173,12 @@ public class StockMovementService {
                 Product product = movement.getProduct();
 
                 BigDecimal newStock = product.getCurrentStock()
-                                .subtract(movement.getQuantity());
+                                .subtract(
+                                                movement.getQuantity());
 
-                if (newStock.compareTo(BigDecimal.ZERO) < 0) {
+                if (newStock.compareTo(
+                                BigDecimal.ZERO) < 0) {
+
                         throw new ConflictException(
                                         "Cannot delete this movement because "
                                                         + "it would result in negative stock.");
@@ -130,7 +188,8 @@ public class StockMovementService {
 
                 productRepository.save(product);
 
-                stockMovementRepository.delete(movement);
+                stockMovementRepository.delete(
+                                movement);
         }
 
         private boolean isValidMovementType(
@@ -145,7 +204,8 @@ public class StockMovementService {
                                         "TRANSFER" ->
                                 true;
 
-                        default -> false;
+                        default ->
+                                false;
                 };
         }
 
@@ -160,7 +220,8 @@ public class StockMovementService {
                                 || movementType.equals("LOSS");
 
                 if (quantityMustBePositive
-                                && quantity.compareTo(BigDecimal.ZERO) <= 0) {
+                                && quantity.compareTo(
+                                                BigDecimal.ZERO) <= 0) {
 
                         throw new ConflictException(
                                         movementType
@@ -168,7 +229,8 @@ public class StockMovementService {
                 }
 
                 if (quantityMustBeNegative
-                                && quantity.compareTo(BigDecimal.ZERO) >= 0) {
+                                && quantity.compareTo(
+                                                BigDecimal.ZERO) >= 0) {
 
                         throw new ConflictException(
                                         movementType
@@ -177,6 +239,7 @@ public class StockMovementService {
         }
 
         private Integer getCurrentCompanyId() {
+
                 Authentication authentication = SecurityContextHolder
                                 .getContext()
                                 .getAuthentication();
@@ -191,13 +254,36 @@ public class StockMovementService {
                 return principal.companyId();
         }
 
+        private void assertOwner() {
+
+                Authentication authentication = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication();
+
+                if (authentication == null
+                                || !(authentication.getPrincipal() instanceof JwtPrincipal principal)) {
+
+                        throw new IllegalStateException(
+                                        "Authenticated user not found.");
+                }
+
+                if (!"OWNER".equals(
+                                principal.role())) {
+
+                        throw new org.springframework.security.access.AccessDeniedException(
+                                        "Only the company owner can adjust stock.");
+                }
+        }
+
         @Transactional
         public StockMovementDTO createSale(
                         Integer idProduct,
                         BigDecimal quantity,
                         String reference) {
+
                 if (quantity == null
-                                || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+                                || quantity.compareTo(
+                                                BigDecimal.ZERO) <= 0) {
 
                         throw new ConflictException(
                                         "Sale quantity must be greater than zero.");
@@ -206,9 +292,12 @@ public class StockMovementService {
                 StockMovementCreateDTO dto = new StockMovementCreateDTO();
 
                 dto.setIdProduct(idProduct);
+
                 dto.setMovementType("SALE");
+
                 dto.setQuantity(
                                 quantity.negate());
+
                 dto.setReference(reference);
 
                 return create(dto);

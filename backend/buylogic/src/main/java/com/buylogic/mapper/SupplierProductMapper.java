@@ -53,6 +53,18 @@ public class SupplierProductMapper {
             supplierProduct.getExpectedLeadTimeDays()
         );
 
+        dto.setPackagingQuantity(
+            supplierProduct.getPackagingQuantity()
+        );
+
+        dto.setPackagingUnit(
+            supplierProduct.getPackagingUnit()
+        );
+
+        dto.setFractionable(
+            supplierProduct.getFractionable()
+        );
+
         dto.setActive(
             supplierProduct.getActive()
         );
@@ -69,23 +81,39 @@ public class SupplierProductMapper {
             return null;
         }
 
-        SupplierProduct supplierProduct =
-            new SupplierProduct();
+        SupplierProduct supplierProduct = new SupplierProduct();
 
         supplierProduct.setProduct(product);
         supplierProduct.setSupplier(supplier);
+
         supplierProduct.setSupplierReference(
             dto.getSupplierReference()
         );
+
         supplierProduct.setUnitPrice(
             dto.getUnitPrice()
         );
+
         supplierProduct.setMinimumOrderQuantity(
             dto.getMinimumOrderQuantity()
         );
+
         supplierProduct.setExpectedLeadTimeDays(
             dto.getExpectedLeadTimeDays()
         );
+
+        supplierProduct.setPackagingQuantity(
+            dto.getPackagingQuantity()
+        );
+
+        supplierProduct.setPackagingUnit(
+            dto.getPackagingUnit()
+        );
+
+        supplierProduct.setFractionable(
+            dto.getFractionable()
+        );
+
         supplierProduct.setActive(true);
 
         return supplierProduct;
@@ -99,18 +127,35 @@ public class SupplierProductMapper {
 
         supplierProduct.setProduct(product);
         supplierProduct.setSupplier(supplier);
+
         supplierProduct.setSupplierReference(
             dto.getSupplierReference()
         );
+
         supplierProduct.setUnitPrice(
             dto.getUnitPrice()
         );
+
         supplierProduct.setMinimumOrderQuantity(
             dto.getMinimumOrderQuantity()
         );
+
         supplierProduct.setExpectedLeadTimeDays(
             dto.getExpectedLeadTimeDays()
         );
+
+        supplierProduct.setPackagingQuantity(
+            dto.getPackagingQuantity()
+        );
+
+        supplierProduct.setPackagingUnit(
+            dto.getPackagingUnit()
+        );
+
+        supplierProduct.setFractionable(
+            dto.getFractionable()
+        );
+
         supplierProduct.setActive(
             dto.getActive()
         );

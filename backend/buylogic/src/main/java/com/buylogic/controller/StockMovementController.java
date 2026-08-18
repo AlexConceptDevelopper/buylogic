@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.buylogic.dto.stockmouvement.StockAdjustmentDTO;
 import com.buylogic.dto.stockmouvement.StockMovementCreateDTO;
 import com.buylogic.dto.stockmouvement.StockMovementDTO;
 import com.buylogic.service.StockMovementService;
@@ -25,8 +26,7 @@ public class StockMovementController {
     @GetMapping
     public ResponseEntity<List<StockMovementDTO>> getAll() {
         return ResponseEntity.ok(
-            stockMovementService.getAll()
-        );
+                stockMovementService.getAll());
     }
 
     @GetMapping("/{id}")
@@ -34,8 +34,7 @@ public class StockMovementController {
             @PathVariable Integer id) {
 
         return ResponseEntity.ok(
-            stockMovementService.getById(id)
-        );
+                stockMovementService.getById(id));
     }
 
     @PostMapping
@@ -45,8 +44,13 @@ public class StockMovementController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
-                    stockMovementService.create(dto)
-                );
+                        stockMovementService.create(dto));
+    }
+
+    @PostMapping("/{idProduct}/adjust")
+    public ResponseEntity<StockMovementDTO> adjustStock(@PathVariable Integer idProduct,
+            @Valid @RequestBody StockAdjustmentDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(stockMovementService.adjustStock(idProduct, dto));
     }
 
     @DeleteMapping("/{id}")

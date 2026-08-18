@@ -3,6 +3,7 @@ package com.buylogic.dto.supplierproduct;
 import java.math.BigDecimal;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
@@ -33,6 +34,18 @@ public class SupplierProductUpdateDTO {
 
     @PositiveOrZero
     private Integer expectedLeadTimeDays;
+
+    @Positive
+    private BigDecimal packagingQuantity;
+
+    @Pattern(
+        regexp = "UNIT|KG|L",
+        message = "Packaging unit must be UNIT, KG or L."
+    )
+    private String packagingUnit;
+
+    @NotNull
+    private Boolean fractionable;
 
     @NotNull
     private Boolean active;

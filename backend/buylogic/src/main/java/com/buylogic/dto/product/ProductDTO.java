@@ -19,6 +19,7 @@ public class ProductDTO {
     private String name;
     private String description;
     private String unit;
+    private Boolean fractional;
     private BigDecimal currentStock;
     private Boolean active;
 }

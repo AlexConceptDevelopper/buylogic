@@ -35,8 +35,19 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, length = 30)
+    /**
+     * Unit used internally by BuyLogic for stock and consumption.
+     *
+     * Supported values:
+     * UNIT - individual pieces
+     * KG - kilograms
+     * L - litres
+     */
+    @Column(nullable = false, length = 20)
     private String unit = "UNIT";
+
+    @Column(nullable = false)
+    private Boolean fractional = true;
 
     @Column(name = "current_stock", nullable = false, precision = 14, scale = 3)
     private BigDecimal currentStock = BigDecimal.ZERO;

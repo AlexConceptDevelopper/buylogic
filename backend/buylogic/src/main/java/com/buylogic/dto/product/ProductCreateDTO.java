@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import lombok.AllArgsConstructor;
@@ -27,7 +28,12 @@ public class ProductCreateDTO {
 
     private String description;
 
+    @Pattern(
+        regexp = "UNIT|KG|L",
+        message = "Unit must be UNIT, KG or L."
+    )
     private String unit;
+    private Boolean fractional;
 
     @PositiveOrZero
     private BigDecimal currentStock;

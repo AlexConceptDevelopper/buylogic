@@ -20,5 +20,8 @@ public class SupplierProductDTO {
     private BigDecimal unitPrice;
     private BigDecimal minimumOrderQuantity;
     private Integer expectedLeadTimeDays;
+    private BigDecimal packagingQuantity;
+    private String packagingUnit;
+    private Boolean fractionable;
     private Boolean active;
 }

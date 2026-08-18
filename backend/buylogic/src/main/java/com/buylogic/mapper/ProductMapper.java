@@ -21,15 +21,15 @@ public class ProductMapper {
         dto.setIdProduct(product.getIdProduct());
 
         dto.setIdCompany(
-            product.getCompany() != null
-                ? product.getCompany().getIdCompany()
-                : null
-        );
+                product.getCompany() != null
+                        ? product.getCompany().getIdCompany()
+                        : null);
 
         dto.setReference(product.getReference());
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setUnit(product.getUnit());
+        dto.setFractional(product.getFractional());
         dto.setCurrentStock(product.getCurrentStock());
         dto.setActive(product.getActive());
 
@@ -51,15 +51,17 @@ public class ProductMapper {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setUnit(
-            dto.getUnit() != null && !dto.getUnit().isBlank()
-                ? dto.getUnit()
-                : "UNIT"
-        );
+                dto.getUnit() != null && !dto.getUnit().isBlank()
+                        ? dto.getUnit()
+                        : "UNIT");
+        product.setFractional(
+                dto.getFractional() != null
+                        ? dto.getFractional()
+                        : true);
         product.setCurrentStock(
-            dto.getCurrentStock() != null
-                ? dto.getCurrentStock()
-                : java.math.BigDecimal.ZERO
-        );
+                dto.getCurrentStock() != null
+                        ? dto.getCurrentStock()
+                        : java.math.BigDecimal.ZERO);
         product.setActive(true);
 
         return product;
@@ -75,15 +77,17 @@ public class ProductMapper {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setUnit(
-            dto.getUnit() != null && !dto.getUnit().isBlank()
-                ? dto.getUnit()
-                : "UNIT"
-        );
+                dto.getUnit() != null && !dto.getUnit().isBlank()
+                        ? dto.getUnit()
+                        : "UNIT");
+        product.setFractional(
+                dto.getFractional() != null
+                        ? dto.getFractional()
+                        : true);
         product.setCurrentStock(
-            dto.getCurrentStock() != null
-                ? dto.getCurrentStock()
-                : java.math.BigDecimal.ZERO
-        );
+                dto.getCurrentStock() != null
+                        ? dto.getCurrentStock()
+                        : java.math.BigDecimal.ZERO);
         product.setActive(dto.getActive());
     }
 }
