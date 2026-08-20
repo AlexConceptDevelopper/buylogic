@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.buylogic.model.enums.ProductType;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -75,6 +77,19 @@ public class Product {
 
     @OneToMany(mappedBy = "product")
     private List<PurchaseRecommendation> purchaseRecommendations;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ProductType type = ProductType.PURCHASED;
+
+    // Ingrédients qui composent ce produit (si c'est un produit MANUFACTURED)
+    @OneToMany(mappedBy = "parentProduct", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductComposition> components;
+
+    // Produits dans lesquels ce produit est utilisé comme composant (optionnel mais
+    // pratique)
+    @OneToMany(mappedBy = "childProduct")
+    private List<ProductComposition> usedInProducts;
 
     @PrePersist
     protected void onCreate() {

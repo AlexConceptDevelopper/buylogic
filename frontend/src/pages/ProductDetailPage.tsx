@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { getProductById } from "../api/product.api";
+import { getProductById, getProducts, addProductComponent } from "../api/product.api";
 import { getPurchaseRecommendations } from "../api/purchaseRecommendation.api";
 import {
   adjustStock,
@@ -17,7 +17,7 @@ import { getSuppliers } from "../api/supplier.api";
 import useAsync from "../hooks/useAsync";
 import { useAuth } from "../context/AuthContext";
 
-import type { Product } from "../types/product";
+import type { Product, ProductCompositionDTO } from "../types/product";
 import type { PurchaseRecommendation } from "../types/purchaseRecommendation";
 import type { StockMovement, StockAdjustment } from "../types/stockMovement";
 import type { Supplier } from "../types/supplier";
@@ -32,6 +32,7 @@ import ProductStockSection from "../components/product/ProductStockSection";
 import ProductSuppliersSection from "../components/product/ProductSuppliersSection";
 import ProductMovementsSection from "../components/product/ProductMovementsSection";
 import ProductRecommendationSection from "../components/product/ProductRecommendationSection";
+import ManufacturedProductSection from "../components/product/ManufacturedProductSection";
 
 import SupplierProductModal from "../components/product/modals/SupplierProductModal";
 import InitialStockModal from "../components/product/modals/InitialStockModal";
@@ -45,6 +46,7 @@ export default function ProductDetailPage() {
   const productId = Number(id);
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
 
   const [recommendations, setRecommendations] = useState<
     PurchaseRecommendation[]
@@ -101,6 +103,9 @@ export default function ProductDetailPage() {
     execute: executeProduct,
   } = useAsync<Product>();
 
+  const { loading: productsLoading, execute: executeProducts } =
+    useAsync<Product[]>();
+
   const { loading: recommendationsLoading, execute: executeRecommendations } =
     useAsync<PurchaseRecommendation[]>();
 
@@ -124,6 +129,11 @@ export default function ProductDetailPage() {
   const { loading: adjustingStock, execute: executeAdjustStock } =
     useAsync<StockMovement>();
 
+  const {
+    loading: addingComponent,
+    execute: executeAddComponent,
+  } = useAsync<Product>();
+
   const isOwner = user?.role === "OWNER";
 
   useEffect(() => {
@@ -141,6 +151,18 @@ export default function ProductDetailPage() {
 
     void loadProduct();
   }, [productId, executeProduct]);
+
+  useEffect(() => {
+    const loadAllProducts = async () => {
+      const data = await executeProducts(() => getProducts());
+
+      if (data) {
+        setAllProducts(data);
+      }
+    };
+
+    void loadAllProducts();
+  }, [executeProducts]);
 
   useEffect(() => {
     const loadRecommendations = async () => {
@@ -210,6 +232,18 @@ export default function ProductDetailPage() {
     }
 
     return null;
+  };
+
+  const handleAddComponent = async (component: ProductCompositionDTO) => {
+    if (!product) return;
+
+    const updatedProduct = await executeAddComponent(() =>
+      addProductComponent(product.idProduct, component)
+    );
+
+    if (updatedProduct) {
+      setProduct(updatedProduct);
+    }
   };
 
   const handleCreateSupplierProduct = async () => {
@@ -475,6 +509,7 @@ export default function ProductDetailPage() {
 
   const loading =
     productLoading ||
+    productsLoading ||
     recommendationsLoading ||
     stockMovementsLoading ||
     supplierProductsLoading ||
@@ -626,16 +661,23 @@ export default function ProductDetailPage() {
             onAdjustStock={handleOpenStockAdjustmentModal}
           />
 
-          <ProductSuppliersSection
-            product={product}
-            suppliers={suppliers}
-            supplierProducts={supplierProducts}
-            onAddSupplier={handleOpenSupplierModal}
-          />
+          {product.type === "MANUFACTURED" ? (
+            <ManufacturedProductSection
+              product={product}
+              allProducts={allProducts}
+              onAddComponent={handleAddComponent}
+              loading={addingComponent}
+            />
+          ) : (
+            <ProductSuppliersSection
+              product={product}
+              suppliers={suppliers}
+              supplierProducts={supplierProducts}
+              onAddSupplier={handleOpenSupplierModal}
+            />
+          )}
 
-          <ProductMovementsSection
-            movements={productMovements}
-          />
+          <ProductMovementsSection movements={productMovements} />
 
           <ProductRecommendationSection
             product={product}

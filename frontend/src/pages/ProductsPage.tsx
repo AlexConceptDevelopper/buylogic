@@ -7,17 +7,16 @@ import { getSuppliers } from "../api/supplier.api";
 import useAsync from "../hooks/useAsync";
 import { useAuth } from "../context/AuthContext";
 
-import type { Product, ProductCreate, ProductUnit } from "../types/product";
+import type { Product, ProductCreate, ProductUnit, ProductType } from "../types/product";
 import type { Supplier } from "../types/supplier";
 import type { SupplierProduct } from "../types/supplierProduct";
+import { UNIT_LABELS } from "../constants/product.constants";
 
 export default function ProductsPage() {
   const { user } = useAuth();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>(
-    [],
-  );
+  const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -27,6 +26,7 @@ export default function ProductsPage() {
     reference: "",
     name: "",
     description: "",
+    type: "PURCHASED",
     unit: "UNIT",
     fractional: false,
   });
@@ -34,11 +34,8 @@ export default function ProductsPage() {
   const [createError, setCreateError] = useState<string | null>(null);
 
   const { loading, error, execute } = useAsync<Product[]>();
-
   const { loading: creating, execute: executeCreate } = useAsync<Product>();
-
   const { execute: executeSupplierProducts } = useAsync<SupplierProduct[]>();
-
   const { execute: executeSuppliers } = useAsync<Supplier[]>();
 
   useEffect(() => {
@@ -53,12 +50,10 @@ export default function ProductsPage() {
   useEffect(() => {
     const loadProducts = async () => {
       const data = await execute(() => getProducts());
-
       if (data) {
         setProducts(data);
       }
     };
-
     void loadProducts();
   }, [execute]);
 
@@ -72,12 +67,10 @@ export default function ProductsPage() {
       if (supplierProductData) {
         setSupplierProducts(supplierProductData);
       }
-
       if (supplierData) {
         setSuppliers(supplierData);
       }
     };
-
     void loadSupplierData();
   }, [executeSupplierProducts, executeSuppliers]);
 
@@ -103,6 +96,7 @@ export default function ProductsPage() {
       reference: trimmedReference || "",
       name: trimmedName,
       description: trimmedDescription || undefined,
+      type: form.type,
       unit: form.unit,
       fractional: form.fractional,
     };
@@ -110,9 +104,7 @@ export default function ProductsPage() {
     const created = await executeCreate(() => createProduct(payload));
 
     if (!created) {
-      setCreateError(
-        "Impossible de créer le produit. Vérifiez les informations saisies.",
-      );
+      setCreateError("Impossible de créer le produit. Vérifiez les informations saisies.");
       return;
     }
 
@@ -123,6 +115,7 @@ export default function ProductsPage() {
       reference: "",
       name: "",
       description: "",
+      type: "PURCHASED",
       unit: "UNIT",
       fractional: false,
     });
@@ -131,17 +124,15 @@ export default function ProductsPage() {
   };
 
   const handleCloseCreate = () => {
-    if (creating) {
-      return;
-    }
+    if (creating) return;
 
     setCreateError(null);
-
     setForm({
       idCompany: user?.idCompany ?? 0,
       reference: "",
       name: "",
       description: "",
+      type: "PURCHASED",
       unit: "UNIT",
       fractional: false,
     });
@@ -152,20 +143,10 @@ export default function ProductsPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
-          Produits
-        </p>
-
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-          Catalogue produits
-        </h1>
-
-        <p className="mt-2 text-sm text-slate-500">
-          Chargement de vos produits...
-        </p>
-
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">Produits</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">Catalogue produits</h1>
+        <p className="mt-2 text-sm text-slate-500">Chargement de vos produits...</p>
         <div className="mt-8 space-y-3">
-          <div className="h-16 animate-pulse rounded-2xl bg-white/5" />
           <div className="h-16 animate-pulse rounded-2xl bg-white/5" />
           <div className="h-16 animate-pulse rounded-2xl bg-white/5" />
           <div className="h-16 animate-pulse rounded-2xl bg-white/5" />
@@ -177,22 +158,11 @@ export default function ProductsPage() {
   if (error) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
-          Produits
-        </p>
-
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-          Catalogue produits
-        </h1>
-
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">Produits</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">Catalogue produits</h1>
         <div className="mt-8 rounded-2xl border border-red-400/10 bg-red-400/5 p-6">
-          <p className="text-sm font-semibold text-white">
-            Impossible de charger les produits.
-          </p>
-
-          <p className="mt-2 text-sm text-red-300">
-            Une erreur est survenue lors de la récupération des produits.
-          </p>
+          <p className="text-sm font-semibold text-white">Impossible de charger les produits.</p>
+          <p className="mt-2 text-sm text-red-300">Une erreur est survenue lors de la récupération des produits.</p>
         </div>
       </div>
     );
@@ -202,14 +172,8 @@ export default function ProductsPage() {
     <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
-            Produits
-          </p>
-
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-            Catalogue produits
-          </h1>
-
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">Produits</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">Catalogue produits</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
             Créez et consultez les produits suivis par BuyLogic.
           </p>
@@ -218,10 +182,7 @@ export default function ProductsPage() {
         <div className="flex items-center gap-3">
           <div className="rounded-xl border border-white/5 bg-white/2 px-4 py-3">
             <p className="text-xs text-slate-500">Produits</p>
-
-            <p className="mt-1 text-xl font-bold text-white">
-              {products.length}
-            </p>
+            <p className="mt-1 text-xl font-bold text-white">{products.length}</p>
           </div>
 
           <button
@@ -242,15 +203,10 @@ export default function ProductsPage() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-400/5 text-2xl text-cyan-300">
             📦
           </div>
-
-          <h2 className="mt-5 text-lg font-semibold text-white">
-            Aucun produit
-          </h2>
-
+          <h2 className="mt-5 text-lg font-semibold text-white">Aucun produit</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
             Commencez par créer votre premier produit.
           </p>
-
           <button
             type="button"
             onClick={() => {
@@ -265,27 +221,15 @@ export default function ProductsPage() {
       ) : (
         <section className="mt-8 overflow-hidden rounded-2xl border border-white/5 bg-slate-900/70">
           <div className="border-b border-white/5 px-6 py-4">
-            <p className="text-sm font-semibold text-white">
-              Tous les produits
-            </p>
-
-            <p className="mt-1 text-xs text-slate-500">
-              Cliquez sur un produit pour consulter son détail.
-            </p>
+            <p className="text-sm font-semibold text-white">Tous les produits</p>
+            <p className="mt-1 text-xs text-slate-500">Cliquez sur un produit pour consulter son détail.</p>
           </div>
 
           <div className="divide-y divide-white/5">
             {products.map((product) => {
               const productSupplierNames = supplierProducts
-                .filter(
-                  (item) => item.idProduct === product.idProduct && item.active,
-                )
-                .map(
-                  (item) =>
-                    suppliers.find(
-                      (supplier) => supplier.idSupplier === item.idSupplier,
-                    )?.name,
-                )
+                .filter((item) => item.idProduct === product.idProduct && item.active)
+                .map((item) => suppliers.find((supplier) => supplier.idSupplier === item.idSupplier)?.name)
                 .filter((name): name is string => Boolean(name));
 
               return (
@@ -297,10 +241,7 @@ export default function ProductsPage() {
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-sm font-semibold text-white">
-                          {product.name}
-                        </h2>
-
+                        <h2 className="text-sm font-semibold text-white">{product.name}</h2>
                         <span
                           className={[
                             "inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide",
@@ -311,6 +252,9 @@ export default function ProductsPage() {
                         >
                           {product.active ? "Actif" : "Inactif"}
                         </span>
+                        <span className="inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-cyan-300">
+                          {product.type === "MANUFACTURED" ? "Fabriqué" : "Acheté"}
+                        </span>
                       </div>
 
                       <p className="mt-2 text-[11px] uppercase tracking-[0.15em] text-slate-600">
@@ -318,16 +262,13 @@ export default function ProductsPage() {
                       </p>
 
                       {product.description && (
-                        <p className="mt-2 max-w-2xl truncate text-sm text-slate-500">
-                          {product.description}
-                        </p>
+                        <p className="mt-2 max-w-2xl truncate text-sm text-slate-500">{product.description}</p>
                       )}
 
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <span className="text-[11px] uppercase tracking-[0.15em] text-slate-600">
                           Fournisseurs associés
                         </span>
-
                         {productSupplierNames.length > 0 ? (
                           productSupplierNames.slice(0, 2).map((name) => (
                             <span
@@ -338,44 +279,31 @@ export default function ProductsPage() {
                             </span>
                           ))
                         ) : (
-                          <span className="text-[11px] text-slate-600">
-                            Aucun fournisseur
-                          </span>
+                          <span className="text-[11px] text-slate-600">Aucun fournisseur</span>
                         )}
-
                         {productSupplierNames.length > 2 && (
-                          <span className="text-[11px] text-slate-600">
-                            +{productSupplierNames.length - 2}
-                          </span>
+                          <span className="text-[11px] text-slate-600">+{productSupplierNames.length - 2}</span>
                         )}
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between gap-8 lg:justify-end">
                       <div>
-                        <p className="text-[11px] uppercase tracking-[0.15em] text-slate-600">
-                          Stock actuel
-                        </p>
-
+                        <p className="text-[11px] uppercase tracking-[0.15em] text-slate-600">Stock actuel</p>
                         <p
                           className={[
                             "mt-1 text-lg font-bold",
-                            product.currentStock <= 0
-                              ? "text-rose-300"
-                              : "text-white",
+                            product.currentStock <= 0 ? "text-rose-300" : "text-white",
                           ].join(" ")}
                         >
                           {product.currentStock}
-
                           <span className="ml-1 text-xs font-medium text-slate-500">
-                            {product.unit}
+                            {UNIT_LABELS[product.unit] || product.unit}
                           </span>
                         </p>
                       </div>
 
-                      <span className="text-xs font-semibold text-cyan-300">
-                        Voir le produit →
-                      </span>
+                      <span className="text-xs font-semibold text-cyan-300">Voir le produit →</span>
                     </div>
                   </div>
                 </Link>
@@ -395,17 +323,10 @@ export default function ProductsPage() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-400">
-                  Nouveau produit
-                </p>
-
-                <h2
-                  id="create-product-title"
-                  className="mt-2 text-2xl font-bold text-white"
-                >
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-400">Nouveau produit</p>
+                <h2 id="create-product-title" className="mt-2 text-2xl font-bold text-white">
                   Ajouter un produit
                 </h2>
-
                 <p className="mt-2 text-sm leading-6 text-slate-500">
                   Créez l'article qui sera ensuite suivi par BuyLogic.
                 </p>
@@ -424,13 +345,9 @@ export default function ProductsPage() {
 
             <div className="mt-6 space-y-4">
               <div>
-                <label
-                  htmlFor="product-name"
-                  className="text-xs font-semibold text-slate-400"
-                >
+                <label htmlFor="product-name" className="text-xs font-semibold text-slate-400">
                   Nom du produit *
                 </label>
-
                 <input
                   id="product-name"
                   type="text"
@@ -448,13 +365,30 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label
-                  htmlFor="product-reference"
-                  className="text-xs font-semibold text-slate-400"
+                <label htmlFor="product-type" className="text-xs font-semibold text-slate-400">
+                  Type de produit *
+                </label>
+                <select
+                  id="product-type"
+                  value={form.type}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      type: event.target.value as ProductType,
+                    }))
+                  }
+                  disabled={creating}
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
                 >
+                  <option value="PURCHASED">Acheté (Matière première, ingrédient...)</option>
+                  <option value="MANUFACTURED">Fabriqué (Recette, produit fini...)</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="product-reference" className="text-xs font-semibold text-slate-400">
                   Référence
                 </label>
-
                 <input
                   id="product-reference"
                   type="text"
@@ -472,13 +406,9 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label
-                  htmlFor="product-description"
-                  className="text-xs font-semibold text-slate-400"
-                >
+                <label htmlFor="product-description" className="text-xs font-semibold text-slate-400">
                   Description
                 </label>
-
                 <textarea
                   id="product-description"
                   value={form.description ?? ""}
@@ -496,13 +426,9 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label
-                  htmlFor="product-unit"
-                  className="text-xs font-semibold text-slate-400"
-                >
+                <label htmlFor="product-unit" className="text-xs font-semibold text-slate-400">
                   Unité *
                 </label>
-
                 <select
                   id="product-unit"
                   value={form.unit}
@@ -515,15 +441,14 @@ export default function ProductsPage() {
                   disabled={creating}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
                 >
-                  <option value="UNIT">UNIT — unité</option>
-                  <option value="BOX">BOX — boîte</option>
-                  <option value="SET">SET — lot / jeu</option>
-                  <option value="KG">KG — kilogramme</option>
-                  <option value="G">G — gramme</option>
-                  <option value="L">L — litre</option>
-                  <option value="ML">ML — millilitre</option>
+                  {Object.entries(UNIT_LABELS).map(([code, label]) => (
+                    <option key={code} value={code}>
+                      {code} — {label}
+                    </option>
+                  ))}
                 </select>
-                <div className="rounded-xl border border-white/5 bg-white/2 p-4">
+
+                <div className="mt-4 rounded-xl border border-white/5 bg-white/2 p-4">
                   <label className="flex cursor-pointer items-start gap-3">
                     <input
                       type="checkbox"
@@ -537,15 +462,10 @@ export default function ProductsPage() {
                       disabled={creating}
                       className="mt-0.5 h-4 w-4 cursor-pointer rounded border-white/20 bg-slate-950 accent-cyan-400"
                     />
-
                     <span>
-                      <span className="block text-sm font-semibold text-slate-200">
-                        Produit fractionnable
-                      </span>
-
+                      <span className="block text-sm font-semibold text-slate-200">Produit fractionnable</span>
                       <span className="mt-1 block text-xs leading-5 text-slate-500">
-                        Autorise les quantités décimales pour le stock et les
-                        commandes.
+                        Autorise les quantités décimales pour le stock et les commandes.
                       </span>
                     </span>
                   </label>

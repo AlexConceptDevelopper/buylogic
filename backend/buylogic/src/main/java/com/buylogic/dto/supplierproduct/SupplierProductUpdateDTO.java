@@ -37,11 +37,7 @@ public class SupplierProductUpdateDTO {
 
     @Positive
     private BigDecimal packagingQuantity;
-
-    @Pattern(
-        regexp = "UNIT|KG|L",
-        message = "Packaging unit must be UNIT, KG or L."
-    )
+    @Pattern(regexp = "UNIT|KG|L|BOX|SET|G|ML", message = "Packaging unit must be UNIT, KG, L, BOX, SET, G or ML.")
     private String packagingUnit;
 
     @NotNull

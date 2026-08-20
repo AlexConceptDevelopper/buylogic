@@ -1,14 +1,15 @@
-import type { Product } from "../../../types/product";
+import type { Product, ProductUnit } from "../../../types/product";
 import type { Supplier } from "../../../types/supplier";
 import type {
+  SupplierProduct,
   SupplierProductCreate,
-} from "../../../types/supplierProduct";;
+} from "../../../types/supplierProduct";
 
 interface SupplierProductModalProps {
   open: boolean;
   product: Product;
   suppliers: Supplier[];
-  supplierProducts: SupplierProductCreate[];
+  supplierProducts: SupplierProduct[];
   form: Omit<SupplierProductCreate, "idProduct">;
   error: string | null;
   loading: boolean;
@@ -35,10 +36,6 @@ export default function SupplierProductModal({
     return null;
   }
 
-  const quantityStep = product.fractional
-    ? "0.001"
-    : "1";
-
   const availableSuppliers = suppliers.filter(
     (supplier) =>
       !supplierProducts.some(
@@ -48,12 +45,13 @@ export default function SupplierProductModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6 backdrop-blur-sm">
+    /* Ajout de py-6 et my-auto pour garantir une marge en haut et en bas */
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 px-6 py-6 backdrop-blur-sm">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="supplier-product-title"
-        className="w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl shadow-black/40"
+        className="my-auto w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl shadow-black/40"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -74,6 +72,11 @@ export default function SupplierProductModal({
 
             <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-slate-600">
               {product.reference || "Sans référence"}
+            </p>
+
+            <p className="mt-3 text-sm leading-6 text-slate-500">
+              Définissez les conditions dans lesquelles ce
+              fournisseur propose ce produit.
             </p>
           </div>
 
@@ -103,9 +106,7 @@ export default function SupplierProductModal({
               onChange={(event) =>
                 onChange({
                   ...form,
-                  idSupplier: Number(
-                    event.target.value,
-                  ),
+                  idSupplier: Number(event.target.value),
                 })
               }
               disabled={loading}
@@ -141,8 +142,7 @@ export default function SupplierProductModal({
               onChange={(event) =>
                 onChange({
                   ...form,
-                  supplierReference:
-                    event.target.value,
+                  supplierReference: event.target.value,
                 })
               }
               disabled={loading}
@@ -151,186 +151,67 @@ export default function SupplierProductModal({
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="supplier-product-price"
-                className="text-xs font-semibold text-slate-400"
-              >
-                Prix unitaire (€) *
-              </label>
-
-              <input
-                id="supplier-product-price"
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.unitPrice ?? ""}
-                onChange={(event) =>
-                  onChange({
-                    ...form,
-                    unitPrice:
-                      event.target.value === ""
-                        ? (undefined as unknown as number)
-                        : Number(
-                            event.target.value,
-                          ),
-                  })
-                }
-                disabled={loading}
-                placeholder="18.50"
-                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="supplier-product-minimum"
-                className="text-xs font-semibold text-slate-400"
-              >
-                Minimum de commande *
-              </label>
-
-              <input
-                id="supplier-product-minimum"
-                type="number"
-                min="0"
-                step={quantityStep}
-                value={form.minimumOrderQuantity ?? ""}
-                onChange={(event) =>
-                  onChange({
-                    ...form,
-                    minimumOrderQuantity:
-                      event.target.value === ""
-                        ? (undefined as unknown as number)
-                        : Number(
-                            event.target.value,
-                          ),
-                  })
-                }
-                disabled={loading}
-                placeholder={
-                  product.fractional
-                    ? "Ex. 2.5"
-                    : "Ex. 10"
-                }
-                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
-              />
-
-              <p className="mt-1 text-[10px] text-slate-600">
-                {product.fractional
-                  ? "Les quantités décimales sont autorisées."
-                  : "Ce produit doit être commandé en quantité entière."}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="supplier-product-packaging-quantity"
-                className="text-xs font-semibold text-slate-400"
-              >
-                Quantité du conditionnement *
-              </label>
-
-              <div className="mt-2 flex gap-2">
-                <input
-                  id="supplier-product-packaging-quantity"
-                  type="number"
-                  min="0"
-                  step={quantityStep}
-                  value={form.packagingQuantity ?? ""}
-                  onChange={(event) =>
-                    onChange({
-                      ...form,
-                      packagingQuantity:
-                        event.target.value === ""
-                          ? (undefined as unknown as number)
-                          : Number(
-                              event.target.value,
-                            ),
-                    })
-                  }
-                  disabled={loading}
-                  placeholder={
-                    product.fractional
-                      ? "Ex. 25.5"
-                      : "Ex. 25"
-                  }
-                  className="min-w-0 flex-1 rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
-                />
-
-                <div className="flex items-center rounded-xl border border-white/5 bg-white/2 px-3 text-xs font-semibold text-slate-400">
-                  {product.unit}
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="supplier-product-packaging-unit"
-                className="text-xs font-semibold text-slate-400"
-              >
-                Unité du conditionnement *
-              </label>
-
-              <select
-                id="supplier-product-packaging-unit"
-                value={form.packagingUnit}
-                onChange={(event) =>
-                  onChange({
-                    ...form,
-                    packagingUnit:
-                      event.target.value as
-                        | "UNIT"
-                        | "KG"
-                        | "L",
-                  })
-                }
-                disabled={loading}
-                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
-              >
-                <option value="UNIT">UNIT</option>
-                <option value="KG">KG</option>
-                <option value="L">L</option>
-              </select>
-
-              <p className="mt-1 text-[10px] text-slate-600">
-                Doit correspondre à l'unité du produit :{" "}
-                {product.unit}
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-white/5 bg-white/2 p-4">
-            <label className="flex cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                checked={form.fractionable}
-                onChange={(event) =>
-                  onChange({
-                    ...form,
-                    fractionable:
-                      event.target.checked,
-                  })
-                }
-                disabled={loading}
-                className="mt-0.5 h-4 w-4 cursor-pointer rounded border-white/20 bg-slate-950 accent-cyan-400"
-              />
-
-              <span>
-                <span className="block text-sm font-semibold text-slate-200">
-                  Conditionnement fractionnable
-                </span>
-
-                <span className="mt-1 block text-xs leading-5 text-slate-500">
-                  Le fournisseur autorise l'achat ou
-                  l'utilisation d'une partie du
-                  conditionnement.
-                </span>
-              </span>
+          <div>
+            <label
+              htmlFor="supplier-product-price"
+              className="text-xs font-semibold text-slate-400"
+            >
+              Prix unitaire (€) *
             </label>
+
+            <input
+              id="supplier-product-price"
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.unitPrice ?? ""}
+              onChange={(event) =>
+                onChange({
+                  ...form,
+                  unitPrice:
+                    event.target.value === ""
+                      ? undefined
+                      : Number(event.target.value),
+                })
+              }
+              disabled={loading}
+              placeholder="18.50"
+              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="supplier-product-minimum"
+              className="text-xs font-semibold text-slate-400"
+            >
+              Minimum de commande *
+            </label>
+
+            <input
+              id="supplier-product-minimum"
+              type="number"
+              min="0"
+              step="0.001"
+              value={form.minimumOrderQuantity ?? ""}
+              onChange={(event) =>
+                onChange({
+                  ...form,
+                  minimumOrderQuantity:
+                    event.target.value === ""
+                      ? undefined
+                      : Number(event.target.value),
+                })
+              }
+              disabled={loading}
+              placeholder="10"
+              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
+            />
+
+            <p className="mt-1 text-[10px] leading-5 text-slate-600">
+              Quantité minimale que le fournisseur accepte
+              par commande.
+            </p>
           </div>
 
           <div>
@@ -352,16 +233,102 @@ export default function SupplierProductModal({
                   ...form,
                   expectedLeadTimeDays:
                     event.target.value === ""
-                      ? (undefined as unknown as number)
-                      : Number(
-                          event.target.value,
-                        ),
+                      ? undefined
+                      : Number(event.target.value),
                 })
               }
               disabled={loading}
               placeholder="2"
               className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
             />
+
+            <p className="mt-1 text-[10px] leading-5 text-slate-600">
+              Délai habituel entre la commande et la réception.
+            </p>
+          </div>
+
+          {/* Quantité de livraison / conditionnement */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="supplier-product-pkg-qty"
+                className="text-xs font-semibold text-slate-400"
+              >
+                Qté par livraison *
+              </label>
+              <input
+                id="supplier-product-pkg-qty"
+                type="number"
+                min="0"
+                step="0.001"
+                value={form.packagingQuantity ?? ""}
+                onChange={(e) =>
+                  onChange({
+                    ...form,
+                    packagingQuantity:
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
+                  })
+                }
+                disabled={loading}
+                placeholder="25"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="supplier-product-pkg-unit"
+                className="text-xs font-semibold text-slate-400"
+              >
+                Unité *
+              </label>
+              <select
+                id="supplier-product-pkg-unit"
+                value={form.packagingUnit ?? ""}
+                onChange={(e) =>
+                  onChange({
+                    ...form,
+                    packagingUnit: e.target.value === "" ? undefined : (e.target.value as ProductUnit),
+                  })
+                }
+                disabled={loading}
+                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
+              >
+                <option value="">Sélectionner</option>
+                <option value="UNIT">UNIT</option>
+                <option value="BOX">BOX</option>
+                <option value="SET">SET</option>
+                <option value="KG">KG</option>
+                <option value="G">G</option>
+                <option value="L">L</option>
+                <option value="ML">ML</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Option fractionnable */}
+          <div className="flex items-center gap-3 pt-2">
+            <input
+              id="supplier-product-fractionable"
+              type="checkbox"
+              checked={form.fractionable ?? false}
+              onChange={(e) =>
+                onChange({
+                  ...form,
+                  fractionable: e.target.checked,
+                })
+              }
+              disabled={loading}
+              className="h-4 w-4 rounded border-white/10 bg-slate-950 text-cyan-400 focus:ring-cyan-400/20"
+            />
+            <label
+              htmlFor="supplier-product-fractionable"
+              className="text-xs font-semibold text-slate-300 cursor-pointer"
+            >
+              Conditionnement fractionnable
+            </label>
           </div>
 
           {error && (

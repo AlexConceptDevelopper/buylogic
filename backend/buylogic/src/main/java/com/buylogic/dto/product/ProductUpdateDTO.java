@@ -1,6 +1,7 @@
 package com.buylogic.dto.product;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -28,10 +29,7 @@ public class ProductUpdateDTO {
 
     private String description;
 
-    @Pattern(
-        regexp = "UNIT|KG|L",
-        message = "Unit must be UNIT, KG or L."
-    )
+    @Pattern(regexp = "UNIT|KG|L", message = "Unit must be UNIT, KG or L.")
     private String unit;
     private Boolean fractional;
 
@@ -40,4 +38,10 @@ public class ProductUpdateDTO {
 
     @NotNull
     private Boolean active;
+
+    @NotNull
+    @Pattern(regexp = "PURCHASED|MANUFACTURED", message = "Type must be PURCHASED or MANUFACTURED.")
+    private String type;
+
+    private List<ProductCompositionDTO> components;
 }

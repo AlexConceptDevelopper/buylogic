@@ -1,6 +1,7 @@
 package com.buylogic.dto.product;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,4 +23,6 @@ public class ProductDTO {
     private Boolean fractional;
     private BigDecimal currentStock;
     private Boolean active;
+    private String type; // ou directement l'Enum ProductType selon tes préférences
+    private List<ProductCompositionDTO> components;
 }

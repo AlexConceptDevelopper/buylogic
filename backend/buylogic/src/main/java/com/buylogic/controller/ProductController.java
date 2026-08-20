@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.buylogic.dto.product.ProductCompositionDTO;
 import com.buylogic.dto.product.ProductCreateDTO;
 import com.buylogic.dto.product.ProductDTO;
 import com.buylogic.dto.product.ProductUpdateDTO;
@@ -63,5 +64,17 @@ public class ProductController {
         productService.delete(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+
+    //Créer une recette avec des produits
+    @PostMapping("/{id}/components")
+    public ResponseEntity<ProductDTO> addComponent(
+            @PathVariable Integer id,
+            @Valid @RequestBody ProductCompositionDTO dto) {
+
+        return ResponseEntity.ok(
+            productService.addComponent(id, dto)
+        );
     }
 }
