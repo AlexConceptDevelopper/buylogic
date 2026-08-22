@@ -3,6 +3,8 @@ package com.buylogic.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.buylogic.model.enums.Role;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

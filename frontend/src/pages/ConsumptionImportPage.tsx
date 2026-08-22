@@ -289,6 +289,13 @@ export default function ConsumptionImportPage() {
     }
   };
 
+  const handleRemoveRow = (indexToRemove: number) => {
+    setRows((prevRows) =>
+      prevRows.filter((_, index) => index !== indexToRemove),
+    );
+    setImportError(null);
+  };
+
   const handleImport = async () => {
     if (
       recognizedRows.length === 0 ||
@@ -303,15 +310,13 @@ export default function ConsumptionImportPage() {
 
     try {
       const fileBuffer = await selectedFile.arrayBuffer();
-
       const hashBuffer = await crypto.subtle.digest("SHA-256", fileBuffer);
-
       const fileHash = Array.from(new Uint8Array(hashBuffer))
         .map((byte) => byte.toString(16).padStart(2, "0"))
         .join("");
 
-      const result = await executeImport(() =>
-        importConsumptions({
+      const response = await executeImport(async () => {
+        return await importConsumptions({
           fileName: selectedFile.name,
           fileHash,
           rows: recognizedRows.map((row) => ({
@@ -319,22 +324,34 @@ export default function ConsumptionImportPage() {
             quantity: row.quantity,
             consumptionDate: row.date,
           })),
-        }),
-      );
+        });
+      });
 
-      if (!result) {
-        setImportError(
-          "Impossible de terminer l'import. Le fichier a peut-être déjà été importé ou une erreur est survenue côté serveur.",
-        );
-        return;
-      }
+      const count =
+        typeof response === "number"
+          ? response
+          : ((response as any)?.data ?? 1);
 
-      setImportedCount(result);
+      setImportedCount(count);
       setImportCompleted(true);
-    } catch {
-      setImportError(
-        "Impossible de calculer l'identifiant sécurisé du fichier ou de terminer l'import.",
-      );
+    } catch (error: any) {
+      const serverMessage = error?.response?.data?.message || error?.message;
+
+      if (error?.response?.status === 409 && serverMessage) {
+        if (serverMessage.includes("Insufficient stock for product:")) {
+          const productName = serverMessage.split(":")[1]?.trim();
+          setImportError(
+            `Stock insuffisant pour le produit : "${productName}".`,
+          );
+        } else {
+          setImportError(serverMessage);
+        }
+      } else {
+        setImportError(
+          serverMessage ||
+            "Impossible de terminer l'import. Une erreur est survenue.",
+        );
+      }
     }
   };
 
@@ -563,6 +580,16 @@ export default function ConsumptionImportPage() {
                                 Prête à importer
                               </span>
                             )}
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveRow(index)}
+                              title="Retirer cette ligne"
+                              className="cursor-pointer rounded-lg p-1.5 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-400"
+                            >
+                              ✕
+                            </button>
                           </td>
                         </tr>
                       ))}

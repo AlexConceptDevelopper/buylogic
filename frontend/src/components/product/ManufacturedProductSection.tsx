@@ -6,6 +6,7 @@ interface ManufacturedProductSectionProps {
   product: Product;
   allProducts?: Product[];
   onAddComponent: (component: ProductCompositionDTO) => Promise<void>;
+  onRemoveComponent?: (idChildProduct: number) => Promise<void>;
   loading?: boolean;
 }
 
@@ -13,6 +14,7 @@ export default function ManufacturedProductSection({
   product,
   allProducts = [],
   onAddComponent,
+  onRemoveComponent,
   loading = false,
 }: ManufacturedProductSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -76,8 +78,6 @@ export default function ManufacturedProductSection({
     }
   };
 
-  console.log("Objet product reçu :", product);
-
   return (
     <div className="rounded-2xl border border-white/5 bg-slate-900/70 p-6">
       <div className="flex items-center justify-between">
@@ -135,13 +135,20 @@ export default function ManufacturedProductSection({
                     >
                       Modifier
                     </button>
-                    {/* Bouton de suppression (à relier selon votre API de suppression) */}
+                    {/* Bouton de suppression branché */}
                     <button
                       type="button"
-                      onClick={() => {
-                        // TODO: Implémenter la suppression si besoin
+                      disabled={loading}
+                      onClick={async () => {
+                        if (onRemoveComponent) {
+                          try {
+                            await onRemoveComponent(item.idChildProduct);
+                          } catch {
+                            console.error("Impossible de supprimer cet ingrédient");
+                          }
+                        }
                       }}
-                      className="cursor-pointer text-xs text-red-400 hover:underline"
+                      className="cursor-pointer text-xs text-red-400 hover:underline disabled:opacity-50"
                     >
                       Supprimer
                     </button>

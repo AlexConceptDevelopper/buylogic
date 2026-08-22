@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { getProductById, getProducts, addProductComponent } from "../api/product.api";
-import { getPurchaseRecommendations } from "../api/purchaseRecommendation.api";
 import {
-  adjustStock,
-  createStockMovement,
-  getStockMovements,
-} from "../api/stockMovement.api";
+  getProductById,
+  getProducts,
+  addProductComponent,
+  removeProductComponent,
+} from "../api/product.api";
+import { getPurchaseRecommendations } from "../api/purchaseRecommendation.api";
 import {
   createSupplierProduct,
   getSupplierProducts,
@@ -15,11 +15,9 @@ import {
 import { getSuppliers } from "../api/supplier.api";
 
 import useAsync from "../hooks/useAsync";
-import { useAuth } from "../context/AuthContext";
 
-import type { Product, ProductCompositionDTO } from "../types/product";
+import type { Product, ProductCompositionDTO, ProductUnit } from "../types/product";
 import type { PurchaseRecommendation } from "../types/purchaseRecommendation";
-import type { StockMovement, StockAdjustment } from "../types/stockMovement";
 import type { Supplier } from "../types/supplier";
 import type {
   SupplierProduct,
@@ -27,510 +25,171 @@ import type {
 } from "../types/supplierProduct";
 
 import ProductHeader from "../components/product/ProductHeader";
-import ProductQuickView from "../components/product/ProductQuickView";
-import ProductStockSection from "../components/product/ProductStockSection";
 import ProductSuppliersSection from "../components/product/ProductSuppliersSection";
-import ProductMovementsSection from "../components/product/ProductMovementsSection";
 import ProductRecommendationSection from "../components/product/ProductRecommendationSection";
 import ManufacturedProductSection from "../components/product/ManufacturedProductSection";
 
 import SupplierProductModal from "../components/product/modals/SupplierProductModal";
-import InitialStockModal from "../components/product/modals/InitialStockModal";
-import StockAdjustmentModal from "../components/product/modals/StockAdjustementModal";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const productId = Number(id);
 
+  // Données principales
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
-
-  const [recommendations, setRecommendations] = useState<
-    PurchaseRecommendation[]
-  >([]);
-
-  const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
-
-  const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>(
-    [],
-  );
-
+  const [recommendations, setRecommendations] = useState<PurchaseRecommendation[]>([]);
+  const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
-  const [supplierFormOpen, setSupplierFormOpen] = useState(false);
-
-  const [supplierForm, setSupplierForm] = useState<
-    Omit<SupplierProductCreate, "idProduct">
-  >({
-    idSupplier: 0,
-    supplierReference: "",
-    unitPrice: undefined as unknown as number,
-    minimumOrderQuantity: undefined as unknown as number,
-    expectedLeadTimeDays: undefined as unknown as number,
-    packagingQuantity: undefined as unknown as number,
-    packagingUnit: "UNIT",
-    fractionable: false,
+  // État du modal fournisseur
+  const [supplierModal, setSupplierModal] = useState({
+    open: false,
+    error: null as string | null,
+    form: {
+      idSupplier: 0,
+      supplierReference: "",
+      unitPrice: 0,
+      minimumOrderQuantity: 0,
+      expectedLeadTimeDays: 0,
+      packagingQuantity: 0,
+      packagingUnit: "UNIT" as ProductUnit,
+      fractionable: false,
+    },
   });
 
-  const [supplierFormError, setSupplierFormError] = useState<string | null>(
-    null,
-  );
+  // Hooks Async
+  const { loading: productLoading, error: productError, execute: executeProduct } = useAsync<Product>();
+  const { execute: executeProducts } = useAsync<Product[]>();
+  const { execute: executeRecommendations } = useAsync<PurchaseRecommendation[]>();
+  const { execute: executeSupplierProducts } = useAsync<SupplierProduct[]>();
+  const { execute: executeSuppliers } = useAsync<Supplier[]>();
 
-  const [initialStockOpen, setInitialStockOpen] = useState(false);
+  const { loading: creatingSupplierProduct, execute: executeCreateSupplierProduct } = useAsync<SupplierProduct>();
+  const { execute: executeAddComponent } = useAsync<Product>();
+  const { execute: executeRemoveComponent } = useAsync<void>();
 
-  const [initialStockQuantity, setInitialStockQuantity] = useState("");
-
-  const [initialStockError, setInitialStockError] = useState<string | null>(
-    null,
-  );
-
-  const [stockAdjustmentOpen, setStockAdjustmentOpen] = useState(false);
-
-  const [stockAdjustmentQuantity, setStockAdjustmentQuantity] = useState("");
-
-  const [stockAdjustmentReason, setStockAdjustmentReason] = useState("");
-
-  const [stockAdjustmentError, setStockAdjustmentError] = useState<
-    string | null
-  >(null);
-
-  const {
-    loading: productLoading,
-    error: productError,
-    execute: executeProduct,
-  } = useAsync<Product>();
-
-  const { loading: productsLoading, execute: executeProducts } =
-    useAsync<Product[]>();
-
-  const { loading: recommendationsLoading, execute: executeRecommendations } =
-    useAsync<PurchaseRecommendation[]>();
-
-  const { loading: stockMovementsLoading, execute: executeStockMovements } =
-    useAsync<StockMovement[]>();
-
-  const { loading: supplierProductsLoading, execute: executeSupplierProducts } =
-    useAsync<SupplierProduct[]>();
-
-  const { loading: suppliersLoading, execute: executeSuppliers } =
-    useAsync<Supplier[]>();
-
-  const {
-    loading: creatingSupplierProduct,
-    execute: executeCreateSupplierProduct,
-  } = useAsync<SupplierProduct>();
-
-  const { loading: creatingInitialStock, execute: executeCreateInitialStock } =
-    useAsync<StockMovement>();
-
-  const { loading: adjustingStock, execute: executeAdjustStock } =
-    useAsync<StockMovement>();
-
-  const {
-    loading: addingComponent,
-    execute: executeAddComponent,
-  } = useAsync<Product>();
-
-  const isOwner = user?.role === "OWNER";
-
+  // Chargement initial global de la page
   useEffect(() => {
-    if (!Number.isInteger(productId)) {
-      return;
-    }
+    if (!Number.isInteger(productId)) return;
 
-    const loadProduct = async () => {
-      const data = await executeProduct(() => getProductById(productId));
+    const loadInitialData = async () => {
+      const [prodData, allProdData, recsData, suppProdsData, suppsData] = await Promise.all([
+        executeProduct(() => getProductById(productId)),
+        executeProducts(() => getProducts()),
+        executeRecommendations(() => getPurchaseRecommendations()),
+        executeSupplierProducts(() => getSupplierProducts()),
+        executeSuppliers(() => getSuppliers()),
+      ]);
 
-      if (data) {
-        setProduct(data);
+      if (prodData) setProduct(prodData);
+      if (allProdData) setAllProducts(allProdData);
+      if (recsData) setRecommendations(recsData);
+      if (suppProdsData) {
+        setSupplierProducts(suppProdsData.filter((item) => item.idProduct === productId));
+      }
+      if (suppsData) {
+        setSuppliers(suppsData.filter((supplier) => supplier.active));
       }
     };
 
-    void loadProduct();
-  }, [productId, executeProduct]);
-
-  useEffect(() => {
-    const loadAllProducts = async () => {
-      const data = await executeProducts(() => getProducts());
-
-      if (data) {
-        setAllProducts(data);
-      }
-    };
-
-    void loadAllProducts();
-  }, [executeProducts]);
-
-  useEffect(() => {
-    const loadRecommendations = async () => {
-      const data = await executeRecommendations(() =>
-        getPurchaseRecommendations(),
-      );
-
-      if (data) {
-        setRecommendations(data);
-      }
-    };
-
-    void loadRecommendations();
-  }, [executeRecommendations]);
-
-  useEffect(() => {
-    const loadStockMovements = async () => {
-      const data = await executeStockMovements(() => getStockMovements());
-
-      if (data) {
-        setStockMovements(data);
-      }
-    };
-
-    void loadStockMovements();
-  }, [executeStockMovements]);
-
-  useEffect(() => {
-    if (!Number.isInteger(productId)) {
-      return;
-    }
-
-    const loadSupplierProducts = async () => {
-      const data = await executeSupplierProducts(() => getSupplierProducts());
-
-      if (data) {
-        setSupplierProducts(
-          data.filter((item) => item.idProduct === productId),
-        );
-      }
-    };
-
-    void loadSupplierProducts();
-  }, [executeSupplierProducts, productId]);
-
-  useEffect(() => {
-    const loadSuppliers = async () => {
-      const data = await executeSuppliers(() => getSuppliers());
-
-      if (data) {
-        setSuppliers(data.filter((supplier) => supplier.active));
-      }
-    };
-
-    void loadSuppliers();
-  }, [executeSuppliers]);
-
-  const quantityStep = product?.fractional ? "0.001" : "1";
-
-  const validateQuantity = (value: number, label: string): string | null => {
-    if (!Number.isFinite(value) || value < 0) {
-      return `${label} doit être supérieur ou égal à 0.`;
-    }
-
-    if (product && !product.fractional && !Number.isInteger(value)) {
-      return `${label} doit être un nombre entier pour ce produit.`;
-    }
-
-    return null;
-  };
+    void loadInitialData();
+  }, [productId, executeProduct, executeProducts, executeRecommendations, executeSupplierProducts, executeSuppliers]);
 
   const handleAddComponent = async (component: ProductCompositionDTO) => {
     if (!product) return;
-
     const updatedProduct = await executeAddComponent(() =>
       addProductComponent(product.idProduct, component)
     );
+    if (updatedProduct) setProduct(updatedProduct);
+  };
 
-    if (updatedProduct) {
-      setProduct(updatedProduct);
+  const handleRemoveComponent = async (idChildProduct: number) => {
+    if (!product) return;
+    const result = await executeRemoveComponent(() =>
+      removeProductComponent(product.idProduct, idChildProduct)
+    );
+
+    if (result !== null) {
+      setProduct((current) => {
+        if (!current) return null;
+        return {
+          ...current,
+          components: current.components?.filter(
+            (item) => item.idChildProduct !== idChildProduct
+          ),
+        };
+      });
     }
   };
 
   const handleCreateSupplierProduct = async () => {
-    setSupplierFormError(null);
+    const { form } = supplierModal;
+    setSupplierModal((prev) => ({ ...prev, error: null }));
 
-    if (!supplierForm.idSupplier) {
-      setSupplierFormError("Sélectionnez un fournisseur.");
+    if (!form.idSupplier) {
+      setSupplierModal((prev) => ({ ...prev, error: "Sélectionnez un fournisseur." }));
       return;
     }
-
-    if (
-      supplierForm.unitPrice == null ||
-      !Number.isFinite(supplierForm.unitPrice) ||
-      supplierForm.unitPrice <= 0
-    ) {
-      setSupplierFormError("Le prix unitaire doit être supérieur à 0.");
+    if (form.unitPrice <= 0 || form.minimumOrderQuantity <= 0 || form.expectedLeadTimeDays < 0 || form.packagingQuantity <= 0) {
+      setSupplierModal((prev) => ({ ...prev, error: "Veuillez vérifier les valeurs numériques du formulaire." }));
       return;
     }
-
-    if (
-      supplierForm.minimumOrderQuantity == null ||
-      !Number.isFinite(supplierForm.minimumOrderQuantity) ||
-      supplierForm.minimumOrderQuantity <= 0
-    ) {
-      setSupplierFormError("Le minimum de commande doit être supérieur à 0.");
-      return;
-    }
-
-    if (
-      product &&
-      !product.fractional &&
-      !Number.isInteger(supplierForm.minimumOrderQuantity)
-    ) {
-      setSupplierFormError(
-        "Le minimum de commande doit être un nombre entier pour ce produit.",
-      );
-      return;
-    }
-
-    if (
-      supplierForm.expectedLeadTimeDays == null ||
-      !Number.isFinite(supplierForm.expectedLeadTimeDays) ||
-      supplierForm.expectedLeadTimeDays < 0
-    ) {
-      setSupplierFormError(
-        "Le délai fournisseur doit être supérieur ou égal à 0.",
-      );
-      return;
-    }
-
-    if (
-      supplierForm.packagingQuantity == null ||
-      !Number.isFinite(supplierForm.packagingQuantity) ||
-      supplierForm.packagingQuantity <= 0
-    ) {
-      setSupplierFormError(
-        "La quantité de conditionnement doit être supérieure à 0.",
-      );
-      return;
-    }
-
-    if (!supplierForm.packagingUnit) {
-      setSupplierFormError("Sélectionnez une unité de conditionnement.");
-      return;
-    }
-
-    if (!product) {
-      setSupplierFormError("Impossible de déterminer le produit courant.");
-      return;
-    }
-
-    if (supplierForm.packagingUnit !== product.unit) {
-      setSupplierFormError(
-        `L'unité du conditionnement doit correspondre à l'unité du produit (${product.unit}).`,
-      );
+    if (!product || form.packagingUnit !== product.unit) {
+      setSupplierModal((prev) => ({ ...prev, error: `L'unité du conditionnement doit correspondre à (${product?.unit}).` }));
       return;
     }
 
     const payload: SupplierProductCreate = {
       idProduct: product.idProduct,
-      idSupplier: supplierForm.idSupplier,
-      supplierReference: supplierForm.supplierReference?.trim() || undefined,
-      unitPrice: supplierForm.unitPrice,
-      minimumOrderQuantity: supplierForm.minimumOrderQuantity,
-      expectedLeadTimeDays: supplierForm.expectedLeadTimeDays,
-      packagingQuantity: supplierForm.packagingQuantity,
-      packagingUnit: supplierForm.packagingUnit,
-      fractionable: supplierForm.fractionable,
+      idSupplier: form.idSupplier,
+      supplierReference: form.supplierReference?.trim() || undefined,
+      unitPrice: form.unitPrice,
+      minimumOrderQuantity: form.minimumOrderQuantity,
+      expectedLeadTimeDays: form.expectedLeadTimeDays,
+      packagingQuantity: form.packagingQuantity,
+      packagingUnit: form.packagingUnit,
+      fractionable: form.fractionable,
     };
 
-    const created = await executeCreateSupplierProduct(() =>
-      createSupplierProduct(payload),
-    );
+    const created = await executeCreateSupplierProduct(() => createSupplierProduct(payload));
 
     if (!created) {
-      setSupplierFormError(
-        "Impossible d'associer ce fournisseur au produit. Il est peut-être déjà associé.",
-      );
+      setSupplierModal((prev) => ({ ...prev, error: "Impossible d'associer ce fournisseur." }));
       return;
     }
 
     setSupplierProducts((current) => [created, ...current]);
-
-    setSupplierForm({
-      idSupplier: 0,
-      supplierReference: "",
-      unitPrice: undefined as unknown as number,
-      minimumOrderQuantity: undefined as unknown as number,
-      expectedLeadTimeDays: undefined as unknown as number,
-      packagingQuantity: undefined as unknown as number,
-      packagingUnit: product.unit,
-      fractionable: false,
+    setSupplierModal({ 
+      open: false, 
+      error: null, 
+      form: { 
+        idSupplier: 0, 
+        supplierReference: "", 
+        unitPrice: 0, 
+        minimumOrderQuantity: 0, 
+        expectedLeadTimeDays: 0, 
+        packagingQuantity: 0, 
+        packagingUnit: product.unit, 
+        fractionable: false 
+      } 
     });
-
-    setSupplierFormOpen(false);
-  };
-
-  const handleCreateInitialStock = async () => {
-    setInitialStockError(null);
-
-    const quantity = Number(initialStockQuantity);
-
-    if (!Number.isFinite(quantity) || quantity <= 0) {
-      setInitialStockError(
-        "La quantité de stock initial doit être supérieure à 0.",
-      );
-      return;
-    }
-
-    const quantityError = validateQuantity(
-      quantity,
-      "La quantité de stock initial",
-    );
-
-    if (quantityError) {
-      setInitialStockError(quantityError);
-      return;
-    }
-
-    if (!product) {
-      setInitialStockError("Impossible de déterminer le produit courant.");
-      return;
-    }
-
-    const hasProductMovements = stockMovements.some(
-      (movement) => movement.idProduct === product.idProduct,
-    );
-
-    if (product.currentStock > 0 || hasProductMovements) {
-      setInitialStockError(
-        "Le stock initial ne peut être défini qu'avant le premier mouvement de stock.",
-      );
-      return;
-    }
-
-    const createdMovement = await executeCreateInitialStock(() =>
-      createStockMovement({
-        idProduct: product.idProduct,
-        movementType: "ADJUSTMENT",
-        quantity,
-        reference: "STOCK_INITIAL",
-      }),
-    );
-
-    if (!createdMovement) {
-      setInitialStockError("Impossible d'enregistrer le stock initial.");
-      return;
-    }
-
-    setProduct((current) =>
-      current
-        ? {
-            ...current,
-            currentStock: current.currentStock + quantity,
-          }
-        : current,
-    );
-
-    setStockMovements((current) => [createdMovement, ...current]);
-
-    setInitialStockQuantity("");
-    setInitialStockOpen(false);
-  };
-
-  const handleAdjustStock = async () => {
-    setStockAdjustmentError(null);
-
-    if (!product) {
-      setStockAdjustmentError("Impossible de déterminer le produit courant.");
-      return;
-    }
-
-    const targetStock = Number(stockAdjustmentQuantity);
-
-    if (!Number.isFinite(targetStock) || targetStock < 0) {
-      setStockAdjustmentError(
-        "Le nouveau stock doit être supérieur ou égal à 0.",
-      );
-      return;
-    }
-
-    const quantityError = validateQuantity(targetStock, "Le nouveau stock");
-
-    if (quantityError) {
-      setStockAdjustmentError(quantityError);
-      return;
-    }
-
-    const reason = stockAdjustmentReason.trim();
-
-    if (!reason) {
-      setStockAdjustmentError("La raison de l'ajustement est obligatoire.");
-      return;
-    }
-
-    if (targetStock === product.currentStock) {
-      setStockAdjustmentError(
-        "Le nouveau stock est identique au stock actuel.",
-      );
-      return;
-    }
-
-    const payload: StockAdjustment = {
-      targetStock,
-      reason,
-    };
-
-    const createdMovement = await executeAdjustStock(() =>
-      adjustStock(product.idProduct, payload),
-    );
-
-    if (!createdMovement) {
-      setStockAdjustmentError("Impossible d'ajuster le stock.");
-      return;
-    }
-
-    setProduct((current) =>
-      current
-        ? {
-            ...current,
-            currentStock: targetStock,
-          }
-        : current,
-    );
-
-    setStockMovements((current) => [createdMovement, ...current]);
-
-    setStockAdjustmentQuantity("");
-    setStockAdjustmentReason("");
-    setStockAdjustmentOpen(false);
   };
 
   const recommendation = useMemo(() => {
-    if (!product) {
-      return null;
-    }
-
-    return (
-      recommendations.find((item) => item.idProduct === product.idProduct) ??
-      null
-    );
+    if (!product) return null;
+    return recommendations.find((item) => item.idProduct === product.idProduct) ?? null;
   }, [product, recommendations]);
-
-  const loading =
-    productLoading ||
-    productsLoading ||
-    recommendationsLoading ||
-    stockMovementsLoading ||
-    supplierProductsLoading ||
-    suppliersLoading;
 
   if (!Number.isInteger(productId)) {
     return (
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        <div className="rounded-2xl border border-red-400/10 bg-red-400/5 p-6">
-          <p className="text-sm font-semibold text-white">
-            Produit introuvable
-          </p>
-
-          <p className="mt-2 text-sm text-red-300">
-            L'identifiant du produit est invalide.
-          </p>
-
-          <Link
-            to="/products"
-            className="mt-5 inline-flex cursor-pointer rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
-          >
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        <div className="rounded-2xl border border-red-400/15 bg-red-400/5 p-6">
+          <p className="text-sm font-semibold text-white">Produit introuvable</p>
+          <p className="mt-2 text-sm text-red-300">L'identifiant du produit est invalide.</p>
+          <Link to="/products" className="mt-5 inline-flex rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/5 hover:text-white">
             Retour aux produits
           </Link>
         </div>
@@ -538,39 +197,22 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (loading) {
+  if (productLoading) {
     return (
-      <div className="mx-auto max-w-6xl px-6 py-8">
+      <div className="mx-auto max-w-4xl px-6 py-8">
         <div className="h-4 w-24 animate-pulse rounded bg-white/5" />
-
         <div className="mt-4 h-10 w-72 animate-pulse rounded bg-white/5" />
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-          <div className="h-80 animate-pulse rounded-2xl bg-white/5" />
-          <div className="h-80 animate-pulse rounded-2xl bg-white/5" />
-        </div>
+        <div className="mt-8 h-80 animate-pulse rounded-2xl bg-white/5" />
       </div>
     );
   }
 
   if (productError || !product) {
     return (
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        <div className="rounded-2xl border border-red-400/10 bg-red-400/5 p-6">
-          <p className="text-sm font-semibold text-white">
-            Impossible de charger ce produit.
-          </p>
-
-          <p className="mt-2 text-sm text-red-300">
-            Le produit n'existe pas ou n'est pas accessible depuis votre
-            entreprise.
-          </p>
-
-          <button
-            type="button"
-            onClick={() => navigate("/products")}
-            className="mt-5 cursor-pointer rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
-          >
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        <div className="rounded-2xl border border-red-400/15 bg-red-400/5 p-6">
+          <p className="text-sm font-semibold text-white">Impossible de charger ce produit.</p>
+          <button type="button" onClick={() => navigate("/products")} className="mt-5 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/5 hover:text-white">
             Retour aux produits
           </button>
         </div>
@@ -578,153 +220,56 @@ export default function ProductDetailPage() {
     );
   }
 
-  const productMovements = stockMovements
-    .filter((movement) => movement.idProduct === product.idProduct)
-    .sort(
-      (a, b) =>
-        new Date(b.movementDate).getTime() - new Date(a.movementDate).getTime(),
-    )
-    .slice(0, 8);
-
-  const hasProductMovements = stockMovements.some(
-    (movement) => movement.idProduct === product.idProduct,
-  );
-
-  const handleOpenSupplierModal = () => {
-    setSupplierFormError(null);
-
-    setSupplierForm({
-      idSupplier: 0,
-      supplierReference: "",
-      unitPrice: undefined as unknown as number,
-      minimumOrderQuantity: undefined as unknown as number,
-      expectedLeadTimeDays: undefined as unknown as number,
-      packagingQuantity: undefined as unknown as number,
-      packagingUnit: product.unit,
-      fractionable: false,
-    });
-
-    setSupplierFormOpen(true);
-  };
-
-  const handleOpenInitialStockModal = () => {
-    setInitialStockError(null);
-    setInitialStockQuantity("");
-    setInitialStockOpen(true);
-  };
-
-  const handleOpenStockAdjustmentModal = () => {
-    setStockAdjustmentError(null);
-    setStockAdjustmentQuantity(String(product.currentStock));
-    setStockAdjustmentReason("");
-    setStockAdjustmentOpen(true);
-  };
-
-  const handleCloseSupplierModal = () => {
-    if (creatingSupplierProduct) {
-      return;
-    }
-
-    setSupplierFormError(null);
-    setSupplierFormOpen(false);
-  };
-
-  const handleCloseInitialStockModal = () => {
-    if (creatingInitialStock) {
-      return;
-    }
-
-    setInitialStockError(null);
-    setInitialStockOpen(false);
-  };
-
-  const handleCloseStockAdjustmentModal = () => {
-    if (adjustingStock) {
-      return;
-    }
-
-    setStockAdjustmentError(null);
-    setStockAdjustmentOpen(false);
-  };
-
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
+    <div className="mx-auto max-w-4xl px-6 py-8">
       <ProductHeader product={product} />
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-        <div className="space-y-6">
-          <ProductStockSection
+      <div className="mt-8 space-y-6">
+        {product.type === "MANUFACTURED" ? (
+          <ManufacturedProductSection
             product={product}
-            isOwner={isOwner}
-            hasProductMovements={hasProductMovements}
-            onInitializeStock={handleOpenInitialStockModal}
-            onAdjustStock={handleOpenStockAdjustmentModal}
+            allProducts={allProducts}
+            onAddComponent={handleAddComponent}
+            onRemoveComponent={handleRemoveComponent}
+            loading={false}
           />
-
-          {product.type === "MANUFACTURED" ? (
-            <ManufacturedProductSection
-              product={product}
-              allProducts={allProducts}
-              onAddComponent={handleAddComponent}
-              loading={addingComponent}
-            />
-          ) : (
-            <ProductSuppliersSection
-              product={product}
-              suppliers={suppliers}
-              supplierProducts={supplierProducts}
-              onAddSupplier={handleOpenSupplierModal}
-            />
-          )}
-
-          <ProductMovementsSection movements={productMovements} />
-
-          <ProductRecommendationSection
+        ) : (
+          <ProductSuppliersSection
             product={product}
-            recommendation={recommendation}
+            suppliers={suppliers}
+            supplierProducts={supplierProducts}
+            onAddSupplier={() => setSupplierModal({ 
+              open: true, 
+              error: null, 
+              form: { 
+                idSupplier: 0, 
+                supplierReference: "", 
+                unitPrice: 0, 
+                minimumOrderQuantity: 0, 
+                expectedLeadTimeDays: 0, 
+                packagingQuantity: 0, 
+                packagingUnit: product.unit, 
+                fractionable: false 
+              } 
+            })}
           />
-        </div>
+        )}
 
-        <ProductQuickView product={product} recommendation={recommendation} />
+        <ProductRecommendationSection product={product} recommendation={recommendation} />
       </div>
 
+      {/* Modal Fournisseur */}
       <SupplierProductModal
         product={product}
         suppliers={suppliers}
         supplierProducts={supplierProducts}
-        open={supplierFormOpen}
-        form={supplierForm}
-        error={supplierFormError}
+        open={supplierModal.open}
+        form={supplierModal.form}
+        error={supplierModal.error}
         loading={creatingSupplierProduct}
-        onChange={setSupplierForm}
-        onClose={handleCloseSupplierModal}
+        onChange={(form) => setSupplierModal((prev) => ({ ...prev, form: form as any }))}
+        onClose={() => setSupplierModal((prev) => ({ ...prev, open: false }))}
         onSubmit={() => void handleCreateSupplierProduct()}
-      />
-
-      <InitialStockModal
-        product={product}
-        open={initialStockOpen}
-        quantity={initialStockQuantity}
-        error={initialStockError}
-        loading={creatingInitialStock}
-        quantityStep={quantityStep}
-        onQuantityChange={setInitialStockQuantity}
-        onClose={handleCloseInitialStockModal}
-        onSubmit={() => void handleCreateInitialStock()}
-      />
-
-      <StockAdjustmentModal
-        product={product}
-        open={stockAdjustmentOpen}
-        quantity={stockAdjustmentQuantity}
-        reason={stockAdjustmentReason}
-        error={stockAdjustmentError}
-        loading={adjustingStock}
-        quantityStep={quantityStep}
-        onQuantityChange={setStockAdjustmentQuantity}
-        onReasonChange={setStockAdjustmentReason}
-        onClose={handleCloseStockAdjustmentModal}
-        onSubmit={() => void handleAdjustStock()}
       />
     </div>
   );

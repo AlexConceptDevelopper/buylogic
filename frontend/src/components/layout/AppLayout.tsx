@@ -29,15 +29,15 @@ export default function AppLayout() {
       path: "/products",
       icon: "▣",
     },
+        {
+      label: "Gestion de stock",
+      path: "/stock",
+      icon: "▤",
+    },
     {
       label: "Fournisseurs",
       path: "/suppliers",
       icon: "◉",
-    },
-    {
-      label: "Stock",
-      path: "/stock",
-      icon: "▤",
     },
     {
       label: "Commandes",

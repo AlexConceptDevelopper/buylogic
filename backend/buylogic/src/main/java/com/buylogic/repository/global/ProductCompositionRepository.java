@@ -15,4 +15,6 @@ public interface ProductCompositionRepository extends GenericRepository<ProductC
 
     // Supprimer tous les composants liés à un produit parent (pratique si on met à jour la recette en remplaçant tout)
     void deleteAllByParentProduct_IdProduct(Integer parentProductId);
+
+    long deleteByParentProduct_IdProductAndChildProduct_IdProduct(Integer parentId, Integer childId);
 }

@@ -61,4 +61,10 @@ public class StockMovementController {
 
         return ResponseEntity.noContent().build();
     }
+
+    //endpoint de check, verifie si le produit à déjà été initialisé
+    @GetMapping("/product/{idProduct}/has-initial")
+    public ResponseEntity<Boolean> hasInitialStock(@PathVariable Integer idProduct) {
+        return ResponseEntity.ok(stockMovementService.hasInitialStock(idProduct));
+    }
 }

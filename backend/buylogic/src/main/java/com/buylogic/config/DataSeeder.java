@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.buylogic.model.AppUser;
 import com.buylogic.model.Company;
-import com.buylogic.model.Role;
+import com.buylogic.model.enums.Role;
 import com.buylogic.repository.global.AppUserRepository;
 import com.buylogic.repository.global.CompanyRepository;
 

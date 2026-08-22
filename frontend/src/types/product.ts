@@ -21,14 +21,14 @@ export interface Product {
   reference: string;
   name: string;
   description?: string;
-  type: ProductType; // Ajouté ici
+  type: ProductType;
   unit: ProductUnit;
   currentStock: number;
   fractional: boolean;
   active: boolean;
   createdAt: string;
   updatedAt: string;
-  components?: ProductCompositionDTO[]; // Ajouté ici aussi
+  components?: ProductCompositionDTO[];
 }
 
 export interface ProductCreate {
@@ -36,10 +36,10 @@ export interface ProductCreate {
   reference: string;
   name: string;
   description?: string;
-  type: ProductType; // Ajouté ici
+  type: ProductType;
   unit: ProductUnit;
   fractional: boolean;
-  components?: ProductCompositionDTO[]; // Ajouté ici
+  components?: ProductCompositionDTO[];
 }
 
 export interface ProductUpdate {
@@ -47,9 +47,10 @@ export interface ProductUpdate {
   reference: string;
   name: string;
   description?: string;
-  type: ProductType; // Ajouté ici
+  type: ProductType;
   unit: ProductUnit;
   fractional: boolean;
   active: boolean;
-  components?: ProductCompositionDTO[]; // Ajouté ici
+  currentStock?: number; // Ajouté ici
+  components?: ProductCompositionDTO[];
 }

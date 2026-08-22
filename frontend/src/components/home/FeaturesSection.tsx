@@ -40,6 +40,25 @@ export default function FeaturesSection() {
             title="Éviter le surstock"
             description="Ne plus immobiliser inutilement votre trésorerie dans des produits qui dorment."
           />
+
+          {/* Nouvelles cartes pour refléter tes ajouts récents */}
+          <FeatureCard
+            number="04"
+            title="Gestion des assemblages"
+            description="Structurez vos produits manufacturés avec des compositions multi-niveaux précises."
+          />
+
+          <FeatureCard
+            number="05"
+            title="Atelier de production"
+            description="Pilotez la fabrication de vos produits en série pour fluidifier le travail de l'atelier."
+          />
+
+          <FeatureCard
+            number="06"
+            title="Recommandations d'achat"
+            description="Laissez BuyLogic calculer exactement quoi commander, quand et chez quel fournisseur."
+          />
         </div>
       </div>
     </section>

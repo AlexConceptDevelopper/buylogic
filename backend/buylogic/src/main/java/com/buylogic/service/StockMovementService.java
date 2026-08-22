@@ -302,4 +302,12 @@ public class StockMovementService {
 
                 return create(dto);
         }
+
+        public boolean hasInitialStock(Integer idProduct) {
+                Integer companyId = getCurrentCompanyId();
+                // On vérifie si un mouvement avec "STOCK_INITIAL" existe (via la référence ou
+                // le type selon ton modèle, ici on utilise la raison/référence ou tu adaptes)
+                return stockMovementRepository.existsByProduct_IdProductAndProduct_Company_IdCompanyAndReference(
+                                idProduct, companyId, "STOCK_INITIAL");
+        }
 }

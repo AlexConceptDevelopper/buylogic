@@ -18,4 +18,11 @@ public interface StockMovementRepository
         Integer idStockMovement,
         Integer companyId
     );
+
+    // Ajout de cette méthode pour vérifier si un produit a déjà un mouvement STOCK_INITIAL
+    boolean existsByProduct_IdProductAndProduct_Company_IdCompanyAndReference(
+        Integer idProduct,
+        Integer companyId,
+        String reference
+    );
 }

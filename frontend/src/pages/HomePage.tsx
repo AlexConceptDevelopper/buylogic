@@ -2,6 +2,7 @@ import DashboardPreview from "../components/home/DashboardPreview";
 import FeaturesSection from "../components/home/FeaturesSection";
 import HeroSection from "../components/home/HeroSection";
 import HowItWorksSection from "../components/home/HowItWorksSection";
+import BusinessModelsSection from "../components/home/BusinessModelsSection";
 import Navbar from "../components/Navbar";
 import TrialOffer from "../components/home/TrialOffer";
 
@@ -21,6 +22,7 @@ export default function HomePage() {
         <TrialOffer />
         <DashboardPreview />
         <FeaturesSection />
+        <BusinessModelsSection />
         <HowItWorksSection />
       </main>
 

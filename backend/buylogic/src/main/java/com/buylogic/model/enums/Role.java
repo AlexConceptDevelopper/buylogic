@@ -1,4 +1,4 @@
-package com.buylogic.model;
+package com.buylogic.model.enums;
 
 public enum Role {
 
