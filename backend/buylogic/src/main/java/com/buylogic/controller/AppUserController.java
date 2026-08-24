@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.buylogic.dto.appuser.AppUserCreateDTO;
@@ -43,6 +44,7 @@ public class AppUserController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('OWNER', 'SUPER_ADMIN')")
     @PostMapping
     public ResponseEntity<AppUserDTO> create(
             @Valid @RequestBody AppUserCreateDTO dto) {
@@ -54,6 +56,7 @@ public class AppUserController {
                 );
     }
 
+    @PreAuthorize("hasAnyRole('OWNER', 'SUPER_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable Integer id) {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getProducts, adjustProductStock } from "../api/product.api";
 import { checkHasInitialStock } from "../api/stockMovement.api";
 import useAsync from "../hooks/useAsync";
@@ -7,9 +8,18 @@ import type { Product } from "../types/product";
 type StockFilter = "ALL" | "OUT_OF_STOCK" | "LOW_STOCK" | "AVAILABLE";
 
 export default function StockPage() {
+  const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<StockFilter>("ALL");
+  
+  // Initialisation du filtre selon l'URL (ex: /stock?filter=OUT_OF_STOCK)
+  const urlFilter = searchParams.get("filter") as StockFilter;
+  const [filter, setFilter] = useState<StockFilter>(
+    urlFilter && ["ALL", "OUT_OF_STOCK", "LOW_STOCK", "AVAILABLE"].includes(urlFilter)
+      ? urlFilter
+      : "ALL"
+  );
+
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
 
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
@@ -37,6 +47,14 @@ export default function StockPage() {
   useEffect(() => {
     void loadProducts();
   }, [execute]);
+
+  // Met à jour le filtre si l'URL change dynamiquement
+  useEffect(() => {
+    const param = searchParams.get("filter") as StockFilter;
+    if (param && ["ALL", "OUT_OF_STOCK", "LOW_STOCK", "AVAILABLE"].includes(param)) {
+      setFilter(param);
+    }
+  }, [searchParams]);
 
   const stockStats = useMemo(() => {
     const outOfStock = products.filter((p) => p.currentStock <= 0).length;
@@ -82,7 +100,6 @@ export default function StockPage() {
     );
   };
 
-  // Ouverture de la modale pour un seul produit
   const handleOpenSingleModal = async (product: Product) => {
     setSingleProductTarget(product);
     setBulkQuantity(product.currentStock);
@@ -102,14 +119,13 @@ export default function StockPage() {
     }
   };
 
-  // Ouverture de la modale pour l'action groupée (plusieurs produits cochés)
   const handleOpenBulkModal = () => {
     setSingleProductTarget(null);
     setBulkQuantity(0);
     setBulkReason("AJUSTEMENT");
     setBulkCustomReason("");
     setHasInitialStock(false);
-    setBulkActionType("ADD"); // Par défaut en mode "Ajouter" ou "Définir" pour du bulk
+    setBulkActionType("ADD");
     setBulkModalOpen(true);
   };
 
@@ -277,7 +293,6 @@ export default function StockPage() {
           className="w-full rounded-xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400"
         />
 
-        {/* Barre d'action groupée qui apparaît si des produits sont sélectionnés */}
         {selectedProductIds.length > 0 && (
           <div className="flex items-center gap-3 w-full lg:w-auto justify-end bg-cyan-950/40 border border-cyan-400/20 px-4 py-2.5 rounded-xl">
             <span className="text-xs text-cyan-300 font-medium">
@@ -361,7 +376,6 @@ export default function StockPage() {
         </table>
       </section>
 
-      {/* Modale d'ajustement (unique ou groupé) */}
       {bulkModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { getProducts } from "../../api/product.api";
 import useAsync from "../../hooks/useAsync";
@@ -87,12 +88,12 @@ export default function StockAlerts() {
           </p>
         </div>
 
-        <button
-          type="button"
+        <Link
+          to="/stock?filter=OUT_OF_STOCK"
           className="cursor-pointer self-start rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-slate-400 transition hover:border-cyan-400/20 hover:bg-cyan-400/5 hover:text-cyan-300"
         >
           Voir tout
-        </button>
+        </Link>
       </div>
 
       <div className="mt-6 space-y-3">

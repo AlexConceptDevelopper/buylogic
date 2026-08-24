@@ -29,7 +29,7 @@ export default function AppLayout() {
       path: "/products",
       icon: "▣",
     },
-        {
+    {
       label: "Gestion de stock",
       path: "/stock",
       icon: "▤",
@@ -59,6 +59,15 @@ export default function AppLayout() {
       path: "/notifications",
       icon: "◌",
     },
+    ...(user?.role === "OWNER" || user?.role === "SUPER_ADMIN"
+      ? [
+          {
+            label: "Utilisateurs",
+            path: "/settings/users",
+            icon: "⚙",
+          },
+        ]
+      : []),
   ];
 
   useEffect(() => {

@@ -52,6 +52,9 @@ public class PurchaseOrder {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "is_auto_recommended", nullable = false)
+    private Boolean isAutoRecommended = false;
+
     @OneToMany(mappedBy = "purchaseOrder")
     private List<PurchaseOrderItem> items;
 

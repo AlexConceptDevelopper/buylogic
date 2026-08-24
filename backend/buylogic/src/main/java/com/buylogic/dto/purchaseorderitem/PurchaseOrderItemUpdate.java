@@ -1,7 +1,6 @@
-package com.buylogic.dto;
+package com.buylogic.dto.purchaseorderitem;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,19 +11,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PurchaseOrderItemDTO {
-
-
-    private Integer idPurchaseOrderItem;
-    private Integer idPurchaseOrder;
-    private Integer idProduct;
-
-    private String productReference;
-    private String productName;
+public class PurchaseOrderItemUpdate {
 
     private BigDecimal quantityOrdered;
     private BigDecimal quantityReceived;
     private BigDecimal unitPrice;
-
-    private LocalDateTime createdAt;
 }

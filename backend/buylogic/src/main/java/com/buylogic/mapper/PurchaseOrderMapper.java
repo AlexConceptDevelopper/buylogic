@@ -55,6 +55,27 @@ public class PurchaseOrderMapper {
         dto.setCreatedAt(
                 order.getCreatedAt());
 
+        // AJOUT : Mapper la liste des items si elle est chargée dans l'entité
+        if (order.getItems() != null) {
+            dto.setItems(
+                order.getItems().stream()
+                    .map(item -> {
+                        // Crée et remplis ton PurchaseOrderItemDTO ici selon ta structure existante
+                        var itemDto = new com.buylogic.dto.purchaseorderitem.PurchaseOrderItemDTO();
+                        itemDto.setIdPurchaseOrderItem(item.getIdPurchaseOrderItem());
+                        itemDto.setQuantityOrdered(item.getQuantityOrdered());
+                        itemDto.setQuantityReceived(item.getQuantityReceived());
+                        itemDto.setUnitPrice(item.getUnitPrice());
+                        if (item.getProduct() != null) {
+                            itemDto.setIdProduct(item.getProduct().getIdProduct());
+                            itemDto.setProductName(item.getProduct().getName());
+                        }
+                        return itemDto;
+                    })
+                    .toList()
+            );
+        }
+
         return dto;
     }
 }

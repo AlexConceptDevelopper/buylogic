@@ -187,7 +187,7 @@ export default function ConsumptionImportPage() {
     execute: executeProducts,
   } = useAsync<Product[]>();
 
-  const { loading: importing, execute: executeImport } = useAsync<number>();
+  const { loading: importing} = useAsync<number>();
 
   const recognizedRows = useMemo(
     () => rows.filter((row) => row.product !== null && !row.error),
@@ -315,43 +315,45 @@ export default function ConsumptionImportPage() {
         .map((byte) => byte.toString(16).padStart(2, "0"))
         .join("");
 
-      const response = await executeImport(async () => {
-        return await importConsumptions({
-          fileName: selectedFile.name,
-          fileHash,
-          rows: recognizedRows.map((row) => ({
-            reference: row.reference,
-            quantity: row.quantity,
-            consumptionDate: row.date,
-          })),
-        });
+      // Appel direct de l'API sans passer par executeImport si celui-ci masque les erreurs HTTP
+      const count = await importConsumptions({
+        fileName: selectedFile.name,
+        fileHash,
+        rows: recognizedRows.map((row) => ({
+          reference: row.reference,
+          quantity: row.quantity,
+          consumptionDate: row.date,
+        })),
       });
 
-      const count =
-        typeof response === "number"
-          ? response
-          : ((response as any)?.data ?? 1);
-
-      setImportedCount(count);
+      setImportedCount(typeof count === "number" ? count : 1);
       setImportCompleted(true);
     } catch (error: any) {
-      const serverMessage = error?.response?.data?.message || error?.message;
+      // Récupération précise du message d'erreur d'Axios (error.response.data)
+      const serverData = error?.response?.data;
+      const serverMessage = serverData?.message || error?.message || "";
+      const status = error?.response?.status || error?.status;
 
-      if (error?.response?.status === 409 && serverMessage) {
-        if (serverMessage.includes("Insufficient stock for product:")) {
-          const productName = serverMessage.split(":")[1]?.trim();
-          setImportError(
-            `Stock insuffisant pour le produit : "${productName}".`,
-          );
-        } else {
-          setImportError(serverMessage);
-        }
+      if (
+        status === 409 ||
+        serverMessage.includes("Insufficient stock") ||
+        serverMessage.includes("Conflict")
+      ) {
+        const productName = serverMessage.includes(":")
+          ? serverMessage.split(":")[1]?.trim()
+          : "inconnu";
+
+        setImportError(
+          `Stock insuffisant pour le produit : "${productName}". Import bloqué.`,
+        );
       } else {
         setImportError(
           serverMessage ||
             "Impossible de terminer l'import. Une erreur est survenue.",
         );
       }
+
+      setImportCompleted(false);
     }
   };
 

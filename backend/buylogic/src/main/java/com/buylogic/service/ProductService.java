@@ -86,8 +86,10 @@ public class ProductService {
                 saveOrUpdateCompositions(savedProduct, dto.getComponents());
 
                 // Traçabilité : si un stock initial est présent à la création
-                if (savedProduct.getCurrentStock() != null && savedProduct.getCurrentStock().compareTo(BigDecimal.ZERO) > 0) {
-                        recordMovement(savedProduct, "STOCK_INITIAL", savedProduct.getCurrentStock(), dto.getReference());
+                if (savedProduct.getCurrentStock() != null
+                                && savedProduct.getCurrentStock().compareTo(BigDecimal.ZERO) > 0) {
+                        recordMovement(savedProduct, "STOCK_INITIAL", savedProduct.getCurrentStock(),
+                                        dto.getReference());
                 }
 
                 return productMapper.toDTO(savedProduct);
@@ -290,17 +292,23 @@ public class ProductService {
                         java.math.BigDecimal totalNeeded = comp.getQuantity().multiply(quantityToProduce);
 
                         if (ingredient.getCurrentStock().compareTo(totalNeeded) < 0) {
+                                String formattedRequired = totalNeeded.stripTrailingZeros().toPlainString().replace('.',
+                                                ',');
+                                String formattedStock = ingredient.getCurrentStock().stripTrailingZeros()
+                                                .toPlainString().replace('.', ',');
+
                                 throw new ConflictException(
                                                 "Stock insuffisant pour l'ingrédient : " + ingredient.getName()
-                                                                + " (Requis: " + totalNeeded + ", Disponible: "
-                                                                + ingredient.getCurrentStock() + ")");
+                                                                + " (Requis: " + formattedRequired + ", Disponible: "
+                                                                + formattedStock + ")");
                         }
 
                         ingredient.setCurrentStock(ingredient.getCurrentStock().subtract(totalNeeded));
                         productRepository.save(ingredient);
 
                         // Traçabilité de la consommation
-                        recordMovement(ingredient, "CONSUMPTION", totalNeeded.negate(), "Production de " + parentProduct.getName());
+                        recordMovement(ingredient, "CONSUMPTION", totalNeeded.negate(),
+                                        "Production de " + parentProduct.getName());
                 }
 
                 // 2. Production du produit fini

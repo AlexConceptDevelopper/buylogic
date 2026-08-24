@@ -119,7 +119,6 @@ public class AppUserService {
         }
 
         AppUser user = new AppUser();
-
         user.setCompany(getCurrentCompany());
 
         user.setEmail(email);

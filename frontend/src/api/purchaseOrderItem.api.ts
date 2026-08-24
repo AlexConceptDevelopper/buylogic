@@ -23,7 +23,7 @@ export function getPurchaseOrderItemsByPurchaseOrderId(
   return apiFetch<PurchaseOrderItem[]>(
     `/purchase-order-items/purchase-order/${idPurchaseOrder}`,
   );
-}
+} 
 
 export function createPurchaseOrderItem(
   data: PurchaseOrderItemCreate,

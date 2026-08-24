@@ -47,7 +47,7 @@ export function deleteStockMovement(id: number) {
   );
 }
 
-//verifie si le produit à déjà été initialisé
+//verifie si le stock du produit à déjà été initialisé
 export function checkHasInitialStock(idProduct: number) {
   return apiFetch<boolean>(`/stock-movements/product/${idProduct}/has-initial`);
 }

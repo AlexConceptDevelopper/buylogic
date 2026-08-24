@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { createProduct, getProducts, updateProduct } from "../api/product.api";
+import {
+  createProduct,
+  getProducts,
+  updateProduct,
+  produceProduct,
+} from "../api/product.api";
 import { getSupplierProducts } from "../api/supplierProduct.api";
 import { getSuppliers } from "../api/supplier.api";
 import useAsync from "../hooks/useAsync";
 import { useAuth } from "../context/AuthContext";
 
-import type { Product, ProductCreate, ProductUnit, ProductType } from "../types/product";
+import type {
+  Product,
+  ProductCreate,
+  ProductUnit,
+  ProductType,
+} from "../types/product";
 import type { Supplier } from "../types/supplier";
 import type { SupplierProduct } from "../types/supplierProduct";
 import { UNIT_LABELS } from "../constants/product.constants";
@@ -16,11 +26,22 @@ export default function ProductsPage() {
   const { user } = useAuth();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>([]);
+  const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>(
+    [],
+  );
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "ALL" | "PURCHASED" | "MANUFACTURED"
+  >("ALL");
+
+  // États pour la modale de fabrication
+  const [produceTarget, setProduceTarget] = useState<Product | null>(null);
+  const [produceQuantity, setProduceQuantity] = useState<string>("1");
+  const [produceLoading, setProduceLoading] = useState<boolean>(false);
+  const [produceError, setProduceError] = useState<string | null>(null);
 
   // États pour la modale de modification
   const [editProduct, setEditProduct] = useState<Product | null>(null);
@@ -49,7 +70,8 @@ export default function ProductsPage() {
 
   const { loading, error, execute } = useAsync<Product[]>();
   const { loading: creating, execute: executeCreate } = useAsync<Product>();
-  const { loading: updating, execute: executeUpdateAsync } = useAsync<Product>();
+  const { loading: updating, execute: executeUpdateAsync } =
+    useAsync<Product>();
   const { execute: executeSupplierProducts } = useAsync<SupplierProduct[]>();
   const { execute: executeSuppliers } = useAsync<Supplier[]>();
 
@@ -89,16 +111,25 @@ export default function ProductsPage() {
     void loadSupplierData();
   }, [executeSupplierProducts, executeSuppliers]);
 
-  const displayedProducts = products.filter((p) => (showArchived ? !p.active : p.active));
+  const displayedProducts = products.filter((p) => {
+    const matchesArchive = showArchived ? !p.active : p.active;
+    if (!matchesArchive) return false;
+
+    if (activeTab === "PURCHASED") return p.type === "PURCHASED";
+    if (activeTab === "MANUFACTURED") return p.type === "MANUFACTURED";
+    return true; // "ALL"
+  });
 
   const handleToggleArchive = async (product: Product) => {
     const updatedProduct = await executeUpdateAsync(() =>
-      updateProduct(product.idProduct, { ...product, active: !product.active })
+      updateProduct(product.idProduct, { ...product, active: !product.active }),
     );
 
     if (updatedProduct) {
       setProducts((current) =>
-        current.map((p) => (p.idProduct === product.idProduct ? updatedProduct : p))
+        current.map((p) =>
+          p.idProduct === product.idProduct ? updatedProduct : p,
+        ),
       );
     }
   };
@@ -146,15 +177,19 @@ export default function ProductsPage() {
       fractional: editForm.fractional,
     };
 
-    const updated = await executeUpdateAsync(() => updateProduct(editProduct.idProduct, payload));
+    const updated = await executeUpdateAsync(() =>
+      updateProduct(editProduct.idProduct, payload),
+    );
 
     if (!updated) {
-      setEditError("Impossible de modifier le produit. Vérifiez les informations saisies.");
+      setEditError(
+        "Impossible de modifier le produit. Vérifiez les informations saisies.",
+      );
       return;
     }
 
     setProducts((current) =>
-      current.map((p) => (p.idProduct === updated.idProduct ? updated : p))
+      current.map((p) => (p.idProduct === updated.idProduct ? updated : p)),
     );
 
     setEditProduct(null);
@@ -190,7 +225,9 @@ export default function ProductsPage() {
     const created = await executeCreate(() => createProduct(payload));
 
     if (!created) {
-      setCreateError("Impossible de créer le produit. Vérifiez les informations saisies.");
+      setCreateError(
+        "Impossible de créer le produit. Vérifiez les informations saisies.",
+      );
       return;
     }
 
@@ -226,12 +263,50 @@ export default function ProductsPage() {
     setCreateOpen(false);
   };
 
+  const handleProduceSubmit = async () => {
+    if (!produceTarget) return;
+
+    const qty = Number(produceQuantity);
+    if (isNaN(qty) || qty <= 0) {
+      setProduceError("Veuillez entrer une quantité valide.");
+      return;
+    }
+
+    setProduceLoading(true);
+    setProduceError(null);
+
+    try {
+      await produceProduct(produceTarget.idProduct, qty);
+      setProduceTarget(null);
+      setProduceQuantity("1");
+
+      // Recharger la liste des produits pour mettre à jour les stocks
+      const data = await execute(() => getProducts());
+      if (data) {
+        setProducts(data);
+      }
+    } catch (err: any) {
+      setProduceError(
+        err.message ||
+          "Erreur lors de la fabrication. Vérifiez les stocks des composants.",
+      );
+    } finally {
+      setProduceLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">Produits</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">Catalogue produits</h1>
-        <p className="mt-2 text-sm text-slate-500">Chargement de vos produits...</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
+          Produits
+        </p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          Catalogue produits
+        </h1>
+        <p className="mt-2 text-sm text-slate-500">
+          Chargement de vos produits...
+        </p>
         <div className="mt-8 space-y-3">
           <div className="h-16 animate-pulse rounded-2xl bg-white/5" />
           <div className="h-16 animate-pulse rounded-2xl bg-white/5" />
@@ -244,22 +319,44 @@ export default function ProductsPage() {
   if (error) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">Produits</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">Catalogue produits</h1>
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
+          Produits
+        </p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          Catalogue produits
+        </h1>
         <div className="mt-8 rounded-2xl border border-red-400/10 bg-red-400/5 p-6">
-          <p className="text-sm font-semibold text-white">Impossible de charger les produits.</p>
-          <p className="mt-2 text-sm text-red-300">Une erreur est survenue lors de la récupération des produits.</p>
+          <p className="text-sm font-semibold text-white">
+            Impossible de charger les produits.
+          </p>
+          <p className="mt-2 text-sm text-red-300">
+            Une erreur est survenue lors de la récupération des produits.
+          </p>
         </div>
       </div>
     );
   }
 
+  const activeProductsCount = products.filter((p) =>
+    showArchived ? !p.active : p.active,
+  ).length;
+  const purchasedCount = products.filter(
+    (p) => (showArchived ? !p.active : p.active) && p.type === "PURCHASED",
+  ).length;
+  const manufacturedCount = products.filter(
+    (p) => (showArchived ? !p.active : p.active) && p.type === "MANUFACTURED",
+  ).length;
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">Produits</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">Catalogue produits</h1>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
+            Produits
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+            Catalogue produits
+          </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
             Créez et consultez les produits suivis par BuyLogic.
           </p>
@@ -268,7 +365,9 @@ export default function ProductsPage() {
         <div className="flex flex-wrap items-center gap-3">
           <div className="rounded-xl border border-white/5 bg-white/2 px-4 py-3">
             <p className="text-xs text-slate-500">Produits</p>
-            <p className="mt-1 text-xl font-bold text-white">{products.length}</p>
+            <p className="mt-1 text-xl font-bold text-white">
+              {products.length}
+            </p>
           </div>
 
           <button
@@ -301,7 +400,9 @@ export default function ProductsPage() {
             {showArchived ? "Aucun produit archivé" : "Aucun produit"}
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-            {showArchived ? "Vous n'avez aucun produit dans les archives." : "Commencez par créer votre premier produit."}
+            {showArchived
+              ? "Vous n'avez aucun produit dans les archives."
+              : "Commencez par créer votre premier produit."}
           </p>
           {!showArchived && (
             <button
@@ -318,23 +419,70 @@ export default function ProductsPage() {
         </section>
       ) : (
         <section className="mt-8 overflow-hidden rounded-2xl border border-white/5 bg-slate-900/70">
+          {/* Barre d'onglets de filtrage */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-white/5 px-6 py-3 bg-slate-900/50">
+            <button
+              type="button"
+              onClick={() => setActiveTab("ALL")}
+              className={`cursor-pointer rounded-xl px-3.5 py-1.5 text-xs font-semibold transition ${
+                activeTab === "ALL"
+                  ? "bg-cyan-400 text-slate-950"
+                  : "text-slate-400 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              Tous ({activeProductsCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("PURCHASED")}
+              className={`cursor-pointer rounded-xl px-3.5 py-1.5 text-xs font-semibold transition ${
+                activeTab === "PURCHASED"
+                  ? "bg-cyan-400 text-slate-950"
+                  : "text-slate-400 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              Achetés ({purchasedCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("MANUFACTURED")}
+              className={`cursor-pointer rounded-xl px-3.5 py-1.5 text-xs font-semibold transition ${
+                activeTab === "MANUFACTURED"
+                  ? "bg-cyan-400 text-slate-950"
+                  : "text-slate-400 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              Fabriqués ({manufacturedCount})
+            </button>
+          </div>
+
           <div className="border-b border-white/5 px-6 py-4 flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-white">
-                {showArchived ? "Produits archivés" : "Tous les produits actifs"}
+                {showArchived ? "Produits archivés" : "Liste des produits"}
               </p>
-              <p className="mt-1 text-xs text-slate-500">Cliquez sur un produit pour consulter son détail.</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Cliquez sur un produit pour consulter son détail.
+              </p>
             </div>
             <span className="text-xs font-semibold text-slate-400">
-              {displayedProducts.length} élément{displayedProducts.length > 1 ? "s" : ""}
+              {displayedProducts.length} élément
+              {displayedProducts.length > 1 ? "s" : ""}
             </span>
           </div>
 
           <div className="divide-y divide-white/5">
             {displayedProducts.map((product) => {
               const productSupplierNames = supplierProducts
-                .filter((item) => item.idProduct === product.idProduct && item.active)
-                .map((item) => suppliers.find((supplier) => supplier.idSupplier === item.idSupplier)?.name)
+                .filter(
+                  (item) => item.idProduct === product.idProduct && item.active,
+                )
+                .map(
+                  (item) =>
+                    suppliers.find(
+                      (supplier) => supplier.idSupplier === item.idSupplier,
+                    )?.name,
+                )
                 .filter((name): name is string => Boolean(name));
 
               return (
@@ -342,9 +490,14 @@ export default function ProductsPage() {
                   key={product.idProduct}
                   className="flex flex-col gap-4 px-6 py-5 transition hover:bg-white/3 lg:flex-row lg:items-center lg:justify-between"
                 >
-                  <Link to={`/products/${product.idProduct}`} className="min-w-0 flex-1 cursor-pointer">
+                  <Link
+                    to={`/products/${product.idProduct}`}
+                    className="min-w-0 flex-1 cursor-pointer"
+                  >
                     <div className="flex flex-wrap items-center gap-3">
-                      <h2 className="text-sm font-semibold text-white">{product.name}</h2>
+                      <h2 className="text-sm font-semibold text-white">
+                        {product.name}
+                      </h2>
                       <span
                         className={[
                           "inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide",
@@ -356,7 +509,9 @@ export default function ProductsPage() {
                         {product.active ? "Actif" : "Inactif"}
                       </span>
                       <span className="inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-cyan-300">
-                        {product.type === "MANUFACTURED" ? "Fabriqué" : "Acheté"}
+                        {product.type === "MANUFACTURED"
+                          ? "Fabriqué"
+                          : "Acheté"}
                       </span>
                     </div>
 
@@ -365,38 +520,61 @@ export default function ProductsPage() {
                     </p>
 
                     {product.description && (
-                      <p className="mt-2 max-w-2xl truncate text-sm text-slate-500">{product.description}</p>
+                      <p className="mt-2 max-w-2xl truncate text-sm text-slate-500">
+                        {product.description}
+                      </p>
                     )}
 
                     <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <span className="text-[11px] uppercase tracking-[0.15em] text-slate-600">
-                        Fournisseurs associés
-                      </span>
-                      {productSupplierNames.length > 0 ? (
-                        productSupplierNames.slice(0, 2).map((name) => (
-                          <span
-                            key={name}
-                            className="rounded-full border border-cyan-400/10 bg-cyan-400/5 px-2.5 py-1 text-[10px] font-semibold text-cyan-300"
-                          >
-                            {name}
+                      {product.type === "MANUFACTURED" ? (
+                        <>
+                          <span className="text-[11px] uppercase tracking-[0.15em] text-slate-600">
+                            Atelier
                           </span>
-                        ))
+                          <span className="rounded-full border border-cyan-400/10 bg-cyan-400/5 px-2.5 py-1 text-[10px] font-semibold text-cyan-300">
+                            Produit assemblé / fabriqué
+                          </span>
+                        </>
                       ) : (
-                        <span className="text-[11px] text-slate-600">Aucun fournisseur</span>
-                      )}
-                      {productSupplierNames.length > 2 && (
-                        <span className="text-[11px] text-slate-600">+{productSupplierNames.length - 2}</span>
+                        <>
+                          <span className="text-[11px] uppercase tracking-[0.15em] text-slate-600">
+                            Fournisseurs associés
+                          </span>
+                          {productSupplierNames.length > 0 ? (
+                            productSupplierNames.slice(0, 2).map((name) => (
+                              <span
+                                key={name}
+                                className="rounded-full border border-cyan-400/10 bg-cyan-400/5 px-2.5 py-1 text-[10px] font-semibold text-cyan-300"
+                              >
+                                {name}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-[11px] text-slate-600">
+                              Aucun fournisseur
+                            </span>
+                          )}
+                          {productSupplierNames.length > 2 && (
+                            <span className="text-[11px] text-slate-600">
+                              +{productSupplierNames.length - 2}
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </Link>
 
                   <div className="flex items-center justify-between gap-6 lg:justify-end">
                     <div>
-                      <p className="text-[11px] uppercase tracking-[0.15em] text-slate-600">Stock actuel</p>
+                      <p className="text-[11px] uppercase tracking-[0.15em] text-slate-600">
+                        Stock actuel
+                      </p>
                       <p
                         className={[
                           "mt-1 text-lg font-bold",
-                          product.currentStock <= 0 ? "text-rose-300" : "text-white",
+                          product.currentStock <= 0
+                            ? "text-rose-300"
+                            : "text-white",
                         ].join(" ")}
                       >
                         {product.currentStock}
@@ -407,6 +585,19 @@ export default function ProductsPage() {
                     </div>
 
                     <div className="flex items-center gap-3 border-l border-white/5 pl-6">
+                      {product.type === "MANUFACTURED" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProduceTarget(product);
+                            setProduceQuantity("1");
+                            setProduceError(null);
+                          }}
+                          className="cursor-pointer rounded-xl bg-cyan-400/10 border border-cyan-400/20 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition hover:bg-cyan-400/20"
+                        >
+                          Fabriquer
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => handleOpenEdit(product)}
@@ -428,7 +619,10 @@ export default function ProductsPage() {
                       </button>
                     </div>
 
-                    <Link to={`/products/${product.idProduct}`} className="cursor-pointer text-xs font-semibold text-cyan-300">
+                    <Link
+                      to={`/products/${product.idProduct}`}
+                      className="cursor-pointer text-xs font-semibold text-cyan-300"
+                    >
                       Voir →
                     </Link>
                   </div>
@@ -450,8 +644,13 @@ export default function ProductsPage() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-400">Nouveau produit</p>
-                <h2 id="create-product-title" className="mt-2 text-2xl font-bold text-white">
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-400">
+                  Nouveau produit
+                </p>
+                <h2
+                  id="create-product-title"
+                  className="mt-2 text-2xl font-bold text-white"
+                >
                   Ajouter un produit
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -472,7 +671,10 @@ export default function ProductsPage() {
 
             <div className="mt-6 space-y-4">
               <div>
-                <label htmlFor="product-name" className="text-xs font-semibold text-slate-400">
+                <label
+                  htmlFor="product-name"
+                  className="text-xs font-semibold text-slate-400"
+                >
                   Nom du produit *
                 </label>
                 <input
@@ -492,7 +694,10 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="product-type" className="text-xs font-semibold text-slate-400">
+                <label
+                  htmlFor="product-type"
+                  className="text-xs font-semibold text-slate-400"
+                >
                   Type de produit *
                 </label>
                 <select
@@ -507,13 +712,20 @@ export default function ProductsPage() {
                   disabled={creating}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
                 >
-                  <option value="PURCHASED">Acheté (Matière première, ingrédient...)</option>
-                  <option value="MANUFACTURED">Fabriqué (Recette, produit fini...)</option>
+                  <option value="PURCHASED">
+                    Acheté (Matière première, ingrédient...)
+                  </option>
+                  <option value="MANUFACTURED">
+                    Fabriqué (Recette, produit fini...)
+                  </option>
                 </select>
               </div>
 
               <div>
-                <label htmlFor="product-reference" className="text-xs font-semibold text-slate-400">
+                <label
+                  htmlFor="product-reference"
+                  className="text-xs font-semibold text-slate-400"
+                >
                   Référence
                 </label>
                 <input
@@ -533,7 +745,10 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="product-description" className="text-xs font-semibold text-slate-400">
+                <label
+                  htmlFor="product-description"
+                  className="text-xs font-semibold text-slate-400"
+                >
                   Description
                 </label>
                 <textarea
@@ -553,7 +768,10 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="product-unit" className="text-xs font-semibold text-slate-400">
+                <label
+                  htmlFor="product-unit"
+                  className="text-xs font-semibold text-slate-400"
+                >
                   Unité *
                 </label>
                 <select
@@ -590,9 +808,12 @@ export default function ProductsPage() {
                       className="mt-0.5 h-4 w-4 cursor-pointer rounded border-white/20 bg-slate-950 accent-cyan-400"
                     />
                     <span>
-                      <span className="block text-sm font-semibold text-slate-200">Produit fractionnable</span>
+                      <span className="block text-sm font-semibold text-slate-200">
+                        Produit fractionnable
+                      </span>
                       <span className="mt-1 block text-xs leading-5 text-slate-500">
-                        Autorise les quantités décimales pour le stock et les commandes.
+                        Autorise les quantités décimales pour le stock et les
+                        commandes.
                       </span>
                     </span>
                   </label>
@@ -634,6 +855,95 @@ export default function ProductsPage() {
         </div>
       )}
 
+      {/* Modale de fabrication */}
+      {produceTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto py-10 bg-black/60 px-6 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="produce-product-title"
+            className="w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl shadow-black/40"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-400">Atelier de fabrication</p>
+                <h2 id="produce-product-title" className="mt-2 text-2xl font-bold text-white">
+                  Lancer une production
+                </h2>
+                <p className="mt-2 text-sm font-semibold text-slate-200">{produceTarget.name}</p>
+                <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-slate-600">
+                  Stock actuel : {produceTarget.currentStock} {UNIT_LABELS[produceTarget.unit] || produceTarget.unit}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setProduceTarget(null)}
+                disabled={produceLoading}
+                aria-label="Fermer"
+                className="cursor-pointer rounded-xl border border-white/10 px-3 py-2 text-sm text-slate-400 transition hover:border-white/20 hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <div>
+                <label htmlFor="produce-quantity" className="text-xs font-semibold text-slate-400">
+                  Quantité à produire *
+                </label>
+                <div className="mt-2 flex items-center gap-3">
+                  <input
+                    id="produce-quantity"
+                    type="number"
+                    min="1"
+                    step={produceTarget.fractional ? "0.01" : "1"}
+                    value={produceQuantity}
+                    onChange={(event) => setProduceQuantity(event.target.value)}
+                    disabled={produceLoading}
+                    className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
+                  />
+                  <span className="shrink-0 rounded-xl border border-white/5 bg-white/2 px-4 py-3 text-sm font-semibold text-slate-300">
+                    {UNIT_LABELS[produceTarget.unit] || produceTarget.unit}
+                  </span>
+                </div>
+              </div>
+
+              {produceError && (
+                <div className="rounded-xl border border-rose-400/10 bg-rose-400/5 p-4">
+                  <p className="text-sm text-rose-300">{produceError}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setProduceTarget(null)}
+                disabled={produceLoading}
+                className="cursor-pointer rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-400 transition hover:border-white/20 hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Annuler
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void handleProduceSubmit()}
+                disabled={produceLoading}
+                className={[
+                  "rounded-xl px-4 py-3 text-sm font-bold transition",
+                  produceLoading
+                    ? "cursor-not-allowed bg-slate-700 text-slate-500"
+                    : "cursor-pointer bg-cyan-400 text-slate-950 hover:bg-cyan-300",
+                ].join(" ")}
+              >
+                {produceLoading ? "Fabrication..." : "Lancer la fabrication"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modale de modification */}
       {editProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto py-10 bg-black/60 px-6 backdrop-blur-sm">
@@ -645,8 +955,13 @@ export default function ProductsPage() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-400">Modifier le produit</p>
-                <h2 id="edit-product-title" className="mt-2 text-2xl font-bold text-white">
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-400">
+                  Modifier le produit
+                </p>
+                <h2
+                  id="edit-product-title"
+                  className="mt-2 text-2xl font-bold text-white"
+                >
                   {editProduct.name}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -667,7 +982,10 @@ export default function ProductsPage() {
 
             <div className="mt-6 space-y-4">
               <div>
-                <label htmlFor="edit-product-name" className="text-xs font-semibold text-slate-400">
+                <label
+                  htmlFor="edit-product-name"
+                  className="text-xs font-semibold text-slate-400"
+                >
                   Nom du produit *
                 </label>
                 <input
@@ -686,7 +1004,10 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="edit-product-type" className="text-xs font-semibold text-slate-400">
+                <label
+                  htmlFor="edit-product-type"
+                  className="text-xs font-semibold text-slate-400"
+                >
                   Type de produit *
                 </label>
                 <select
@@ -701,13 +1022,20 @@ export default function ProductsPage() {
                   disabled={updating}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
                 >
-                  <option value="PURCHASED">Acheté (Matière première, ingrédient...)</option>
-                  <option value="MANUFACTURED">Fabriqué (Recette, produit fini...)</option>
+                  <option value="PURCHASED">
+                    Acheté (Matière première, ingrédient...)
+                  </option>
+                  <option value="MANUFACTURED">
+                    Fabriqué (Recette, produit fini...)
+                  </option>
                 </select>
               </div>
 
               <div>
-                <label htmlFor="edit-product-reference" className="text-xs font-semibold text-slate-400">
+                <label
+                  htmlFor="edit-product-reference"
+                  className="text-xs font-semibold text-slate-400"
+                >
                   Référence
                 </label>
                 <input
@@ -726,7 +1054,10 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="edit-product-description" className="text-xs font-semibold text-slate-400">
+                <label
+                  htmlFor="edit-product-description"
+                  className="text-xs font-semibold text-slate-400"
+                >
                   Description
                 </label>
                 <textarea
@@ -745,7 +1076,10 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="edit-product-unit" className="text-xs font-semibold text-slate-400">
+                <label
+                  htmlFor="edit-product-unit"
+                  className="text-xs font-semibold text-slate-400"
+                >
                   Unité *
                 </label>
                 <select
@@ -782,9 +1116,12 @@ export default function ProductsPage() {
                       className="mt-0.5 h-4 w-4 cursor-pointer rounded border-white/20 bg-slate-950 accent-cyan-400"
                     />
                     <span>
-                      <span className="block text-sm font-semibold text-slate-200">Produit fractionnable</span>
+                      <span className="block text-sm font-semibold text-slate-200">
+                        Produit fractionnable
+                      </span>
                       <span className="mt-1 block text-xs leading-5 text-slate-500">
-                        Autorise les quantités décimales pour le stock et les commandes.
+                        Autorise les quantités décimales pour le stock et les
+                        commandes.
                       </span>
                     </span>
                   </label>
@@ -819,7 +1156,9 @@ export default function ProductsPage() {
                     : "cursor-pointer bg-cyan-400 text-slate-950 hover:bg-cyan-300",
                 ].join(" ")}
               >
-                {updating ? "Enregistrement..." : "Enregistrer les modifications"}
+                {updating
+                  ? "Enregistrement..."
+                  : "Enregistrer les modifications"}
               </button>
             </div>
           </div>

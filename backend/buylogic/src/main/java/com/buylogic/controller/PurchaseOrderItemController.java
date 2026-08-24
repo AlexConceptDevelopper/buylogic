@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.buylogic.dto.PurchaseOrderItemDTO;
+import com.buylogic.dto.purchaseorderitem.PurchaseOrderItemCreate;
+import com.buylogic.dto.purchaseorderitem.PurchaseOrderItemDTO;
+import com.buylogic.dto.purchaseorderitem.PurchaseOrderItemUpdate;
 import com.buylogic.service.PurchaseOrderItemService;
 
 import lombok.RequiredArgsConstructor;
@@ -47,5 +49,17 @@ public class PurchaseOrderItemController {
         purchaseOrderItemService.delete(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<PurchaseOrderItemDTO> create(@RequestBody PurchaseOrderItemCreate data) {
+        return ResponseEntity.ok(purchaseOrderItemService.create(data));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PurchaseOrderItemDTO> update(
+            @PathVariable Integer id,
+            @RequestBody PurchaseOrderItemUpdate data) {
+        return ResponseEntity.ok(purchaseOrderItemService.update(id, data));
     }
 }

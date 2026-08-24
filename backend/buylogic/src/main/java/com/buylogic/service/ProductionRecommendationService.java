@@ -11,17 +11,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.buylogic.dto.PurchaseRecommendationDTO;
+import com.buylogic.dto.ProductionRecommendationDTO;
 import com.buylogic.exception.ResourceNotFoundException;
-import com.buylogic.mapper.PurchaseRecommendationMapper;
+import com.buylogic.mapper.ProductionRecommendationMapper;
 import com.buylogic.model.Consumption;
 import com.buylogic.model.Product;
-import com.buylogic.model.PurchaseRecommendation;
-import com.buylogic.model.SupplierProduct;
-import com.buylogic.model.enums.ProductType;
+import com.buylogic.model.ProductionRecommendation;
 import com.buylogic.repository.global.ConsumptionRepository;
 import com.buylogic.repository.global.ProductRepository;
-import com.buylogic.repository.global.PurchaseRecommendationRepository;
+import com.buylogic.repository.global.ProductionRecommendationRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
 import lombok.RequiredArgsConstructor;
@@ -29,89 +27,71 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PurchaseRecommendationService {
+public class ProductionRecommendationService {
 
     private final ProductRepository productRepository;
-    private final PurchaseRecommendationRepository purchaseRecommendationRepository;
+    private final ProductionRecommendationRepository productionRecommendationRepository;
     private final ConsumptionRepository consumptionRepository;
-    private final PurchaseRecommendationMapper purchaseRecommendationMapper;
+    private final ProductionRecommendationMapper productionRecommendationMapper;
 
     private static final BigDecimal SAFETY_DAYS = new BigDecimal("2");
     private static final BigDecimal TARGET_COVERAGE_DAYS = new BigDecimal("7");
 
-    public List<PurchaseRecommendationDTO> getAll() {
+    public List<ProductionRecommendationDTO> getAll() {
         Integer companyId = getCurrentCompanyId();
 
-        return purchaseRecommendationRepository.findAllByCompany_IdCompany(companyId)
+        return productionRecommendationRepository.findAllByCompany_IdCompany(companyId)
                 .stream()
                 .map(recommendation -> {
                     updateRecommendationValues(recommendation, companyId);
-                    return purchaseRecommendationMapper.toDTO(recommendation);
+                    return productionRecommendationMapper.toDTO(recommendation);
                 })
                 .toList();
     }
 
-    public PurchaseRecommendationDTO getById(Integer id) {
+    public ProductionRecommendationDTO getById(Integer id) {
         Integer companyId = getCurrentCompanyId();
 
-        PurchaseRecommendation recommendation = purchaseRecommendationRepository
-                .findByIdRecommendationAndCompany_IdCompany(id, companyId)
+        ProductionRecommendation recommendation = productionRecommendationRepository
+                .findByIdProductionRecommendationAndCompany_IdCompany(id, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Purchase recommendation not found with id: " + id));
+                        "Production recommendation not found with id: " + id));
 
         updateRecommendationValues(recommendation, companyId);
-        return purchaseRecommendationMapper.toDTO(recommendation);
+        return productionRecommendationMapper.toDTO(recommendation);
     }
 
-    /**
-     * Génère, met à jour ou supprime la recommandation lors d'un mouvement de stock.
-     * Réservé exclusivement aux produits de type PURCHASED.
-     */
     @Transactional
     public void generateOrUpdateForProduct(Integer productId, Integer companyId) {
         Product product = productRepository.findByIdProductAndCompany_IdCompany(productId, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Product not found with id: " + productId));
 
-        // SÉCURITÉ : Si ce n'est pas un produit PURCHASED, on supprime l'éventuelle reco d'achat et on stoppe
-        if (product.getType() != ProductType.PURCHASED) {
-            purchaseRecommendationRepository.findByProduct_IdProductAndCompany_IdCompany(productId, companyId)
-                    .ifPresent(purchaseRecommendationRepository::delete);
-            return;
-        }
-
-        PurchaseRecommendation recommendation = purchaseRecommendationRepository
+        ProductionRecommendation recommendation = productionRecommendationRepository
                 .findByProduct_IdProductAndCompany_IdCompany(productId, companyId)
                 .orElse(null);
 
-        PurchaseRecommendation tempRecommendation = recommendation != null ? recommendation : new PurchaseRecommendation();
-        if (tempRecommendation.getIdRecommendation() == null) {
+        ProductionRecommendation tempRecommendation = recommendation != null ? recommendation : new ProductionRecommendation();
+        if (tempRecommendation.getIdProductionRecommendation() == null) {
             tempRecommendation.setProduct(product);
             tempRecommendation.setCompany(product.getCompany());
             tempRecommendation.setStatus("PENDING");
-
-            if (product.getSupplierProducts() != null) {
-                product.getSupplierProducts().stream()
-                    .filter(sp -> Boolean.TRUE.equals(sp.getActive()) && sp.getSupplier() != null)
-                    .findFirst()
-                    .ifPresent(sp -> tempRecommendation.setSupplier(sp.getSupplier()));
-            }
         }
 
         updateRecommendationValues(tempRecommendation, companyId);
 
         if (tempRecommendation.getRecommendedQuantity() == null 
                 || tempRecommendation.getRecommendedQuantity().compareTo(BigDecimal.ZERO) <= 0) {
-            if (tempRecommendation.getIdRecommendation() != null) {
-                purchaseRecommendationRepository.delete(tempRecommendation);
+            if (tempRecommendation.getIdProductionRecommendation() != null) {
+                productionRecommendationRepository.delete(tempRecommendation);
             }
             return;
         }
 
-        purchaseRecommendationRepository.save(tempRecommendation);
+        productionRecommendationRepository.save(tempRecommendation);
     }
 
-    private void updateRecommendationValues(PurchaseRecommendation recommendation, Integer companyId) {
+    private void updateRecommendationValues(ProductionRecommendation recommendation, Integer companyId) {
         if (recommendation.getProduct() == null) {
             return;
         }
@@ -157,55 +137,17 @@ public class PurchaseRecommendationService {
             }
         }
 
-        SupplierProduct supplierProduct = null;
-        if (recommendation.getSupplier() != null && recommendation.getProduct().getSupplierProducts() != null) {
-            supplierProduct = recommendation.getProduct().getSupplierProducts().stream()
-                    .filter(item -> item.getSupplier() != null
-                            && item.getSupplier().getIdSupplier().equals(
-                                    recommendation.getSupplier().getIdSupplier())
-                            && Boolean.TRUE.equals(item.getActive()))
-                    .findFirst()
-                    .orElse(null);
-        }
-
-        BigDecimal leadTimeDays = supplierProduct != null && supplierProduct.getExpectedLeadTimeDays() != null
-                ? BigDecimal.valueOf(supplierProduct.getExpectedLeadTimeDays())
-                : recommendation.getEstimatedLeadTimeDays() != null
-                        ? recommendation.getEstimatedLeadTimeDays()
-                        : BigDecimal.ZERO;
-
         BigDecimal safetyStock = dailyConsumption.multiply(SAFETY_DAYS);
-        BigDecimal reorderPoint = dailyConsumption.multiply(leadTimeDays).add(safetyStock);
-        
-        BigDecimal targetStock = reorderPoint.add(dailyConsumption.multiply(TARGET_COVERAGE_DAYS));
+        BigDecimal targetStock = safetyStock.add(dailyConsumption.multiply(TARGET_COVERAGE_DAYS));
         BigDecimal recommendedQuantity = targetStock.subtract(currentStock);
 
         if (recommendedQuantity.compareTo(BigDecimal.ZERO) < 0) {
             recommendedQuantity = BigDecimal.ZERO;
         }
 
-        if (supplierProduct != null) {
-            BigDecimal minimumOrderQuantity = supplierProduct.getMinimumOrderQuantity();
-            if (minimumOrderQuantity != null && minimumOrderQuantity.compareTo(BigDecimal.ZERO) > 0
-                    && recommendedQuantity.compareTo(minimumOrderQuantity) < 0) {
-                recommendedQuantity = minimumOrderQuantity;
-            }
-        }
-
         String unit = recommendation.getProduct().getUnit();
         if ("UNIT".equalsIgnoreCase(unit) || "BOX".equalsIgnoreCase(unit) || "SET".equalsIgnoreCase(unit)) {
             recommendedQuantity = recommendedQuantity.setScale(0, RoundingMode.CEILING);
-        }
-
-        BigDecimal estimatedPurchaseAmount = BigDecimal.ZERO;
-        if (supplierProduct != null && supplierProduct.getUnitPrice() != null) {
-            estimatedPurchaseAmount = recommendedQuantity.multiply(supplierProduct.getUnitPrice());
-        } else if (recommendation.getEstimatedPurchaseAmount() != null
-                && recommendation.getRecommendedQuantity() != null
-                && recommendation.getRecommendedQuantity().compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal estimatedUnitPrice = recommendation.getEstimatedPurchaseAmount()
-                    .divide(recommendation.getRecommendedQuantity(), 5, RoundingMode.HALF_UP);
-            estimatedPurchaseAmount = recommendedQuantity.multiply(estimatedUnitPrice);
         }
 
         LocalDate stockoutDate = null;
@@ -223,20 +165,17 @@ public class PurchaseRecommendationService {
 
         String reason;
         if (currentStock.compareTo(BigDecimal.ZERO) <= 0) {
-            reason = "Stock épuisé et consommation détectée.";
-        } else if (currentStock.compareTo(reorderPoint) <= 0) {
-            reason = "Le stock est inférieur ou égal au point de commande.";
+            reason = "Stock de produit fini épuisé, besoin de lancer une production.";
+        } else if (currentStock.compareTo(safetyStock) <= 0) {
+            reason = "Le stock est inférieur ou égal au stock de sécurité.";
         } else {
-            reason = "Le niveau de stock reste supérieur au point de commande.";
+            reason = "Le niveau de stock est stable.";
         }
 
         recommendation.setCurrentStock(currentStock);
         recommendation.setEstimatedDailyConsumption(dailyConsumption);
-        recommendation.setEstimatedLeadTimeDays(leadTimeDays);
         recommendation.setSafetyStock(safetyStock);
-        recommendation.setReorderPoint(reorderPoint);
         recommendation.setRecommendedQuantity(recommendedQuantity);
-        recommendation.setEstimatedPurchaseAmount(estimatedPurchaseAmount);
         recommendation.setEstimatedStockoutDate(stockoutDate);
         recommendation.setConfidenceScore(confidenceScore);
         recommendation.setReason(reason);
@@ -246,12 +185,12 @@ public class PurchaseRecommendationService {
     public void delete(Integer id) {
         Integer companyId = getCurrentCompanyId();
 
-        PurchaseRecommendation recommendation = purchaseRecommendationRepository
-                .findByIdRecommendationAndCompany_IdCompany(id, companyId)
+        ProductionRecommendation recommendation = productionRecommendationRepository
+                .findByIdProductionRecommendationAndCompany_IdCompany(id, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Purchase recommendation not found with id: " + id));
+                        "Production recommendation not found with id: " + id));
 
-        purchaseRecommendationRepository.delete(recommendation);
+        productionRecommendationRepository.delete(recommendation);
     }
 
     private Integer getCurrentCompanyId() {

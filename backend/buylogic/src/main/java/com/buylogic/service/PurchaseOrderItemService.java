@@ -8,9 +8,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.buylogic.dto.purchaseorder.PurchaseOrderItemCreate;
-import com.buylogic.dto.PurchaseOrderItemDTO;
-import com.buylogic.dto.purchaseorder.PurchaseOrderItemUpdate;
+import com.buylogic.dto.purchaseorderitem.PurchaseOrderItemCreate;
+import com.buylogic.dto.purchaseorderitem.PurchaseOrderItemDTO;
+import com.buylogic.dto.purchaseorderitem.PurchaseOrderItemUpdate;
 import com.buylogic.exception.ResourceNotFoundException;
 import com.buylogic.mapper.PurchaseOrderItemMapper;
 import com.buylogic.model.Product;

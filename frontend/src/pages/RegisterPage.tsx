@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { SubmitEvent } from "react";
+import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { register } from "../api/auth.api";
@@ -77,13 +77,6 @@ export default function RegisterPage() {
       return false;
     }
 
-    if (step === 4 && !consumptionSource) {
-      setError(
-        "Sélectionnez la manière dont vous souhaitez renseigner vos consommations.",
-      );
-      return false;
-    }
-
     return true;
   };
 
@@ -92,6 +85,7 @@ export default function RegisterPage() {
       return;
     }
 
+    setError("");
     if (step < 4) {
       setStep((current) => (current + 1) as OnboardingStep);
     }
@@ -105,15 +99,18 @@ export default function RegisterPage() {
     }
   };
 
-  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!validateCurrentStep()) {
+    // Si on n'est pas à la dernière étape, "Entrée" fait juste avancer
+    if (step < 4) {
+      goNext();
       return;
     }
 
+    // À l'étape 4, on vérifie STRICTEMENT tout avant d'envoyer la requête API
     if (!productManagementMode || !consumptionMode || !consumptionSource) {
-      setError("Veuillez compléter la configuration de votre entreprise.");
+      setError("Veuillez sélectionner toutes les options de configuration.");
       return;
     }
 
@@ -148,7 +145,6 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
-
         <div className="absolute right-0 top-1/3 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
       </div>
 
@@ -163,12 +159,10 @@ export default function RegisterPage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-400/20">
                   <span className="text-lg font-black">B</span>
                 </div>
-
                 <div>
                   <p className="text-lg font-bold tracking-tight text-white">
                     BuyLogic
                   </p>
-
                   <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
                     Smart purchasing
                   </p>
@@ -179,11 +173,9 @@ export default function RegisterPage() {
                 <p className="text-sm font-semibold text-cyan-300">
                   Commencez simplement.
                 </p>
-
                 <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
                   Créez votre espace BuyLogic
                 </h1>
-
                 <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400">
                   Votre compte crée automatiquement votre entreprise, votre
                   espace de travail et votre configuration BuyLogic.
@@ -193,9 +185,7 @@ export default function RegisterPage() {
               <div className="mt-8 grid grid-cols-4 gap-2">
                 {stepLabels.map((label, index) => {
                   const currentStep = (index + 1) as OnboardingStep;
-
                   const active = currentStep === step;
-
                   const completed = currentStep < step;
 
                   return (
@@ -206,7 +196,6 @@ export default function RegisterPage() {
                           active || completed ? "bg-cyan-400" : "bg-white/10",
                         ].join(" ")}
                       />
-
                       <p
                         className={[
                           "mt-2 text-[10px] font-semibold uppercase tracking-[0.14em]",
@@ -235,7 +224,6 @@ export default function RegisterPage() {
                         >
                           Prénom
                         </label>
-
                         <input
                           id="firstName"
                           type="text"
@@ -255,7 +243,6 @@ export default function RegisterPage() {
                         >
                           Nom
                         </label>
-
                         <input
                           id="lastName"
                           type="text"
@@ -276,7 +263,6 @@ export default function RegisterPage() {
                       >
                         Nom de l'entreprise
                       </label>
-
                       <input
                         id="companyName"
                         type="text"
@@ -296,7 +282,6 @@ export default function RegisterPage() {
                       >
                         Adresse e-mail
                       </label>
-
                       <input
                         id="email"
                         type="email"
@@ -316,7 +301,6 @@ export default function RegisterPage() {
                       >
                         Mot de passe
                       </label>
-
                       <input
                         id="password"
                         type="password"
@@ -337,7 +321,6 @@ export default function RegisterPage() {
                     <p className="text-sm font-semibold text-white">
                       Comment gérez-vous principalement vos produits ?
                     </p>
-
                     <p className="mt-2 text-sm leading-6 text-slate-500">
                       Cette réponse aide BuyLogic à comprendre comment vos
                       produits entrent et sortent de votre stock.
@@ -346,7 +329,10 @@ export default function RegisterPage() {
                     <div className="mt-6 space-y-3">
                       <button
                         type="button"
-                        onClick={() => setProductManagementMode("RESALE")}
+                        onClick={() => {
+                          setProductManagementMode("RESALE");
+                          setError("");
+                        }}
                         className={optionClassName(
                           productManagementMode === "RESALE",
                         )}
@@ -354,7 +340,6 @@ export default function RegisterPage() {
                         <p className="text-sm font-bold text-white">
                           Je revends les produits tels que je les achète
                         </p>
-
                         <p className="mt-2 text-xs leading-5 text-slate-500">
                           Un produit acheté auprès d'un fournisseur est ensuite
                           vendu sans transformation notable.
@@ -363,7 +348,10 @@ export default function RegisterPage() {
 
                       <button
                         type="button"
-                        onClick={() => setProductManagementMode("PRODUCTION")}
+                        onClick={() => {
+                          setProductManagementMode("PRODUCTION");
+                          setError("");
+                        }}
                         className={optionClassName(
                           productManagementMode === "PRODUCTION",
                         )}
@@ -371,7 +359,6 @@ export default function RegisterPage() {
                         <p className="text-sm font-bold text-white">
                           Je fabrique ou assemble mes produits
                         </p>
-
                         <p className="mt-2 text-xs leading-5 text-slate-500">
                           Un produit vendu peut nécessiter plusieurs autres
                           produits ou composants.
@@ -380,7 +367,10 @@ export default function RegisterPage() {
 
                       <button
                         type="button"
-                        onClick={() => setProductManagementMode("MIXED")}
+                        onClick={() => {
+                          setProductManagementMode("MIXED");
+                          setError("");
+                        }}
                         className={optionClassName(
                           productManagementMode === "MIXED",
                         )}
@@ -388,7 +378,6 @@ export default function RegisterPage() {
                         <p className="text-sm font-bold text-white">
                           Je fais les deux
                         </p>
-
                         <p className="mt-2 text-xs leading-5 text-slate-500">
                           Certains produits sont revendus tels quels et d'autres
                           sont fabriqués ou assemblés.
@@ -404,7 +393,6 @@ export default function RegisterPage() {
                       Lorsqu'un produit est vendu, comment votre stock
                       évolue-t-il ?
                     </p>
-
                     <p className="mt-2 text-sm leading-6 text-slate-500">
                       BuyLogic utilise cette information pour déterminer ce qui
                       doit réellement être déduit du stock.
@@ -413,7 +401,10 @@ export default function RegisterPage() {
                     <div className="mt-6 space-y-3">
                       <button
                         type="button"
-                        onClick={() => setConsumptionMode("DIRECT_STOCK_OUT")}
+                        onClick={() => {
+                          setConsumptionMode("DIRECT_STOCK_OUT");
+                          setError("");
+                        }}
                         className={optionClassName(
                           consumptionMode === "DIRECT_STOCK_OUT",
                         )}
@@ -421,7 +412,6 @@ export default function RegisterPage() {
                         <p className="text-sm font-bold text-white">
                           Le produit vendu sort directement du stock
                         </p>
-
                         <p className="mt-2 text-xs leading-5 text-slate-500">
                           Exemple : vous revendez directement un produit acheté
                           auprès d'un fournisseur.
@@ -430,7 +420,10 @@ export default function RegisterPage() {
 
                       <button
                         type="button"
-                        onClick={() => setConsumptionMode("COMPOSITION")}
+                        onClick={() => {
+                          setConsumptionMode("COMPOSITION");
+                          setError("");
+                        }}
                         className={optionClassName(
                           consumptionMode === "COMPOSITION",
                         )}
@@ -438,7 +431,6 @@ export default function RegisterPage() {
                         <p className="text-sm font-bold text-white">
                           La vente consomme plusieurs produits ou composants
                         </p>
-
                         <p className="mt-2 text-xs leading-5 text-slate-500">
                           Exemple : un produit vendu est composé de plusieurs
                           éléments suivis en stock.
@@ -447,13 +439,15 @@ export default function RegisterPage() {
 
                       <button
                         type="button"
-                        onClick={() => setConsumptionMode("MIXED")}
+                        onClick={() => {
+                          setConsumptionMode("MIXED");
+                          setError("");
+                        }}
                         className={optionClassName(consumptionMode === "MIXED")}
                       >
                         <p className="text-sm font-bold text-white">
                           Les deux selon les produits
                         </p>
-
                         <p className="mt-2 text-xs leading-5 text-slate-500">
                           Certaines ventes sortent directement du stock et
                           d'autres entraînent la consommation de composants.
@@ -468,7 +462,6 @@ export default function RegisterPage() {
                     <p className="text-sm font-semibold text-white">
                       Comment renseignez-vous vos consommations ?
                     </p>
-
                     <p className="mt-2 text-sm leading-6 text-slate-500">
                       Cette information permet à BuyLogic d'adapter les écrans
                       d'import et de saisie à votre organisation.
@@ -477,13 +470,15 @@ export default function RegisterPage() {
                     <div className="mt-6 space-y-3">
                       <button
                         type="button"
-                        onClick={() => setConsumptionSource("CSV")}
+                        onClick={() => {
+                          setConsumptionSource("CSV");
+                          setError("");
+                        }}
                         className={optionClassName(consumptionSource === "CSV")}
                       >
                         <p className="text-sm font-bold text-white">
                           J'importe des fichiers CSV
                         </p>
-
                         <p className="mt-2 text-xs leading-5 text-slate-500">
                           Les données peuvent provenir d'un logiciel de caisse,
                           de gestion ou d'un export interne.
@@ -492,7 +487,10 @@ export default function RegisterPage() {
 
                       <button
                         type="button"
-                        onClick={() => setConsumptionSource("MANUAL")}
+                        onClick={() => {
+                          setConsumptionSource("MANUAL");
+                          setError("");
+                        }}
                         className={optionClassName(
                           consumptionSource === "MANUAL",
                         )}
@@ -500,7 +498,6 @@ export default function RegisterPage() {
                         <p className="text-sm font-bold text-white">
                           Je saisis les consommations manuellement
                         </p>
-
                         <p className="mt-2 text-xs leading-5 text-slate-500">
                           J'enregistre directement les sorties dans BuyLogic.
                         </p>
@@ -508,13 +505,15 @@ export default function RegisterPage() {
 
                       <button
                         type="button"
-                        onClick={() => setConsumptionSource("MIXED")}
+                        onClick={() => {
+                          setConsumptionSource("MIXED");
+                          setError("");
+                        }}
                         className={optionClassName(
                           consumptionSource === "MIXED",
                         )}
                       >
                         <p className="text-sm font-bold text-white">Les deux</p>
-
                         <p className="mt-2 text-xs leading-5 text-slate-500">
                           J'utilise le CSV pour certaines données et la saisie
                           manuelle pour d'autres.
@@ -588,11 +587,9 @@ export default function RegisterPage() {
                 <div className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-400/5 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
                   Offre découverte
                 </div>
-
                 <h2 className="mt-6 text-3xl font-black tracking-tight">
                   30 jours. 0 €.
                 </h2>
-
                 <p className="mt-4 text-sm leading-7 text-slate-400">
                   Découvrez BuyLogic avec un véritable espace d'entreprise et
                   vos propres données.
@@ -604,7 +601,6 @@ export default function RegisterPage() {
                   <p className="text-xl font-black text-white">
                     30 jours gratuits
                   </p>
-
                   <p className="mt-1 text-xs text-slate-500">
                     Pour découvrir l'ensemble de l'expérience BuyLogic
                   </p>

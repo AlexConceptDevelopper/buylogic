@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { getProducts } from "../../api/product.api";
 import { getPurchaseOrders } from "../../api/purchaseOrder.api";
@@ -37,38 +38,32 @@ export default function DashboardStats() {
   useEffect(() => {
     const loadProducts = async () => {
       const data = await executeProducts(() => getProducts());
-
       if (data) {
         setProducts(data);
       }
     };
-
     loadProducts();
   }, [executeProducts]);
 
   useEffect(() => {
     const loadPurchaseOrders = async () => {
       const data = await executeOrders(() => getPurchaseOrders());
-
       if (data) {
         setPurchaseOrders(data);
       }
     };
-
     loadPurchaseOrders();
   }, [executeOrders]);
 
   useEffect(() => {
     const loadRecommendations = async () => {
-      const data = await executeRecommendations(
-        () => getPurchaseRecommendations(),
+      const data = await executeRecommendations(() =>
+        getPurchaseRecommendations(),
       );
-
       if (data) {
         setRecommendations(data);
       }
     };
-
     loadRecommendations();
   }, [executeRecommendations]);
 
@@ -78,13 +73,11 @@ export default function DashboardStats() {
 
   const activePurchaseOrders = purchaseOrders.filter(
     (order) =>
-      order.status === "ORDERED" ||
-      order.status === "PARTIALLY_RECEIVED",
+      order.status === "ORDERED" || order.status === "PARTIALLY_RECEIVED",
   ).length;
 
   const priorityRecommendations = recommendations.filter(
-    (recommendation) =>
-      recommendation.status === "PENDING",
+    (recommendation) => recommendation.status === "PENDING",
   ).length;
 
   const productsErrorMessage = productsError
@@ -101,52 +94,49 @@ export default function DashboardStats() {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <StatCard
-        label="Produits suivis"
-        value={
-          productsLoading
-            ? "..."
-            : products.length.toString()
-        }
-        detail={productsErrorMessage}
-        icon="▣"
-      />
+      <Link to="/products" className="transition hover:opacity-90">
+        <StatCard
+          label="Produits suivis"
+          value={productsLoading ? "..." : products.length.toString()}
+          detail={productsErrorMessage}
+          icon="▣"
+        />
+      </Link>
 
-      <StatCard
-        label="Alertes stock"
-        value={
-          productsLoading
-            ? "..."
-            : productsInStockAlert.toString()
-        }
-        detail="Produits sans stock"
-        icon="!"
-        danger={productsInStockAlert > 0}
-      />
+      <Link
+        to="/stock?filter=OUT_OF_STOCK"
+        className="transition hover:opacity-90 block"
+      >
+        <StatCard
+          label="Alertes stock"
+          value={productsLoading ? "..." : productsInStockAlert.toString()}
+          detail="Produits sans stock"
+          icon="!"
+          danger={productsInStockAlert > 0}
+        />
+      </Link>
 
-      <StatCard
-        label="Commandes en cours"
-        value={
-          ordersLoading
-            ? "..."
-            : activePurchaseOrders.toString()
-        }
-        detail={ordersErrorMessage}
-        icon="◫"
-        warning={activePurchaseOrders > 0}
-      />
+      <Link to="/purchase-orders" className="transition hover:opacity-90">
+        <StatCard
+          label="Commandes en cours"
+          value={ordersLoading ? "..." : activePurchaseOrders.toString()}
+          detail={ordersErrorMessage}
+          icon="◫"
+          warning={activePurchaseOrders > 0}
+        />
+      </Link>
 
-      <StatCard
-        label="Recommandations"
-        value={
-          recommendationsLoading
-            ? "..."
-            : recommendations.length.toString()
-        }
-        detail={recommendationsDetail}
-        icon="✦"
-        danger={priorityRecommendations > 0}
-      />
+      <Link to="/recommendations" className="transition hover:opacity-90">
+        <StatCard
+          label="Recommandations"
+          value={
+            recommendationsLoading ? "..." : recommendations.length.toString()
+          }
+          detail={recommendationsDetail}
+          icon="✦"
+          danger={priorityRecommendations > 0}
+        />
+      </Link>
     </div>
   );
 }

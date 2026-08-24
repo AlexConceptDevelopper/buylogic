@@ -19,4 +19,4 @@ public class AppUserDTO {
     private String lastName;
     private String role;
     private Boolean active;
-}
+} 

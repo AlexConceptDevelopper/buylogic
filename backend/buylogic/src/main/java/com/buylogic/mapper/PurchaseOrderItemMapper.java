@@ -2,7 +2,7 @@ package com.buylogic.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.buylogic.dto.PurchaseOrderItemDTO;
+import com.buylogic.dto.purchaseorderitem.PurchaseOrderItemDTO;
 import com.buylogic.model.PurchaseOrderItem;
 
 @Component

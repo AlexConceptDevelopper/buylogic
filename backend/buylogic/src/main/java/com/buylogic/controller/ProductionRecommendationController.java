@@ -5,44 +5,44 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.buylogic.dto.PurchaseRecommendationDTO;
-import com.buylogic.service.PurchaseRecommendationService;
+import com.buylogic.dto.ProductionRecommendationDTO;
+import com.buylogic.service.ProductionRecommendationService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/recommendations")
+@RequestMapping("/production-recommendations")
 @RequiredArgsConstructor
-public class PurchaseRecommendationController {
+public class ProductionRecommendationController {
 
-    private final PurchaseRecommendationService purchaseRecommendationService;
+    private final ProductionRecommendationService productionRecommendationService;
 
     @GetMapping
-    public ResponseEntity<List<PurchaseRecommendationDTO>> getAll() {
+    public ResponseEntity<List<ProductionRecommendationDTO>> getAll() {
         return ResponseEntity.ok(
-                purchaseRecommendationService.getAll());
+                productionRecommendationService.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PurchaseRecommendationDTO> getById(
+    public ResponseEntity<ProductionRecommendationDTO> getById(
             @PathVariable Integer id) {
 
         return ResponseEntity.ok(
-                purchaseRecommendationService.getById(id));
+                productionRecommendationService.getById(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        purchaseRecommendationService.delete(id);
+        productionRecommendationService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/calculate/{companyId}/{productId}")
-    public ResponseEntity<PurchaseRecommendationDTO> calculateForProduct(
+    public ResponseEntity<Void> calculateForProduct(
             @PathVariable Integer companyId,
             @PathVariable Integer productId) {
 
-        purchaseRecommendationService.generateOrUpdateForProduct(productId, companyId);
+        productionRecommendationService.generateOrUpdateForProduct(productId, companyId);
         return ResponseEntity.ok().build();
     }
 }

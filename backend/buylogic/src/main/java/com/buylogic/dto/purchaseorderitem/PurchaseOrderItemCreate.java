@@ -1,4 +1,4 @@
-package com.buylogic.dto.purchaseorder;
+package com.buylogic.dto.purchaseorderitem;
 
 import java.math.BigDecimal;
 

@@ -11,9 +11,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PurchaseOrderItemUpdate {
-
-    private BigDecimal quantityOrdered;
-    private BigDecimal quantityReceived;
-    private BigDecimal unitPrice;
+public class PurchaseOrderItemReceiveDTO {
+    private Integer idPurchaseOrderItem;
+    private BigDecimal quantityReceivedNow; 
+    private BigDecimal unitPrice;           
 }

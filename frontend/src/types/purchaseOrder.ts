@@ -1,3 +1,5 @@
+import type { PurchaseOrderItem } from "./purchaseOrderItem"; // Ajuste le chemin d'import si ton fichier purchaseOrderItem est ailleurs
+
 export interface PurchaseOrder {
   idPurchaseOrder: number;
   idCompany: number;
@@ -14,6 +16,9 @@ export interface PurchaseOrder {
 
   totalAmount: number;
   createdAt: string;
+  isAutoRecommended: boolean;
+
+  items?: PurchaseOrderItem[];
 }
 
 export interface PurchaseOrderCreate {
@@ -24,6 +29,7 @@ export interface PurchaseOrderCreate {
   orderedAt?: string;
   expectedDeliveryDate?: string;
   totalAmount?: number;
+  isAutoRecommended?: boolean;
 }
 
 export interface PurchaseOrderUpdate {
@@ -31,4 +37,14 @@ export interface PurchaseOrderUpdate {
   expectedDeliveryDate?: string;
   receivedAt?: string | null;
   totalAmount?: number;
+}
+
+export interface PurchaseOrderItemReceiveDTO {
+  idPurchaseOrderItem: number;
+  quantityReceivedNow: number;
+  unitPrice?: number;
+}
+
+export interface PurchaseOrderReceiveDTO {
+  items: PurchaseOrderItemReceiveDTO[];
 }
