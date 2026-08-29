@@ -64,7 +64,8 @@ public class PurchaseRecommendationService {
     }
 
     /**
-     * Génère, met à jour ou supprime la recommandation lors d'un mouvement de stock.
+     * Génère, met à jour ou supprime la recommandation lors d'un mouvement de
+     * stock.
      * Réservé exclusivement aux produits de type PURCHASED.
      */
     @Transactional
@@ -73,7 +74,8 @@ public class PurchaseRecommendationService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Product not found with id: " + productId));
 
-        // SÉCURITÉ : Si ce n'est pas un produit PURCHASED, on supprime l'éventuelle reco d'achat et on stoppe
+        // SÉCURITÉ : Si ce n'est pas un produit PURCHASED, on supprime l'éventuelle
+        // reco d'achat et on stoppe
         if (product.getType() != ProductType.PURCHASED) {
             purchaseRecommendationRepository.findByProduct_IdProductAndCompany_IdCompany(productId, companyId)
                     .ifPresent(purchaseRecommendationRepository::delete);
@@ -84,7 +86,8 @@ public class PurchaseRecommendationService {
                 .findByProduct_IdProductAndCompany_IdCompany(productId, companyId)
                 .orElse(null);
 
-        PurchaseRecommendation tempRecommendation = recommendation != null ? recommendation : new PurchaseRecommendation();
+        PurchaseRecommendation tempRecommendation = recommendation != null ? recommendation
+                : new PurchaseRecommendation();
         if (tempRecommendation.getIdRecommendation() == null) {
             tempRecommendation.setProduct(product);
             tempRecommendation.setCompany(product.getCompany());
@@ -92,22 +95,30 @@ public class PurchaseRecommendationService {
 
             if (product.getSupplierProducts() != null) {
                 product.getSupplierProducts().stream()
-                    .filter(sp -> Boolean.TRUE.equals(sp.getActive()) && sp.getSupplier() != null)
-                    .findFirst()
-                    .ifPresent(sp -> tempRecommendation.setSupplier(sp.getSupplier()));
+                        .filter(sp -> sp != null && Boolean.TRUE.equals(sp.getActive()) && sp.getSupplier() != null
+                                && sp.getUnitPrice() != null)
+                        .sorted((sp1, sp2) -> sp1.getUnitPrice().compareTo(sp2.getUnitPrice()))
+                        .findFirst()
+                        .ifPresent(sp -> tempRecommendation.setSupplier(sp.getSupplier()));
             }
         }
 
+        // On met à jour les valeurs calculées dans tempRecommendation
         updateRecommendationValues(tempRecommendation, companyId);
 
-        if (tempRecommendation.getRecommendedQuantity() == null 
+        // --- NETTOYAGE AUTOMATIQUE ---
+        // Si la quantité recommandée est nulle ou négative (stock suffisant)
+        if (tempRecommendation.getRecommendedQuantity() == null
                 || tempRecommendation.getRecommendedQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+            // Si elle existait déjà en base, on la supprime définitivement
             if (tempRecommendation.getIdRecommendation() != null) {
                 purchaseRecommendationRepository.delete(tempRecommendation);
             }
-            return;
+            return; // On stoppe là, rien à sauvegarder
         }
+        // -----------------------------
 
+        // Sinon, on sauvegarde la recommandation mise à jour
         purchaseRecommendationRepository.save(tempRecommendation);
     }
 
@@ -149,23 +160,62 @@ public class PurchaseRecommendationService {
             }
         }
 
-        if (firstConsumptionDate != null && lastConsumptionDate != null) {
-            long observedDays = ChronoUnit.DAYS.between(firstConsumptionDate, lastConsumptionDate) + 1;
-            if (observedDays > 0) {
-                dailyConsumption = totalConsumption.divide(
-                        BigDecimal.valueOf(observedDays), 5, RoundingMode.HALF_UP);
-            }
+        long totalPeriodDays = ChronoUnit.DAYS.between(startDate, today) + 1;
+        if (totalConsumption.compareTo(BigDecimal.ZERO) > 0 && totalPeriodDays > 0) {
+            dailyConsumption = totalConsumption.divide(
+                    BigDecimal.valueOf(totalPeriodDays), 5, RoundingMode.HALF_UP);
         }
 
         SupplierProduct supplierProduct = null;
-        if (recommendation.getSupplier() != null && recommendation.getProduct().getSupplierProducts() != null) {
-            supplierProduct = recommendation.getProduct().getSupplierProducts().stream()
-                    .filter(item -> item.getSupplier() != null
-                            && item.getSupplier().getIdSupplier().equals(
-                                    recommendation.getSupplier().getIdSupplier())
-                            && Boolean.TRUE.equals(item.getActive()))
-                    .findFirst()
-                    .orElse(null);
+        if (recommendation.getProduct().getSupplierProducts() != null) {
+            List<SupplierProduct> activeSuppliers = new java.util.ArrayList<>();
+            for (SupplierProduct item : recommendation.getProduct().getSupplierProducts()) {
+                if (item != null
+                        && Boolean.TRUE.equals(item.getActive())
+                        && item.getSupplier() != null
+                        && item.getUnitPrice() != null
+                        && item.getExpectedLeadTimeDays() != null) {
+                    activeSuppliers.add(item);
+                }
+            }
+
+            if (!activeSuppliers.isEmpty()) {
+                BigDecimal minPrice = activeSuppliers.get(0).getUnitPrice();
+                BigDecimal maxPrice = minPrice;
+                int minDelay = activeSuppliers.get(0).getExpectedLeadTimeDays();
+                int maxDelay = minDelay;
+
+                for (SupplierProduct sp : activeSuppliers) {
+                    if (sp.getUnitPrice().compareTo(minPrice) < 0)
+                        minPrice = sp.getUnitPrice();
+                    if (sp.getUnitPrice().compareTo(maxPrice) > 0)
+                        maxPrice = sp.getUnitPrice();
+                    if (sp.getExpectedLeadTimeDays() < minDelay)
+                        minDelay = sp.getExpectedLeadTimeDays();
+                    if (sp.getExpectedLeadTimeDays() > maxDelay)
+                        maxDelay = sp.getExpectedLeadTimeDays();
+                }
+
+                // Poids (ex: 70% prix, 30% délai)
+                double weightPrice = 0.7;
+                double weightDelay = 0.3;
+
+                SupplierProduct bestSupplier = activeSuppliers.get(0);
+                double bestScore = Double.MAX_VALUE;
+
+                for (SupplierProduct sp : activeSuppliers) {
+                    double score = calculateScore(sp, minPrice, maxPrice, minDelay, maxDelay, weightPrice, weightDelay);
+                    if (score < bestScore) {
+                        bestScore = score;
+                        bestSupplier = sp;
+                    }
+                }
+
+                supplierProduct = bestSupplier;
+                if (supplierProduct != null) {
+                    recommendation.setSupplier(supplierProduct.getSupplier());
+                }
+            }
         }
 
         BigDecimal leadTimeDays = supplierProduct != null && supplierProduct.getExpectedLeadTimeDays() != null
@@ -176,19 +226,34 @@ public class PurchaseRecommendationService {
 
         BigDecimal safetyStock = dailyConsumption.multiply(SAFETY_DAYS);
         BigDecimal reorderPoint = dailyConsumption.multiply(leadTimeDays).add(safetyStock);
-        
+
         BigDecimal targetStock = reorderPoint.add(dailyConsumption.multiply(TARGET_COVERAGE_DAYS));
         BigDecimal recommendedQuantity = targetStock.subtract(currentStock);
+
 
         if (recommendedQuantity.compareTo(BigDecimal.ZERO) < 0) {
             recommendedQuantity = BigDecimal.ZERO;
         }
 
         if (supplierProduct != null) {
+            // 1. Respect du Minimum de Commande (MOQ)
             BigDecimal minimumOrderQuantity = supplierProduct.getMinimumOrderQuantity();
             if (minimumOrderQuantity != null && minimumOrderQuantity.compareTo(BigDecimal.ZERO) > 0
                     && recommendedQuantity.compareTo(minimumOrderQuantity) < 0) {
                 recommendedQuantity = minimumOrderQuantity;
+            }
+
+            // 2. Respect du Conditionnement et du caractère Fractionnable
+            BigDecimal packagingQty = supplierProduct.getPackagingQuantity();
+            Boolean isFractionable = supplierProduct.getFractionable();
+
+            if (packagingQty != null && packagingQty.compareTo(BigDecimal.ZERO) > 0) {
+                if (Boolean.FALSE.equals(isFractionable)) {
+                    BigDecimal[] divideAndRemainder = recommendedQuantity.divideAndRemainder(packagingQty);
+                    if (divideAndRemainder[1].compareTo(BigDecimal.ZERO) > 0) {
+                        recommendedQuantity = divideAndRemainder[0].add(BigDecimal.ONE).multiply(packagingQty);
+                    }
+                }
             }
         }
 
@@ -218,8 +283,8 @@ public class PurchaseRecommendationService {
 
         BigDecimal confidenceScore = consumptions.size() >= 10 ? new BigDecimal("90.00")
                 : consumptions.size() >= 5 ? new BigDecimal("80.00")
-                : consumptions.size() >= 3 ? new BigDecimal("70.00")
-                : new BigDecimal("50.00");
+                        : consumptions.size() >= 3 ? new BigDecimal("70.00")
+                                : new BigDecimal("50.00");
 
         String reason;
         if (currentStock.compareTo(BigDecimal.ZERO) <= 0) {
@@ -262,5 +327,24 @@ public class PurchaseRecommendationService {
         }
 
         return principal.companyId();
+    }
+
+    private double calculateScore(SupplierProduct sp, BigDecimal minPrice, BigDecimal maxPrice, int minDelay,
+            int maxDelay, double wPrice, double wDelay) {
+        // Normalisation du prix (entre 0 et 1)
+        double priceRatio = 0.0;
+        if (maxPrice.compareTo(minPrice) > 0) {
+            priceRatio = sp.getUnitPrice().subtract(minPrice)
+                    .divide(maxPrice.subtract(minPrice), 4, RoundingMode.HALF_UP).doubleValue();
+        }
+
+        // Normalisation du délai (entre 0 et 1)
+        double delayRatio = 0.0;
+        if (maxDelay > minDelay) {
+            delayRatio = (double) (sp.getExpectedLeadTimeDays() - minDelay) / (maxDelay - minDelay);
+        }
+
+        // Score final combiné
+        return (priceRatio * wPrice) + (delayRatio * wDelay);
     }
 }

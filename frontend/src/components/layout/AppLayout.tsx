@@ -62,8 +62,8 @@ export default function AppLayout() {
     ...(user?.role === "OWNER" || user?.role === "SUPER_ADMIN"
       ? [
           {
-            label: "Utilisateurs",
-            path: "/settings/users",
+            label: "Paramètres",
+            path: "/params",
             icon: "⚙",
           },
         ]

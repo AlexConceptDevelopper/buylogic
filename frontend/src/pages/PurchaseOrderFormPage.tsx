@@ -7,8 +7,15 @@ import {
   updatePurchaseOrder,
 } from "../api/purchaseOrder.api";
 import { getPurchaseOrderItemsByPurchaseOrderId } from "../api/purchaseOrderItem.api";
+import { getSuppliers } from "../api/supplier.api";
+import { getSupplierProducts } from "../api/supplierProduct.api";
+import { getProducts } from "../api/product.api"; 
 import useAsync from "../hooks/useAsync";
 
+import { OrderStatus } from "../types/OrderStatus";
+import type { Supplier } from "../types/supplier";
+import type { SupplierProduct } from "../types/supplierProduct";
+import type { Product } from "../types/product";
 import type { PurchaseOrderItem } from "../types/purchaseOrderItem";
 
 interface OrderLineForm {
@@ -20,143 +27,15 @@ interface OrderLineForm {
   minOrderQuantity: number;
 }
 
-const SUPPLIERS_DATA = [
-  {
-    id: 1,
-    name: "TechGlobal Distribution",
-    products: [
-      {
-        idProduct: 8,
-        name: "Laser de chantier rotatif",
-        reference: "REF-ELE-003",
-        defaultPrice: 250.0,
-        minOrderQuantity: 1,
-      },
-      {
-        idProduct: 9,
-        name: "Perceuse sans fil 18V",
-        reference: "REF-ELE-001",
-        defaultPrice: 129.99,
-        minOrderQuantity: 2,
-      },
-      {
-        idProduct: 14,
-        name: "Meuleuse d angle 125mm",
-        reference: "REF-ELE-002",
-        defaultPrice: 79.5,
-        minOrderQuantity: 1,
-      },
-      {
-        idProduct: 15,
-        name: "Batterie de rechange 18V",
-        reference: "REF-ELE-004",
-        defaultPrice: 45.0,
-        minOrderQuantity: 5,
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "BatiMat Pro",
-    products: [
-      {
-        idProduct: 4,
-        name: "Vis bois TFP 5x50 (Boite)",
-        reference: "REF-QUI-301",
-        defaultPrice: 12.5,
-        minOrderQuantity: 10,
-      },
-      {
-        idProduct: 5,
-        name: "Chevilles nylon 8mm (Sachet)",
-        reference: "REF-QUI-302",
-        defaultPrice: 6.2,
-        minOrderQuantity: 10,
-      },
-      {
-        idProduct: 7,
-        name: "Canevas de protection lourd",
-        reference: "REF-LOG-204",
-        defaultPrice: 34.0,
-        minOrderQuantity: 3,
-      },
-      {
-        idProduct: 13,
-        name: "Gonds de porte renforcés",
-        reference: "REF-QUI-303",
-        defaultPrice: 18.9,
-        minOrderQuantity: 4,
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "BureauDirect",
-    products: [
-      {
-        idProduct: 1,
-        name: "Stylos billes bleus (x50)",
-        reference: "REF-BUR-102",
-        defaultPrice: 8.5,
-        minOrderQuantity: 5,
-      },
-      {
-        idProduct: 6,
-        name: "Agrafeuse de bureau pro",
-        reference: "REF-BUR-104",
-        defaultPrice: 14.9,
-        minOrderQuantity: 2,
-      },
-      {
-        idProduct: 10,
-        name: "Ramette papier A4 80g",
-        reference: "REF-BUR-101",
-        defaultPrice: 22.0,
-        minOrderQuantity: 10,
-      },
-      {
-        idProduct: 11,
-        name: "Cartouche d encre Noire XL",
-        reference: "REF-BUR-103",
-        defaultPrice: 35.0,
-        minOrderQuantity: 2,
-      },
-    ],
-  },
-  {
-    id: 4,
-    name: "LogiParts Europe",
-    products: [
-      {
-        idProduct: 2,
-        name: "Carton d emballage standard",
-        reference: "REF-LOG-201",
-        defaultPrice: 1.2,
-        minOrderQuantity: 25,
-      },
-      {
-        idProduct: 3,
-        name: "Adhésif de scellage marron",
-        reference: "REF-LOG-202",
-        defaultPrice: 2.5,
-        minOrderQuantity: 10,
-      },
-      {
-        idProduct: 12,
-        name: "Film étirable palette",
-        reference: "REF-LOG-203",
-        defaultPrice: 15.0,
-        minOrderQuantity: 2,
-      },
-    ],
-  },
-];
-
 export default function PurchaseOrderFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditing = Boolean(id);
   const orderId = id ? Number(id) : null;
+
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   const [idSupplier, setIdSupplier] = useState<number>(1);
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState<string>(
@@ -167,18 +46,58 @@ export default function PurchaseOrderFormPage() {
   const { loading: saving, execute: executeSave } = useAsync<any>();
   const { execute: executeOrder } = useAsync<any>();
   const { execute: executeItems } = useAsync<PurchaseOrderItem[]>();
+  const { execute: executeSuppliers } = useAsync<Supplier[]>();
+  const { execute: executeSupplierProducts } = useAsync<SupplierProduct[]>();
+  const { execute: executeProducts } = useAsync<Product[]>();
 
-  const currentSupplierProducts =
-    SUPPLIERS_DATA.find((s) => s.id === idSupplier)?.products ?? [];
-
+  // 1. Charger les fournisseurs, les associations et le catalogue produits au montage
   useEffect(() => {
-    if (isEditing && orderId && Number.isInteger(orderId)) {
+    const loadInitialData = async () => {
+      const [suppliersData, supplierProductsData, productsData] = await Promise.all([
+        executeSuppliers(() => getSuppliers()),
+        executeSupplierProducts(() => getSupplierProducts()),
+        executeProducts(() => getProducts()),
+      ]);
+
+      if (suppliersData && suppliersData.length > 0) {
+        setSuppliers(suppliersData);
+        if (!isEditing) {
+          setIdSupplier(suppliersData[0].idSupplier);
+        }
+      }
+      if (supplierProductsData) setSupplierProducts(supplierProductsData);
+      if (productsData) setProducts(productsData);
+    };
+
+    void loadInitialData();
+  }, [executeSuppliers, executeSupplierProducts, executeProducts, isEditing]);
+
+  // 2. Filtrer et combiner pour obtenir les produits du fournisseur sélectionné avec leurs infos de prix/quantité
+  const currentSupplierProducts = supplierProducts
+    .filter((sp) => sp.idSupplier === idSupplier && sp.active)
+    .map((sp) => {
+      const productInfo = products.find((p) => p.idProduct === sp.idProduct);
+      return {
+        idProduct: sp.idProduct,
+        name: productInfo?.name ?? `Produit #${sp.idProduct}`,
+        reference: sp.supplierReference || productInfo?.reference,
+        defaultPrice: sp.unitPrice,
+        minOrderQuantity: sp.minimumOrderQuantity,
+      };
+    });
+
+  // 3. Charger la commande existante en mode édition
+  useEffect(() => {
+    if (isEditing && orderId && Number.isInteger(orderId) && products.length > 0 && supplierProducts.length > 0) {
       const loadExistingOrder = async () => {
         const orderData = await executeOrder(() =>
           getPurchaseOrderById(orderId),
         );
+        
+        let activeSupplierId = idSupplier;
         if (orderData) {
-          setIdSupplier(orderData.idSupplier);
+          activeSupplierId = orderData.idSupplier;
+          setIdSupplier(activeSupplierId);
           if (orderData.expectedDeliveryDate) {
             setExpectedDeliveryDate(
               orderData.expectedDeliveryDate.split("T")[0],
@@ -189,19 +108,26 @@ export default function PurchaseOrderFormPage() {
         const itemsData = await executeItems(() =>
           getPurchaseOrderItemsByPurchaseOrderId(orderId),
         );
+        
         if (itemsData && itemsData.length > 0) {
           const mappedItems: OrderLineForm[] = itemsData.map(
             (item: PurchaseOrderItem) => {
-              const foundProduct = SUPPLIERS_DATA.flatMap(
-                (s) => s.products,
-              ).find((p) => p.idProduct === item.idProduct);
+              const foundProduct = products.find(
+                (p) => p.idProduct === item.idProduct
+              );
+              
+              // Chercher dans le SupplierProduct pour récupérer la bonne référence fournisseur
+              const foundSp = supplierProducts.find(
+                (sp) => sp.idSupplier === activeSupplierId && sp.idProduct === item.idProduct
+              );
+
               return {
                 idProduct: item.idProduct,
-                productName: item.productName ?? `Produit #${item.idProduct}`,
-                productReference: item.productReference ?? undefined,
-                quantityOrdered: item.quantityOrdered,
-                unitPrice: item.unitPrice,
-                minOrderQuantity: foundProduct?.minOrderQuantity ?? 1,
+                productName: item.productName ?? foundProduct?.name ?? `Produit #${item.idProduct}`,
+                productReference: foundSp?.supplierReference ?? item.productReference ?? foundProduct?.reference,
+                quantityOrdered: item.quantityOrdered ?? foundSp?.minimumOrderQuantity ?? 1,
+                unitPrice: item.unitPrice ?? foundSp?.unitPrice ?? 0,
+                minOrderQuantity: foundSp?.minimumOrderQuantity ?? 1,
               };
             },
           );
@@ -211,14 +137,14 @@ export default function PurchaseOrderFormPage() {
 
       void loadExistingOrder();
     }
-  }, [isEditing, orderId, executeOrder, executeItems]);
+  }, [isEditing, orderId, products, supplierProducts, executeOrder, executeItems]);
 
   const handleSupplierChange = (newSupplierId: number) => {
     setIdSupplier(newSupplierId);
-    setItems([]); // Nettoyage immédiat et sans fioriture des lignes
+    setItems([]); 
   };
 
-  const handleAddItem = (product: (typeof currentSupplierProducts)[0]) => {
+  const handleAddItem = (product: any) => {
     const existingIndex = items.findIndex(
       (item) => item.idProduct === product.idProduct,
     );
@@ -233,9 +159,9 @@ export default function PurchaseOrderFormPage() {
           idProduct: product.idProduct,
           productName: product.name,
           productReference: product.reference,
-          quantityOrdered: product.minOrderQuantity,
-          unitPrice: product.defaultPrice,
-          minOrderQuantity: product.minOrderQuantity,
+          quantityOrdered: product.minOrderQuantity ?? 1,
+          unitPrice: product.defaultPrice ?? 0,
+          minOrderQuantity: product.minOrderQuantity ?? 1,
         },
       ]);
     }
@@ -243,13 +169,13 @@ export default function PurchaseOrderFormPage() {
 
   const handleUpdateItemQuantity = (index: number, quantity: number) => {
     const updated = [...items];
-    updated[index].quantityOrdered = Math.max(1, quantity);
+    updated[index].quantityOrdered = Math.max(1, isNaN(quantity) ? 1 : quantity);
     setItems(updated);
   };
 
   const handleUpdateItemPrice = (index: number, price: number) => {
     const updated = [...items];
-    updated[index].unitPrice = Math.max(0, price);
+    updated[index].unitPrice = Math.max(0, isNaN(price) ? 0 : price);
     setItems(updated);
   };
 
@@ -258,7 +184,7 @@ export default function PurchaseOrderFormPage() {
   };
 
   const totalAmount = items.reduce(
-    (sum, item) => sum + item.quantityOrdered * item.unitPrice,
+    (sum, item) => sum + (item.quantityOrdered || 0) * (item.unitPrice || 0),
     0,
   );
 
@@ -283,7 +209,7 @@ export default function PurchaseOrderFormPage() {
       idCompany: 1,
       idSupplier,
       orderNumber: `CMD-${Date.now().toString().slice(-6)}`,
-      status: "DRAFT",
+      status: OrderStatus.DRAFT,
       expectedDeliveryDate,
       totalAmount,
       items: items.map((item) => ({
@@ -337,8 +263,8 @@ export default function PurchaseOrderFormPage() {
                 onChange={(e) => handleSupplierChange(Number(e.target.value))}
                 className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/40"
               >
-                {SUPPLIERS_DATA.map((supplier) => (
-                  <option key={supplier.id} value={supplier.id}>
+                {suppliers.map((supplier) => (
+                  <option key={supplier.idSupplier} value={supplier.idSupplier}>
                     {supplier.name}
                   </option>
                 ))}
@@ -361,22 +287,26 @@ export default function PurchaseOrderFormPage() {
 
         <div className="rounded-2xl border border-white/5 bg-slate-900/70 p-6 space-y-4">
           <h2 className="text-sm font-semibold text-white">
-            Ajouter des produits
+            Ajouter des produits (fournisseur sélectionné)
           </h2>
           <div className="flex flex-wrap gap-3">
-            {currentSupplierProducts.map((prod) => (
-              <button
-                key={prod.idProduct}
-                type="button"
-                onClick={() => handleAddItem(prod)}
-                className="cursor-pointer rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:border-cyan-400/30 hover:bg-cyan-400/10 hover:text-cyan-300"
-              >
-                + {prod.name} ({prod.defaultPrice.toFixed(2)} €){" "}
-                <span className="text-slate-500 font-normal">
-                  | Min: {prod.minOrderQuantity}
-                </span>
-              </button>
-            ))}
+            {currentSupplierProducts.length === 0 ? (
+              <p className="text-xs text-slate-500 italic">Aucun produit associé à ce fournisseur.</p>
+            ) : (
+              currentSupplierProducts.map((prod) => (
+                <button
+                  key={prod.idProduct}
+                  type="button"
+                  onClick={() => handleAddItem(prod)}
+                  className="cursor-pointer rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:border-cyan-400/30 hover:bg-cyan-400/10 hover:text-cyan-300"
+                >
+                  + {prod.name} ({prod.defaultPrice.toFixed(2)} €){" "}
+                  <span className="text-slate-500 font-normal">
+                    | Min: {prod.minOrderQuantity}
+                  </span>
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -406,14 +336,14 @@ export default function PurchaseOrderFormPage() {
                 <tbody className="divide-y divide-white/5">
                   {items.map((item, index) => {
                     const isBelowMin =
-                      item.quantityOrdered < item.minOrderQuantity;
+                      (item.quantityOrdered ?? 0) < item.minOrderQuantity;
                     return (
-                      <tr key={item.idProduct}>
+                      <tr key={item.idProduct ?? index}>
                         <td className="py-4 text-sm font-semibold text-slate-200">
                           {item.productName}
                           {item.productReference && (
-                            <span className="block text-[11px] text-slate-500 font-normal">
-                              {item.productReference}
+                            <span className="block text-[11px] text-cyan-400 font-medium uppercase tracking-widest">
+                              Réf : {item.productReference}
                             </span>
                           )}
                         </td>
@@ -422,7 +352,7 @@ export default function PurchaseOrderFormPage() {
                             <input
                               type="number"
                               min="1"
-                              value={item.quantityOrdered}
+                              value={item.quantityOrdered ?? 1}
                               onChange={(e) =>
                                 handleUpdateItemQuantity(
                                   index,
@@ -447,7 +377,7 @@ export default function PurchaseOrderFormPage() {
                             type="number"
                             step="0.01"
                             min="0"
-                            value={item.unitPrice}
+                            value={item.unitPrice ?? 0}
                             onChange={(e) =>
                               handleUpdateItemPrice(
                                 index,
@@ -459,7 +389,7 @@ export default function PurchaseOrderFormPage() {
                         </td>
                         <td className="py-4 text-right text-sm font-semibold text-slate-200">
                           {(
-                            item.quantityOrdered * item.unitPrice
+                            (item.quantityOrdered || 0) * (item.unitPrice || 0)
                           ).toLocaleString("fr-FR", {
                             style: "currency",
                             currency: "EUR",

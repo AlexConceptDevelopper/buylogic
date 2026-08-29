@@ -17,11 +17,15 @@ public class CompanyMapper {
 
         CompanyDTO dto = new CompanyDTO();
 
-        dto.setIdCompany(company.getIdCompany());
+       dto.setIdCompany(company.getIdCompany());
         dto.setName(company.getName());
         dto.setEmail(company.getEmail());
+        dto.setPhone(company.getPhone());
         dto.setActive(company.getActive());
-
+        dto.setSiret(company.getSiret()); 
+        dto.setAddress(company.getAddress()); 
+        dto.setReceptionHours(company.getReceptionHours());
+        dto.setLogoUrl(company.getLogoUrl()); 
         return dto;
     }
 
@@ -34,7 +38,12 @@ public class CompanyMapper {
 
         company.setName(dto.getName());
         company.setEmail(dto.getEmail());
+        company.setPhone(dto.getPhone());
         company.setActive(true);
+        company.setSiret(dto.getSiret()); 
+        company.setAddress(dto.getAddress()); 
+        company.setReceptionHours(dto.getReceptionHours()); 
+        company.setLogoUrl(dto.getLogoUrl()); 
 
         return company;
     }
@@ -43,8 +52,12 @@ public class CompanyMapper {
             Company company,
             CompanyUpdateDTO dto) {
 
-        company.setName(dto.getName());
+       company.setName(dto.getName());
         company.setEmail(dto.getEmail());
-        company.setActive(dto.getActive());
+        company.setPhone(dto.getPhone()); 
+        company.setSiret(dto.getSiret()); 
+        company.setAddress(dto.getAddress()); 
+        company.setReceptionHours(dto.getReceptionHours()); 
+        company.setLogoUrl(dto.getLogoUrl());
     }
 }

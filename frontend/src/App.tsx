@@ -9,7 +9,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { AuthProvider } from "./context/AuthContext";
 import NotificationsPage from "./pages/NotificationsPage";
-import UsersSettingsPage from "./pages/UsersSettingsPage";
+import ParamsPage from "./pages/ParamsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import ProductsPage from "./pages/ProductsPage";
 import SuppliersPage from "./pages/SuppliersPage";
@@ -49,7 +49,7 @@ export default function App() {
 
               {/* Route réservée aux rôles OWNER et SUPER_ADMIN */}
               <Route element={<RoleRoute allowedRoles={["OWNER", "SUPER_ADMIN"]} />}>
-                <Route path="/settings/users" element={<UsersSettingsPage />} />
+                <Route path="/params" element={<ParamsPage />} />
               </Route>
             </Route>
           </Route>

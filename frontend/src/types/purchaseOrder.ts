@@ -1,23 +1,20 @@
-import type { PurchaseOrderItem } from "./purchaseOrderItem"; // Ajuste le chemin d'import si ton fichier purchaseOrderItem est ailleurs
+import type { PurchaseOrderItem } from "./purchaseOrderItem";
+import type { OrderStatus } from "./OrderStatus";
 
 export interface PurchaseOrder {
   idPurchaseOrder: number;
   idCompany: number;
   idSupplier: number;
-
   supplierName: string;
-
   orderNumber: string;
-  status: string;
-
+  status: OrderStatus;
+  arcNumber?: string | null;
   orderedAt: string;
   expectedDeliveryDate: string;
   receivedAt?: string | null;
-
   totalAmount: number;
   createdAt: string;
   isAutoRecommended: boolean;
-
   items?: PurchaseOrderItem[];
 }
 
@@ -25,7 +22,7 @@ export interface PurchaseOrderCreate {
   idCompany: number;
   idSupplier: number;
   orderNumber: string;
-  status: string;
+  status: OrderStatus;
   orderedAt?: string;
   expectedDeliveryDate?: string;
   totalAmount?: number;
@@ -33,7 +30,7 @@ export interface PurchaseOrderCreate {
 }
 
 export interface PurchaseOrderUpdate {
-  status: string;
+  status: OrderStatus;
   expectedDeliveryDate?: string;
   receivedAt?: string | null;
   totalAmount?: number;
@@ -47,4 +44,9 @@ export interface PurchaseOrderItemReceiveDTO {
 
 export interface PurchaseOrderReceiveDTO {
   items: PurchaseOrderItemReceiveDTO[];
+}
+
+export interface PurchaseOrderArcUpdateDTO {
+  arcNumber: string;
+  expectedDeliveryDate: string;
 }

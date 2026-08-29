@@ -14,5 +14,10 @@ public class CompanyDTO {
     private Integer idCompany;
     private String name;
     private String email;
+    private String phone;
     private Boolean active;
+    private String siret;
+    private String address;
+    private String receptionHours;
+    private String logoUrl;
 }

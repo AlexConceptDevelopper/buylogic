@@ -22,5 +22,5 @@ public interface PurchaseRecommendationRepository
     List<PurchaseRecommendation> findByCompany_IdCompanyAndProductInAndStatus(
             Integer companyId,
             List<Product> products,
-            String status);
+            String status); 
 }

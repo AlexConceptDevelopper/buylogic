@@ -3,13 +3,21 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
   getPurchaseOrderById,
-  updatePurchaseOrderStatus,
+  updatePurchaseOrderArc,
+  sendPurchaseOrderEmail,
 } from "../api/purchaseOrder.api";
 import { getPurchaseOrderItemsByPurchaseOrderId } from "../api/purchaseOrderItem.api";
+import { getCompanyById } from "../api/company.api";
+import { getSupplierById } from "../api/supplier.api";
+import { getSupplierProducts } from "../api/supplierProduct.api";
 import useAsync from "../hooks/useAsync";
 
 import type { PurchaseOrder } from "../types/purchaseOrder";
 import type { PurchaseOrderItem } from "../types/purchaseOrderItem";
+import type { Company } from "../types/company";
+import type { Supplier } from "../types/supplier";
+import type { SupplierProduct } from "../types/supplierProduct";
+import { EmailComposerModal } from "../components/EmailComposerModal";
 
 const statusStyles: Record<
   string,
@@ -47,6 +55,12 @@ const statusStyles: Record<
     className: "border-rose-400/20 bg-rose-400/5 text-rose-300",
     description: "Cette commande a été annulée.",
   },
+  SENT: {
+    label: "En attente d'ARC",
+    className: "border-purple-400/20 bg-purple-400/5 text-purple-300",
+    description:
+      "Le bon de commande a été envoyé au fournisseur, en attente de l'Accusé de Réception de Commande.",
+  },
 };
 
 export default function PurchaseOrderDetailPage() {
@@ -57,6 +71,22 @@ export default function PurchaseOrderDetailPage() {
 
   const [order, setOrder] = useState<PurchaseOrder | null>(null);
   const [items, setItems] = useState<PurchaseOrderItem[]>([]);
+  const [company, setCompany] = useState<Company | null>(null);
+  const [supplier, setSupplier] = useState<Supplier | null>(null);
+  const [supplierProducts, setSupplierProducts] = useState<
+    SupplierProduct[] | null
+  >([]);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+
+  // États pour la modale d'e-mail et le message de succès optionnel
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Nouveaux états pour l'ARC et la date prévisionnelle
+  const [arcNumber, setArcNumber] = useState("");
+  const [expectedDeliveryInput, setExpectedDeliveryInput] = useState("");
+  const [savingArc, setSavingArc] = useState(false);
 
   const {
     loading: orderLoading,
@@ -70,20 +100,41 @@ export default function PurchaseOrderDetailPage() {
     execute: executeItems,
   } = useAsync<PurchaseOrderItem[]>();
 
-  const { loading: validating, execute: executeValidate } = useAsync<PurchaseOrder>();
-
-  const loadOrder = async () => {
-    const data = await executeOrder(() => getPurchaseOrderById(orderId));
-    if (data) {
-      setOrder(data);
-    }
-  };
-
   useEffect(() => {
     if (!Number.isInteger(orderId)) {
       return;
     }
-    void loadOrder();
+
+    const loadData = async () => {
+      try {
+        const orderData = await executeOrder(() =>
+          getPurchaseOrderById(orderId),
+        );
+
+        if (orderData) {
+          setOrder(orderData);
+          if (orderData.arcNumber) setArcNumber(orderData.arcNumber);
+          if (orderData.expectedDeliveryDate) {
+            setExpectedDeliveryInput(
+              orderData.expectedDeliveryDate.split("T")[0],
+            );
+          }
+
+          const [companyData, supplierData, allSpData] = await Promise.all([
+            getCompanyById(orderData.idCompany),
+            getSupplierById(orderData.idSupplier),
+            getSupplierProducts(),
+          ]);
+          setCompany(companyData);
+          setSupplier(supplierData);
+          setSupplierProducts(allSpData);
+        }
+      } catch (err) {
+        console.error("Erreur lors du chargement des détails", err);
+      }
+    };
+
+    void loadData();
   }, [executeOrder, orderId]);
 
   useEffect(() => {
@@ -104,13 +155,29 @@ export default function PurchaseOrderDetailPage() {
     void loadItems();
   }, [executeItems, orderId]);
 
-const handleValidateOrder = async () => {
-    const updated = await executeValidate(() =>
-      updatePurchaseOrderStatus(orderId, "ORDERED"),
-    );
-    if (updated) {
-      navigate("/purchase-orders");
+  const handleSaveArc = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingArc(true);
+    try {
+      const updated = await updatePurchaseOrderArc(orderId, {
+        arcNumber,
+        expectedDeliveryDate: expectedDeliveryInput,
+      });
+      if (updated) {
+        setOrder(updated);
+      }
+    } catch (err) {
+      console.error("Erreur lors de l'enregistrement de l'ARC", err);
+    } finally {
+      setSavingArc(false);
     }
+  };
+
+  const getSupplierProductForItem = (productId: number) => {
+    if (!order || !supplierProducts) return undefined;
+    return supplierProducts.find(
+      (sp) => sp.idProduct === productId && sp.idSupplier === order.idSupplier,
+    );
   };
 
   if (!Number.isInteger(orderId)) {
@@ -211,6 +278,13 @@ const handleValidateOrder = async () => {
         ← Commandes
       </Link>
 
+      {/* Message de succès d'envoi d'e-mail */}
+      {successMessage && (
+        <div className="mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-emerald-300 text-sm font-medium flex items-center gap-2 animate-fadeIn transition-all duration-500">
+          <span>✅</span> {successMessage}
+        </div>
+      )}
+
       <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
@@ -227,18 +301,19 @@ const handleValidateOrder = async () => {
             <>
               <button
                 type="button"
-                onClick={() => navigate(`/purchase-orders/${order.idPurchaseOrder}/edit`)}
+                onClick={() =>
+                  navigate(`/purchase-orders/${order.idPurchaseOrder}/edit`)
+                }
                 className="cursor-pointer rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
               >
                 Modifier
               </button>
               <button
                 type="button"
-                disabled={validating}
-                onClick={handleValidateOrder}
-                className="cursor-pointer rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-2.5 text-xs font-semibold text-cyan-300 transition hover:bg-cyan-400/20 disabled:opacity-50"
+                onClick={() => setIsPdfModalOpen(true)}
+                className="cursor-pointer rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-2.5 text-xs font-semibold text-cyan-300 transition hover:bg-cyan-400/20"
               >
-                {validating ? "Validation..." : "Valider la commande"}
+                Aperçu & Envoyer
               </button>
             </>
           )}
@@ -281,7 +356,7 @@ const handleValidateOrder = async () => {
                   <thead>
                     <tr className="border-b border-white/5 text-left">
                       <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600">
-                        Produit
+                        Produit / Réf Fournisseur
                       </th>
                       <th className="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600">
                         Commandé
@@ -290,10 +365,10 @@ const handleValidateOrder = async () => {
                         Reçu
                       </th>
                       <th className="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600">
-                        Prix unitaire
+                        Prix unitaire HT
                       </th>
                       <th className="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600">
-                        Total
+                        Total HT
                       </th>
                     </tr>
                   </thead>
@@ -301,6 +376,9 @@ const handleValidateOrder = async () => {
                   <tbody>
                     {items.map((item) => {
                       const lineTotal = item.quantityOrdered * item.unitPrice;
+                      const supplierProduct = getSupplierProductForItem(
+                        item.idProduct,
+                      );
 
                       return (
                         <tr
@@ -311,14 +389,20 @@ const handleValidateOrder = async () => {
                             <p className="text-sm font-semibold text-slate-200">
                               {item.productName ?? `Produit #${item.idProduct}`}
                             </p>
-                            {item.productReference && (
-                              <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-slate-600">
-                                {item.productReference}
+                            {supplierProduct?.supplierReference && (
+                              <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-cyan-400 font-medium">
+                                Réf : {supplierProduct.supplierReference}
                               </p>
                             )}
                           </td>
                           <td className="px-4 py-4 text-right text-sm font-semibold text-slate-200">
                             {item.quantityOrdered.toLocaleString("fr-FR")}
+                            {supplierProduct?.packagingQuantity &&
+                              supplierProduct.packagingQuantity > 1 && (
+                                <span className="block text-[10px] text-slate-400 font-normal">
+                                  (Cond. : {supplierProduct.packagingQuantity})
+                                </span>
+                              )}
                           </td>
                           <td className="px-4 py-4 text-right">
                             <span
@@ -364,7 +448,62 @@ const handleValidateOrder = async () => {
               {status.description}
             </p>
 
+            {order.status === "SENT" && (
+              <form
+                onSubmit={handleSaveArc}
+                className="mt-6 rounded-xl border border-purple-400/20 bg-purple-400/5 p-4 space-y-4"
+              >
+                <p className="text-xs font-bold uppercase tracking-wider text-purple-300">
+                  Enregistrement de l'Accusé de Réception (ARC)
+                </p>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">
+                      Numéro d'ARC
+                    </label>
+                    <input
+                      type="text"
+                      value={arcNumber}
+                      onChange={(e) => setArcNumber(e.target.value)}
+                      placeholder="Ex: ARC-2026-001"
+                      className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white focus:border-purple-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">
+                      Date de prévision fournisseur
+                    </label>
+                    <input
+                      type="date"
+                      value={expectedDeliveryInput}
+                      onChange={(e) => setExpectedDeliveryInput(e.target.value)}
+                      className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white focus:border-purple-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={savingArc}
+                    className="cursor-pointer rounded-lg bg-purple-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {savingArc ? "Enregistrement..." : "Enregistrer l'ARC"}
+                  </button>
+                </div>
+              </form>
+            )}
+
             <div className="mt-6 space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-xs text-slate-500">Numéro d'ARC</span>
+                <span className="text-sm font-semibold text-slate-200">
+                  {order.arcNumber ?? "Non renseigné"}
+                </span>
+              </div>
+              <div className="h-px bg-white/5" />
               <div className="flex items-center justify-between gap-4">
                 <span className="text-xs text-slate-500">Livraison prévue</span>
                 <span className="text-sm font-semibold text-slate-200">
@@ -400,9 +539,7 @@ const handleValidateOrder = async () => {
             </div>
             <div className="h-px bg-white/5" />
             <div>
-              <p className="text-xs text-slate-500">
-                Montant total de la commande
-              </p>
+              <p className="text-xs text-slate-500">Montant total HT estimé</p>
               <p className="mt-1 text-lg font-bold text-white">
                 {order.totalAmount.toLocaleString("fr-FR", {
                   style: "currency",
@@ -413,6 +550,218 @@ const handleValidateOrder = async () => {
           </div>
         </aside>
       </div>
+
+      {/* 1. Modale d'aperçu du PDF */}
+      {isPdfModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl bg-white text-slate-900 shadow-2xl p-8 border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-6">
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
+                <h3 className="text-base font-bold text-slate-900">
+                  Aperçu du bon de commande
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPdfModalOpen(false)}
+                className="text-slate-500 hover:text-slate-800 text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold cursor-pointer transition"
+              >
+                ✕ Fermer
+              </button>
+            </div>
+
+            <div className="bg-white rounded-lg p-2">
+              <div className="grid grid-cols-2 gap-6 border-b border-slate-100 pb-6 items-start">
+                <div>
+                  <h4 className="font-extrabold text-slate-900 text-lg">
+                    {company?.name ?? "MatiGuard"}
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-1">
+                    {company?.address ?? "Adresse non renseignée"}
+                  </p>
+                  {company?.siret && (
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      SIRET : {company.siret}
+                    </p>
+                  )}
+                  {company?.phone && (
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Tél : {company.phone}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-4 text-right">
+                  <div>
+                    <span className="inline-block bg-slate-900 text-white px-3 py-1 rounded text-[11px] font-bold uppercase tracking-wider">
+                      Bon de Commande
+                    </span>
+                    <p className="text-sm font-bold text-cyan-700 mt-1.5">
+                      {order.orderNumber}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Date : {orderedDate}
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 border-l-4 border-l-cyan-600 text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-700">
+                      Fournisseur destinataire
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 mt-1">
+                      {supplier?.name ?? order.supplierName}
+                    </p>
+                    {supplier?.email && (
+                      <p className="text-xs text-slate-600 mt-0.5">
+                        Contact : {supplier.email}
+                      </p>
+                    )}
+                    {supplier?.address && (
+                      <p className="text-xs text-slate-600 mt-0.5">
+                        Adresse : {supplier.address}
+                      </p>
+                    )}
+                    {supplier?.phone && (
+                      <p className="text-xs text-slate-600 mt-0.5">
+                        Tél : {supplier.phone}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto mt-6">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b-2 border-slate-900 text-slate-900 uppercase tracking-wider text-[10px]">
+                      <th className="py-2.5 font-bold">
+                        Article & Réf. Fournisseur
+                      </th>
+                      <th className="py-2.5 text-center font-bold">Quantité</th>
+                      <th className="py-2.5 text-right font-bold">P.U. HT</th>
+                      <th className="py-2.5 text-right font-bold">Total HT</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {items.map((item) => {
+                      const supplierProduct = getSupplierProductForItem(
+                        item.idProduct,
+                      );
+                      return (
+                        <tr
+                          key={item.idPurchaseOrderItem}
+                          className="hover:bg-slate-50/50"
+                        >
+                          <td className="py-3 font-semibold text-slate-900">
+                            {item.productName ?? `Produit #${item.idProduct}`}
+                            {supplierProduct?.supplierReference && (
+                              <span className="block text-[10px] font-bold text-cyan-700 mt-0.5 uppercase tracking-wider">
+                                Réf : {supplierProduct.supplierReference}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 text-center font-medium text-slate-700">
+                            {item.quantityOrdered}
+                          </td>
+                          <td className="py-3 text-right text-slate-700">
+                            {item.unitPrice.toFixed(2)} €
+                          </td>
+                          <td className="py-3 text-right font-bold text-slate-900">
+                            {(item.quantityOrdered * item.unitPrice).toFixed(2)}{" "}
+                            €
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex justify-end pt-4 mt-4 border-t border-slate-200">
+                <div className="w-64 space-y-1.5 text-right text-xs">
+                  <div className="flex justify-between text-slate-700">
+                    <span>Total HT :</span>
+                    <span className="font-semibold text-slate-900">
+                      {order.totalAmount.toLocaleString("fr-FR", {
+                        style: "currency",
+                        currency: "EUR",
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-slate-500 text-[11px]">
+                    <span>TVA (20% indicatif*) :</span>
+                    <span>
+                      {(order.totalAmount * 0.2).toLocaleString("fr-FR", {
+                        style: "currency",
+                        currency: "EUR",
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm font-extrabold text-slate-900 bg-cyan-50/50 p-2 rounded-lg border border-cyan-100">
+                    <span>Total TTC estimé :</span>
+                    <span className="text-cyan-700">
+                      {(order.totalAmount * 1.2).toLocaleString("fr-FR", {
+                        style: "currency",
+                        currency: "EUR",
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPdfModalOpen(false);
+                  setIsEmailModalOpen(true);
+                }}
+                className="cursor-pointer rounded-xl bg-cyan-600 px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-cyan-700 flex items-center gap-1.5"
+              >
+                ✉️ Continuer vers l'envoi de l'e-mail
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Intégration de la modale e-mail épurée (autonome sur les infos utilisateur) */}
+      <EmailComposerModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        onSend={async (emailData) => {
+          try {
+            setIsSendingEmail(true);
+            await sendPurchaseOrderEmail(orderId, emailData);
+            
+            // Fermeture des modales
+            setIsEmailModalOpen(false);
+            setIsPdfModalOpen(false);
+
+            // Affichage du message de succès et redirection avec un léger délai (ex: 1.2s)
+            setSuccessMessage("E-mail de bon de commande envoyé avec succès ! Redirection en cours...");
+            setTimeout(() => {
+              navigate("/purchase-orders");
+            }, 3000);
+
+          } catch (err) {
+            console.error(
+              "Erreur lors de l'envoi de l'e-mail de commande",
+              err,
+            );
+          } finally {
+            setIsSendingEmail(false);
+          }
+        }}
+        supplierEmail={supplier?.email ?? ""}
+        supplierName={supplier?.name ?? order.supplierName}
+        orderNumber={order.orderNumber}
+        totalAmount={order.totalAmount}
+        companyName={company?.name ?? ""}
+        loading={isSendingEmail}
+      />
     </div>
   );
 }

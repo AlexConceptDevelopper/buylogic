@@ -1,6 +1,7 @@
 import { apiFetch } from "./client";
 import type {
   PurchaseOrder,
+  PurchaseOrderArcUpdateDTO,
   PurchaseOrderCreate,
   PurchaseOrderReceiveDTO,
   PurchaseOrderUpdate,
@@ -84,4 +85,25 @@ export function receivePurchaseOrder(
 
 export function getPurchaseOrderWithItems(id: number) {
   return apiFetch<PurchaseOrder>(`/purchase-orders/${id}/with-items`);
+}
+
+export function updatePurchaseOrderArc(
+  id: number,
+  data: PurchaseOrderArcUpdateDTO
+) {
+  return apiFetch<PurchaseOrder>(`/purchase-orders/${id}/arc`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+//endpoint d'envoi de mail
+export function sendPurchaseOrderEmail(
+  id: number,
+  emailData?: { to: string; subject: string; body: string }
+) {
+  return apiFetch<string>(`/purchase-orders/${id}/send`, {
+    method: "POST",
+    body: emailData ? JSON.stringify(emailData) : undefined,
+  });
 }

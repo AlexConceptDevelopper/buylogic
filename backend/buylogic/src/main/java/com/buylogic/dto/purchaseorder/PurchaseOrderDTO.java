@@ -28,6 +28,7 @@ public class PurchaseOrderDTO {
     private String status;
 
     private LocalDateTime orderedAt;
+    private String arcNumber;
     private LocalDate expectedDeliveryDate;
     private LocalDateTime receivedAt;
 

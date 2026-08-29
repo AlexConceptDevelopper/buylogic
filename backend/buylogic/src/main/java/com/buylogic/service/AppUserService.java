@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.buylogic.dto.appuser.AppUserCreateDTO;
 import com.buylogic.dto.appuser.AppUserDTO;
+import com.buylogic.dto.appuser.AppUserUpdateDTO;
 import com.buylogic.exception.ConflictException;
 import com.buylogic.exception.ResourceNotFoundException;
 import com.buylogic.mapper.AppUserMapper;
@@ -137,6 +138,11 @@ public class AppUserService {
                 dto.getLastName().trim()
         );
 
+        // Ajout du service / département
+        if (dto.getDepartment() != null) {
+            user.setDepartment(dto.getDepartment().trim());
+        }
+
         user.setRole(role);
         user.setActive(true);
 
@@ -215,5 +221,50 @@ public class AppUserService {
         }
 
         return principal;
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OWNER')")
+    @Transactional
+    public AppUserDTO update(Integer id, AppUserUpdateDTO dto) {
+        JwtPrincipal principal = getCurrentPrincipal();
+
+        // Récupération sécurisée de l'utilisateur selon le rôle
+        AppUser user;
+        if (principal.role().equals("SUPER_ADMIN")) {
+            user = appUserRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        } else {
+            user = appUserRepository.findByIdUserAndCompany_IdCompany(id, principal.companyId())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        }
+
+        if (dto.getFirstName() != null) {
+            user.setFirstName(dto.getFirstName().trim());
+        }
+        if (dto.getLastName() != null) {
+            user.setLastName(dto.getLastName().trim());
+        }
+        if (dto.getDepartment() != null) {
+            user.setDepartment(dto.getDepartment().trim());
+        }
+        if (dto.getRole() != null) {
+            try {
+                Role newRole = Role.valueOf(dto.getRole().trim().toUpperCase());
+                
+                // Vérification des privilèges si l'éditeur est OWNER
+                if (principal.role().equals("OWNER") && newRole != Role.USER && newRole != Role.MANAGER) {
+                    throw new IllegalArgumentException("An OWNER can only assign USER or MANAGER roles.");
+                }
+                user.setRole(newRole);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid user role.");
+            }
+        }
+        if (dto.getActive() != null) {
+            user.setActive(dto.getActive());
+        }
+
+        AppUser updatedUser = appUserRepository.save(user);
+        return appUserMapper.toDTO(updatedUser);
     }
 }

@@ -32,6 +32,9 @@ public class AppUserCreateDTO {
     @Size(max = 100)
     private String lastName;
 
+    @Size(max = 100)
+    private String department;
+
     @NotNull
     private String role;
 }

@@ -38,10 +38,13 @@ public class PurchaseOrderMapper {
                 order.getOrderNumber());
 
         dto.setStatus(
-                order.getStatus());
+                order.getStatus() != null ? order.getStatus().name() : null);
 
         dto.setOrderedAt(
                 order.getOrderedAt());
+
+        dto.setArcNumber(
+                order.getArcNumber());
 
         dto.setExpectedDeliveryDate(
                 order.getExpectedDeliveryDate());

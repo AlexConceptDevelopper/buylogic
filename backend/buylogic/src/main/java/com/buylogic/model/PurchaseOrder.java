@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.buylogic.model.enums.OrderStatus;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,10 +36,14 @@ public class PurchaseOrder {
     @Column(name = "order_number", length = 100)
     private String orderNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private String status = "DRAFT";
+    private OrderStatus status = OrderStatus.DRAFT;
 
     private LocalDateTime orderedAt;
+
+    @Column(name = "arc_number", length = 100)
+    private String arcNumber;
 
     private LocalDate expectedDeliveryDate;
 

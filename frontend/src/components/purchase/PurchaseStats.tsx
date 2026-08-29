@@ -2,8 +2,11 @@ type PurchaseStatsProps = {
   stats: {
     total: number;
     draft: number;
+    sent: number;
     ordered: number;
     partiallyReceived: number;
+    received: number;
+    cancelled: number;
   };
   filter: string;
   onSelectFilter: (filter: any) => void;
@@ -15,7 +18,7 @@ export default function PurchaseStats({
   onSelectFilter,
 }: PurchaseStatsProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
       <button
         type="button"
         onClick={() => onSelectFilter("ALL")}
@@ -46,10 +49,24 @@ export default function PurchaseStats({
 
       <button
         type="button"
-        onClick={() => onSelectFilter("ORDERED")}
+        onClick={() => onSelectFilter("SENT")}
         className={[
           "cursor-pointer rounded-2xl border p-5 text-left transition",
-          filter === "ORDERED"
+          filter === "SENT"
+            ? "border-indigo-400/20 bg-indigo-400/5"
+            : "border-white/5 bg-slate-900/70 hover:border-white/10 hover:bg-slate-900",
+        ].join(" ")}
+      >
+        <p className="text-xs text-slate-500">Envoyées (ARC)</p>
+        <p className="mt-2 text-2xl font-bold text-indigo-300">{stats.sent}</p>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onSelectFilter("CONFIRMED")}
+        className={[
+          "cursor-pointer rounded-2xl border p-5 text-left transition",
+          filter === "CONFIRMED"
             ? "border-cyan-400/20 bg-cyan-400/5"
             : "border-white/5 bg-slate-900/70 hover:border-white/10 hover:bg-slate-900",
         ].join(" ")}
@@ -68,10 +85,38 @@ export default function PurchaseStats({
             : "border-white/5 bg-slate-900/70 hover:border-white/10 hover:bg-slate-900",
         ].join(" ")}
       >
-        <p className="text-xs text-slate-500">Réceptions partielles</p>
+        <p className="text-xs text-slate-500">Récept. partielles</p>
         <p className="mt-2 text-2xl font-bold text-amber-300">
           {stats.partiallyReceived}
         </p>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onSelectFilter("RECEIVED")}
+        className={[
+          "cursor-pointer rounded-2xl border p-5 text-left transition",
+          filter === "RECEIVED"
+            ? "border-emerald-400/20 bg-emerald-400/5"
+            : "border-white/5 bg-slate-900/70 hover:border-white/10 hover:bg-slate-900",
+        ].join(" ")}
+      >
+        <p className="text-xs text-slate-500">Réceptionnées</p>
+        <p className="mt-2 text-2xl font-bold text-emerald-300">{stats.received}</p>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onSelectFilter("CANCELLED")}
+        className={[
+          "cursor-pointer rounded-2xl border p-5 text-left transition",
+          filter === "CANCELLED"
+            ? "border-rose-400/20 bg-rose-400/5"
+            : "border-white/5 bg-slate-900/70 hover:border-white/10 hover:bg-slate-900",
+        ].join(" ")}
+      >
+        <p className="text-xs text-slate-500">Annulées</p>
+        <p className="mt-2 text-2xl font-bold text-rose-300">{stats.cancelled}</p>
       </button>
     </div>
   );

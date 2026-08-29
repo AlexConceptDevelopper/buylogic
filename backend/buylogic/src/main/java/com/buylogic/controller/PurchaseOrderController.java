@@ -1,11 +1,13 @@
 package com.buylogic.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.buylogic.dto.purchaseorder.PurchaseOrderArcUpdateDTO;
 import com.buylogic.dto.purchaseorder.PurchaseOrderCreate;
 import com.buylogic.dto.purchaseorder.PurchaseOrderDTO;
 import com.buylogic.dto.purchaseorder.PurchaseOrderReceiveDTO;
@@ -81,5 +83,38 @@ public class PurchaseOrderController {
     @GetMapping("/{id}/with-items")
     public ResponseEntity<PurchaseOrderDTO> getOrderWithItems(@PathVariable Integer id) {
         return ResponseEntity.ok(purchaseOrderService.getOrderWithItems(id));
+    }
+
+    // Endpoint de gestion de L'ARC reçu
+    @PatchMapping("/{id}/arc")
+    public ResponseEntity<PurchaseOrderDTO> updateArc(
+            @PathVariable Integer id,
+            @RequestBody PurchaseOrderArcUpdateDTO arcData) {
+        return ResponseEntity.ok(purchaseOrderService.updateArc(id, arcData));
+    }
+
+    @PostMapping("/{id}/send")
+    public ResponseEntity<Void> sendEmail(
+            @PathVariable Integer id,
+            @RequestBody Map<String, Object> emailPayload) {
+        
+        // Si "to" arrive sous forme de String ou de List, on gère proprement
+        Object toObj = emailPayload.get("to");
+        String to = "";
+        
+        if (toObj instanceof List<?>) {
+            to = ((List<?>) toObj).stream()
+                    .filter(item -> item instanceof String)
+                    .map(item -> (String) item)
+                    .collect(java.util.stream.Collectors.joining(","));
+        } else if (toObj instanceof String) {
+            to = (String) toObj;
+        }
+
+        String subject = (String) emailPayload.get("subject");
+        String body = (String) emailPayload.get("body");
+
+        purchaseOrderService.sendOrderEmail(id, to, subject, body);
+        return ResponseEntity.ok().build();
     }
 }

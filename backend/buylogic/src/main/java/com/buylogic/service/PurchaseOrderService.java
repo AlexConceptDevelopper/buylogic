@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.buylogic.dto.purchaseorder.PurchaseOrderArcUpdateDTO;
 import com.buylogic.dto.purchaseorder.PurchaseOrderCreate;
 import com.buylogic.dto.purchaseorder.PurchaseOrderDTO;
 import com.buylogic.dto.purchaseorder.PurchaseOrderItemReceiveDTO;
@@ -25,6 +26,7 @@ import com.buylogic.model.PurchaseOrderItem;
 import com.buylogic.model.PurchaseRecommendation;
 import com.buylogic.model.StockMovement;
 import com.buylogic.model.Supplier;
+import com.buylogic.model.enums.OrderStatus;
 import com.buylogic.repository.global.CompanyRepository;
 import com.buylogic.repository.global.ProductRepository;
 import com.buylogic.repository.global.PurchaseOrderItemRepository;
@@ -50,6 +52,8 @@ public class PurchaseOrderService {
         private final ProductRepository productRepository;
         private final PurchaseRecommendationRepository purchaseRecommendationRepository;
         private final StockMovementRepository stockMovementRepository;
+        private final PdfService pdfService;
+        private final EmailService emailService;
 
         public List<PurchaseOrderDTO> getAll() {
                 Integer companyId = getCurrentCompanyId();
@@ -91,7 +95,7 @@ public class PurchaseOrderService {
                 order.setCompany(company);
                 order.setSupplier(supplier);
                 order.setOrderNumber(data.getOrderNumber());
-                order.setStatus("DRAFT");
+                order.setStatus(OrderStatus.DRAFT);
                 order.setExpectedDeliveryDate(data.getExpectedDeliveryDate());
                 order.setTotalAmount(BigDecimal.ZERO);
 
@@ -162,7 +166,7 @@ public class PurchaseOrderService {
                         PurchaseOrder order = new PurchaseOrder();
                         order.setCompany(supplier.getCompany());
                         order.setSupplier(supplier);
-                        order.setStatus("DRAFT");
+                        order.setStatus(OrderStatus.DRAFT);
 
                         // Attribution du numéro de commande avec le préfixe RCO-CMD-
                         order.setOrderNumber("RCO-CMD-" + System.currentTimeMillis() + "-" + counter++);
@@ -282,7 +286,7 @@ public class PurchaseOrderService {
 
         // met à jours le status de la commande
         @Transactional
-        public PurchaseOrderDTO updateStatus(Integer id, String newStatus) {
+        public PurchaseOrderDTO updateStatus(Integer id, String newStatusStr) {
                 Integer companyId = getCurrentCompanyId();
 
                 PurchaseOrder order = purchaseOrderRepository
@@ -290,7 +294,7 @@ public class PurchaseOrderService {
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Purchase order not found with id: " + id));
 
-                order.setStatus(newStatus);
+                order.setStatus(OrderStatus.valueOf(newStatusStr));
                 purchaseOrderRepository.save(order);
 
                 return toDTOWithCalculatedTotal(order, companyId);
@@ -329,10 +333,8 @@ public class PurchaseOrderService {
                 PurchaseOrder order = new PurchaseOrder();
                 order.setCompany(company);
                 order.setSupplier(supplier);
-                order.setStatus("DRAFT");
+                order.setStatus(OrderStatus.DRAFT);
                 order.setTotalAmount(BigDecimal.ZERO);
-                // Tu peux laisser expectedDeliveryDate à null ou calculer un délai par défaut
-                // si besoin
 
                 PurchaseOrder savedOrder = purchaseOrderRepository.save(order);
 
@@ -364,8 +366,7 @@ public class PurchaseOrderService {
 
                 purchaseOrderItemRepository.save(item);
 
-                // 7. (Optionnel) Mettre à jour le statut de la recommandation pour éviter les
-                // doublons
+                // 7. Mettre à jour le statut de la recommandation
                 recommendation.setStatus("APPROVED");
                 recommendation.setResolvedAt(java.time.LocalDateTime.now());
                 purchaseRecommendationRepository.save(recommendation);
@@ -385,8 +386,8 @@ public class PurchaseOrderService {
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Purchase order not found with id: " + id));
 
-                // Optionnel : Vérifier que la commande peut être réceptionnée
-                if ("DRAFT".equals(order.getStatus()) || "RECEIVED".equals(order.getStatus())) {
+                // Vérifier que la commande peut être réceptionnée
+                if (OrderStatus.DRAFT.equals(order.getStatus()) || OrderStatus.RECEIVED.equals(order.getStatus())) {
                         throw new IllegalStateException(
                                         "Cette commande ne peut pas être réceptionnée dans son état actuel : "
                                                         + order.getStatus());
@@ -397,7 +398,6 @@ public class PurchaseOrderService {
                                 .findAllByPurchaseOrder_IdPurchaseOrderAndPurchaseOrder_Company_IdCompany(id,
                                                 companyId);
 
-                // Transformer la liste reçue en Map pour un accès rapide par ID d'item
                 Map<Integer, PurchaseOrderItemReceiveDTO> receiveMap = new java.util.HashMap<>();
                 if (receiveData.getItems() != null) {
                         for (PurchaseOrderItemReceiveDTO itemReceive : receiveData.getItems()) {
@@ -420,12 +420,10 @@ public class PurchaseOrderService {
                         if (qtyReceivedNow.compareTo(BigDecimal.ZERO) > 0) {
                                 anyItemReceived = true;
 
-                                // Vérification receiveDto != null
                                 if (receiveDto != null && receiveDto.getUnitPrice() != null) {
                                         item.setUnitPrice(receiveDto.getUnitPrice());
                                 }
 
-                                // Cumuler la quantité reçue
                                 BigDecimal currentReceived = item.getQuantityReceived() != null
                                                 ? item.getQuantityReceived()
                                                 : BigDecimal.ZERO;
@@ -441,11 +439,9 @@ public class PurchaseOrderService {
                                                         ? product.getCurrentStock()
                                                         : BigDecimal.ZERO;
 
-                                        // Mise à jour du stock
                                         product.setCurrentStock(currentStock.add(qtyReceivedNow));
                                         productRepository.save(product);
 
-                                        // Enregistrement dans l'historique des mouvements (Type PURCHASE)
                                         StockMovement movement = new StockMovement();
                                         movement.setProduct(product);
                                         movement.setMovementType("PURCHASE");
@@ -455,7 +451,6 @@ public class PurchaseOrderService {
                                 }
                         }
 
-                        // Vérifier si la ligne est totalement remplie
                         BigDecimal ordered = item.getQuantityOrdered() != null ? item.getQuantityOrdered()
                                         : BigDecimal.ZERO;
                         BigDecimal received = item.getQuantityReceived() != null ? item.getQuantityReceived()
@@ -468,27 +463,28 @@ public class PurchaseOrderService {
 
                 // 5. Mettre à jour le statut global de la commande
                 if (allItemsFullyReceived) {
-                        order.setStatus("RECEIVED");
+                        order.setStatus(OrderStatus.RECEIVED);
+                        order.setReceivedAt(LocalDateTime.now());
                 } else if (anyItemReceived) {
-                        order.setStatus("PARTIALLY_RECEIVED");
+                        order.setStatus(OrderStatus.PARTIALLY_RECEIVED);
+                        if (order.getReceivedAt() == null) {
+                                order.setReceivedAt(LocalDateTime.now());
+                        }
                 }
-
                 purchaseOrderRepository.save(order);
 
-                // 6. Retourner le DTO mis à jour
                 return toDTOWithCalculatedTotal(order, companyId);
         }
 
         // va chercher la commande avec ses items
         @Transactional(readOnly = true)
-        public PurchaseOrderDTO getOrderWithItems(Integer orderId) { // Remplacer Long par Integer
+        public PurchaseOrderDTO getOrderWithItems(Integer orderId) {
                 Integer companyId = getCurrentCompanyId();
 
                 PurchaseOrder order = purchaseOrderRepository.findByIdAndCompanyIdWithItems(orderId, companyId)
                                 .orElseThrow(() -> new EntityNotFoundException(
                                                 "Purchase order not found with id: " + orderId));
 
-                // Voir correction numéro 2 ci-dessous pour le mapper
                 return purchaseOrderMapper.toDTO(order);
         }
 
@@ -501,41 +497,35 @@ public class PurchaseOrderService {
                                 .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
 
                 // Sécurité : on ne supprime que les brouillons (DRAFT)
-                if (!"DRAFT".equals(order.getStatus())) {
+                if (!OrderStatus.DRAFT.equals(order.getStatus())) {
                         throw new IllegalStateException(
                                         "Seules les commandes en brouillon (DRAFT) peuvent être supprimées.");
                 }
 
-                // 1. Récupérer les items de la commande
                 List<PurchaseOrderItem> items = purchaseOrderItemRepository
                                 .findAllByPurchaseOrder_IdPurchaseOrderAndPurchaseOrder_Company_IdCompany(orderId,
                                                 companyId);
 
-                // 2. Si la commande vient d'une recommandation, on remet les recommandations en
-                // PENDING
                 if (Boolean.TRUE.equals(order.getIsAutoRecommended())) {
                         List<Product> products = items.stream()
                                         .filter(item -> item != null && item.getProduct() != null)
                                         .map((PurchaseOrderItem item) -> item.getProduct())
                                         .toList();
 
-                        List<PurchaseRecommendation> recommendations = purchaseRecommendationRepository
-                                        .findByCompany_IdCompanyAndProductInAndStatus(
-                                                        companyId,
-                                                        products,
-                                                        "APPROVED");
+                        if (!products.isEmpty()) {
+                                List<PurchaseRecommendation> recommendations = purchaseRecommendationRepository
+                                                .findByCompany_IdCompanyAndProductInAndStatus(
+                                                                companyId,
+                                                                products,
+                                                                "APPROVED");
 
-                        for (PurchaseRecommendation rec : recommendations) {
-                                rec.setStatus("PENDING");
-                                rec.setResolvedAt(null);
+                                if (!recommendations.isEmpty()) {
+                                        purchaseRecommendationRepository.deleteAll(recommendations);
+                                }
                         }
-                        purchaseRecommendationRepository.saveAll(recommendations);
                 }
 
-                // 3. Supprimer les lignes de la commande
                 purchaseOrderItemRepository.deleteAll(items);
-
-                // 4. Supprimer la commande avec la sécurité multi-tenant
                 purchaseOrderRepository.deleteByIdPurchaseOrderAndCompany_IdCompany(orderId, companyId);
         }
 
@@ -586,4 +576,70 @@ public class PurchaseOrderService {
 
                 return principal.companyId();
         }
+
+        // Enregistrement de l'ARC (adapté pour accepter DRAFT ou SENT)
+        @Transactional
+        public PurchaseOrderDTO updateArc(Integer id, PurchaseOrderArcUpdateDTO arcData) {
+                Integer companyId = getCurrentCompanyId();
+
+                PurchaseOrder order = purchaseOrderRepository
+                                .findByIdPurchaseOrderAndCompany_IdCompany(id, companyId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Purchase order not found with id: " + id));
+
+                if (arcData.getArcNumber() != null) {
+                        order.setArcNumber(arcData.getArcNumber());
+                }
+
+                if (arcData.getExpectedDeliveryDate() != null) {
+                        order.setExpectedDeliveryDate(arcData.getExpectedDeliveryDate());
+                }
+
+                // Dès que l'ARC est reçu pour une commande envoyée (SENT), on la passe en
+                // CONFIRMED
+                if (OrderStatus.SENT.equals(order.getStatus())) {
+                        order.setStatus(OrderStatus.CONFIRMED);
+                }
+
+                purchaseOrderRepository.save(order);
+
+                return toDTOWithCalculatedTotal(order, companyId);
+        }
+
+
+        // Envoi du bon de commande par e-mail avec le contenu personnalisé depuis le
+        // front-end
+        @Transactional
+    public void sendOrderEmail(Integer orderId, String toEmail, String subject, String body) {
+        Integer companyId = getCurrentCompanyId();
+
+        // 1. Récupérer la commande
+        PurchaseOrder order = purchaseOrderRepository
+                .findByIdPurchaseOrderAndCompany_IdCompany(orderId, companyId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Commande introuvable avec l'id : " + orderId));
+
+        // 2. Récupérer l'entreprise, le fournisseur et les items associés
+        Company company = companyRepository.findById(companyId).orElse(null);
+        Supplier supplier = order.getSupplier();
+
+        List<PurchaseOrderItem> items = purchaseOrderItemRepository
+                .findAllByPurchaseOrder_IdPurchaseOrderAndPurchaseOrder_Company_IdCompany(orderId,
+                        companyId);
+
+        // 3. Génération du PDF avec la signature complète attendue par ton PdfService
+        byte[] pdfBytes = pdfService.generatePurchaseOrderPdf(company, supplier, order, items);
+        String attachmentName = "BonDeCommande_" + order.getOrderNumber() + ".pdf";
+
+        // 4. Envoi via le service mail simplifié
+        emailService.sendEmailWithAttachment(
+                toEmail,
+                subject,
+                body,
+                pdfBytes,
+                attachmentName);
+
+        order.setStatus(OrderStatus.SENT);
+        purchaseOrderRepository.save(order);
+    }
 }

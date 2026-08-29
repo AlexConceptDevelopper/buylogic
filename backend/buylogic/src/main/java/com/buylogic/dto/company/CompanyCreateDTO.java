@@ -19,4 +19,10 @@ public class CompanyCreateDTO {
 
     @Email
     private String email;
+
+    private String phone;
+    private String siret;
+    private String address;
+    private String receptionHours;
+    private String logoUrl;
 }

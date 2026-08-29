@@ -39,6 +39,9 @@ public class AppUser {
     @Column(name = "last_name", length = 100)
     private String lastName;
 
+    @Column(length = 100)
+    private String department;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private Role role = Role.USER;

@@ -1,27 +1,32 @@
 import { Link } from "react-router-dom";
+import { OrderStatus } from "../../types/OrderStatus";
 import type { PurchaseOrder } from "../../types/purchaseOrder";
 
 const statusStyles: Record<
-  string,
+  OrderStatus,
   { label: string; className: string }
 > = {
-  DRAFT: {
+  [OrderStatus.DRAFT]: {
     label: "Brouillon",
     className: "border-slate-400/20 bg-slate-400/5 text-slate-300",
   },
-  ORDERED: {
+  [OrderStatus.SENT]: {
+    label: "Envoyée (Attente ARC)",
+    className: "border-indigo-400/20 bg-indigo-400/5 text-indigo-300",
+  },
+  [OrderStatus.CONFIRMED]: {
     label: "Commandée",
     className: "border-cyan-400/20 bg-cyan-400/5 text-cyan-300",
   },
-  PARTIALLY_RECEIVED: {
+  [OrderStatus.PARTIALLY_RECEIVED]: {
     label: "Partiellement reçue",
     className: "border-amber-400/20 bg-amber-400/5 text-amber-300",
   },
-  RECEIVED: {
+  [OrderStatus.RECEIVED]: {
     label: "Reçue",
     className: "border-emerald-400/20 bg-emerald-400/5 text-emerald-300",
   },
-  CANCELLED: {
+  [OrderStatus.CANCELLED]: {
     label: "Annulée",
     className: "border-rose-400/20 bg-rose-400/5 text-rose-300",
   },
@@ -158,7 +163,7 @@ export default function PurchaseTable({
                   </td>
 
                   <td className="px-5 py-4 text-right">
-                    {order.status === "DRAFT" && (
+                    {order.status === OrderStatus.DRAFT && (
                       <div className="flex items-center justify-end gap-2">
                         {isConfirming ? (
                           <>
@@ -201,8 +206,17 @@ export default function PurchaseTable({
                       </div>
                     )}
 
-                    {(order.status === "ORDERED" ||
-                      order.status === "PARTIALLY_RECEIVED") && (
+                    {order.status === OrderStatus.SENT && (
+                      <Link
+                        to={`/purchase-orders/${order.idPurchaseOrder}`}
+                        className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-indigo-400/20 bg-indigo-400/5 px-3 py-2 text-xs font-semibold text-indigo-300 transition hover:border-indigo-400/30 hover:bg-indigo-400/10"
+                      >
+                        Ajouter l'ARC
+                      </Link>
+                    )}
+
+                    {(order.status === OrderStatus.CONFIRMED ||
+                      order.status === OrderStatus.PARTIALLY_RECEIVED) && (
                       <Link
                         to={`/purchase-orders/${order.idPurchaseOrder}/receive`}
                         className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2 text-xs font-semibold text-amber-300 transition hover:border-amber-400/30 hover:bg-amber-400/10"
@@ -211,7 +225,7 @@ export default function PurchaseTable({
                       </Link>
                     )}
 
-                    {order.status === "RECEIVED" && (
+                    {order.status === OrderStatus.RECEIVED && (
                       <Link
                         to={`/purchase-orders/${order.idPurchaseOrder}`}
                         className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-emerald-400/20 bg-emerald-400/5 px-3 py-2 text-xs font-semibold text-emerald-300 transition hover:border-emerald-400/30 hover:bg-emerald-400/10"
@@ -219,13 +233,6 @@ export default function PurchaseTable({
                         Consulter
                       </Link>
                     )}
-
-                    {order.status !== "DRAFT" &&
-                      order.status !== "ORDERED" &&
-                      order.status !== "PARTIALLY_RECEIVED" &&
-                      order.status !== "RECEIVED" && (
-                        <span className="text-xs text-slate-700">—</span>
-                      )}
                   </td>
                 </tr>
               );

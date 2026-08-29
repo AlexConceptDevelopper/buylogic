@@ -11,15 +11,10 @@ import PurchaseFilters from "../components/purchase/PurchaseFilters";
 import PurchaseStats from "../components/purchase/PurchaseStats";
 import PurchaseTable from "../components/purchase/PurchaseTable";
 
+import { OrderStatus } from "../types/OrderStatus";
 import type { PurchaseOrder } from "../types/purchaseOrder";
 
-type OrderFilter =
-  | "ALL"
-  | "DRAFT"
-  | "ORDERED"
-  | "PARTIALLY_RECEIVED"
-  | "RECEIVED"
-  | "CANCELLED";
+type OrderFilter = "ALL" | OrderStatus;
 
 export default function PurchaseOrdersPage() {
   const navigate = useNavigate();
@@ -46,11 +41,14 @@ export default function PurchaseOrdersPage() {
   const stats = useMemo(() => {
     return {
       total: orders.length,
-      draft: orders.filter((order) => order.status === "DRAFT").length,
-      ordered: orders.filter((order) => order.status === "ORDERED").length,
+      draft: orders.filter((order) => order.status === OrderStatus.DRAFT).length,
+      sent: orders.filter((order) => order.status === OrderStatus.SENT).length,
+      ordered: orders.filter((order) => order.status === OrderStatus.CONFIRMED).length,
       partiallyReceived: orders.filter(
-        (order) => order.status === "PARTIALLY_RECEIVED",
+        (order) => order.status === OrderStatus.PARTIALLY_RECEIVED,
       ).length,
+      received: orders.filter((order) => order.status === OrderStatus.RECEIVED).length,
+      cancelled: orders.filter((order) => order.status === OrderStatus.CANCELLED).length,
     };
   }, [orders]);
 
@@ -174,20 +172,24 @@ export default function PurchaseOrdersPage() {
         />
       </div>
 
-      <PurchaseFilters
-        search={search}
-        onSearchChange={setSearch}
-        filter={filter}
-        onSelectFilter={setFilter}
-      />
+      <div className="mt-6">
+        <PurchaseFilters
+          search={search}
+          onSearchChange={setSearch}
+          filter={filter}
+          onSelectFilter={setFilter}
+        />
+      </div>
 
-      <PurchaseTable
-        orders={filteredOrders}
-        deletingId={deletingId}
-        onStartDelete={setDeletingId}
-        onCancelDelete={() => setDeletingId(null)}
-        onConfirmDelete={handleDeleteOrder}
-      />
+      <div className="mt-6">
+        <PurchaseTable
+          orders={filteredOrders}
+          deletingId={deletingId}
+          onStartDelete={setDeletingId}
+          onCancelDelete={() => setDeletingId(null)}
+          onConfirmDelete={handleDeleteOrder}
+        />
+      </div>
     </div>
   );
 }

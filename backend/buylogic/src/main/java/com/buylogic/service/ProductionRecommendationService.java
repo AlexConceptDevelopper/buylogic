@@ -111,8 +111,6 @@ public class ProductionRecommendationService {
                 : BigDecimal.ZERO;
 
         BigDecimal dailyConsumption = BigDecimal.ZERO;
-        LocalDate firstConsumptionDate = null;
-        LocalDate lastConsumptionDate = null;
         BigDecimal totalConsumption = BigDecimal.ZERO;
 
         for (Consumption consumption : consumptions) {
@@ -120,21 +118,12 @@ public class ProductionRecommendationService {
                 continue;
             }
             totalConsumption = totalConsumption.add(consumption.getQuantity());
-
-            if (firstConsumptionDate == null || consumption.getConsumptionDate().isBefore(firstConsumptionDate)) {
-                firstConsumptionDate = consumption.getConsumptionDate();
-            }
-            if (lastConsumptionDate == null || consumption.getConsumptionDate().isAfter(lastConsumptionDate)) {
-                lastConsumptionDate = consumption.getConsumptionDate();
-            }
         }
 
-        if (firstConsumptionDate != null && lastConsumptionDate != null) {
-            long observedDays = ChronoUnit.DAYS.between(firstConsumptionDate, lastConsumptionDate) + 1;
-            if (observedDays > 0) {
-                dailyConsumption = totalConsumption.divide(
-                        BigDecimal.valueOf(observedDays), 5, RoundingMode.HALF_UP);
-            }
+        long totalPeriodDays = ChronoUnit.DAYS.between(startDate, today) + 1;
+        if (totalConsumption.compareTo(BigDecimal.ZERO) > 0 && totalPeriodDays > 0) {
+            dailyConsumption = totalConsumption.divide(
+                    BigDecimal.valueOf(totalPeriodDays), 5, RoundingMode.HALF_UP);
         }
 
         BigDecimal safetyStock = dailyConsumption.multiply(SAFETY_DAYS);

@@ -8,7 +8,9 @@ export async function apiFetch<T>(
 
   const headers = new Headers(options.headers);
 
-  headers.set("Content-Type", "application/json");
+  if (!(options.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
 
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
@@ -44,7 +46,8 @@ export async function apiFetch<T>(
       return null;
     }
 
-    return (await response.json()) as T;
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
   } catch (error) {
     console.error("API Error:", error);
     throw error;

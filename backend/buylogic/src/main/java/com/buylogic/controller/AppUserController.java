@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.buylogic.dto.appuser.AppUserCreateDTO;
 import com.buylogic.dto.appuser.AppUserDTO;
+import com.buylogic.dto.appuser.AppUserUpdateDTO;
 import com.buylogic.service.AppUserService;
 
 import jakarta.validation.Valid;
@@ -64,5 +65,16 @@ public class AppUserController {
         appUserService.delete(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OWNER')")
+    @PutMapping("/{id}")
+    public ResponseEntity<AppUserDTO> update(
+            @PathVariable Integer id,
+            @Valid @RequestBody AppUserUpdateDTO dto) {
+
+        return ResponseEntity.ok(
+                appUserService.update(id, dto)
+        );
     }
 }

@@ -30,6 +30,7 @@ public class AppUserMapper {
         dto.setEmail(user.getEmail());
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
+        dto.setDepartment(user.getDepartment());
 
         dto.setRole(
                 user.getRole() != null

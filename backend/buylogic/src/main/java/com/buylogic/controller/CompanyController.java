@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.buylogic.dto.company.CompanyCreateDTO;
 import com.buylogic.dto.company.CompanyDTO;
@@ -33,8 +34,7 @@ public class CompanyController {
             @PathVariable Integer id) {
 
         return ResponseEntity.ok(
-            companyService.getById(id)
-        );
+                companyService.getById(id));
     }
 
     @PostMapping
@@ -52,8 +52,16 @@ public class CompanyController {
             @Valid @RequestBody CompanyUpdateDTO dto) {
 
         return ResponseEntity.ok(
-            companyService.update(id, dto)
-        );
+                companyService.update(id, dto));
+    }
+
+    @PostMapping("/{id}/logo")
+    public ResponseEntity<CompanyDTO> uploadLogo(
+            @PathVariable Integer id,
+            @RequestParam("file") MultipartFile file) {
+
+        return ResponseEntity.ok(
+                companyService.updateLogo(id, file));
     }
 
     @DeleteMapping("/{id}")

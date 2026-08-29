@@ -2,7 +2,6 @@ package com.buylogic.dto.company;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +20,10 @@ public class CompanyUpdateDTO {
     @Email
     private String email;
 
-    @NotNull
-    private Boolean active;
+    private String phone;
+
+    private String siret;
+    private String address;
+    private String receptionHours;
+    private String logoUrl;
 }

@@ -22,9 +22,24 @@ public class Company {
 
     @Column(length = 255)
     private String email;
+    
+    @Column(length = 50)
+    private String phone;
 
     @Column(nullable = false)
     private Boolean active = true;
+
+    @Column(length = 50)
+    private String siret;
+
+    @Column(columnDefinition = "TEXT")
+    private String address;
+
+    @Column(length = 100)
+    private String receptionHours;
+
+    @Column(length = 500)
+    private String logoUrl;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

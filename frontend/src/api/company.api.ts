@@ -27,6 +27,16 @@ export function updateCompany(id: number, data: CompanyUpdate) {
   });
 }
 
+export function uploadCompanyLogo(id: number, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return apiFetch<Company>(`/companies/${id}/logo`, {
+    method: "POST",
+    body: formData, 
+  });
+}
+
 export function deleteCompany(id: number) {
   return apiFetch<void>(`/companies/${id}`, {
     method: "DELETE",

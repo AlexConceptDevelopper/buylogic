@@ -1,3 +1,5 @@
+import { OrderStatus } from "../../types/OrderStatus";
+
 type PurchaseFiltersProps = {
   search: string;
   onSearchChange: (value: string) => void;
@@ -7,11 +9,12 @@ type PurchaseFiltersProps = {
 
 const filterOptions = [
   ["ALL", "Toutes"],
-  ["DRAFT", "Brouillons"],
-  ["ORDERED", "Commandées"],
-  ["PARTIALLY_RECEIVED", "Partiellement reçues"],
-  ["RECEIVED", "Reçues"],
-  ["CANCELLED", "Annulées"],
+  [OrderStatus.DRAFT, "Brouillons"],
+  [OrderStatus.SENT, "Envoyées (ARC)"],
+  [OrderStatus.CONFIRMED, "Commandées"],
+  [OrderStatus.PARTIALLY_RECEIVED, "Partiellement reçues"],
+  [OrderStatus.RECEIVED, "Reçues"],
+  [OrderStatus.CANCELLED, "Annulées"],
 ] as const;
 
 export default function PurchaseFilters({

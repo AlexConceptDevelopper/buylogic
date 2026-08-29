@@ -28,6 +28,7 @@ import ProductHeader from "../components/product/ProductHeader";
 import ProductSuppliersSection from "../components/product/ProductSuppliersSection";
 import ProductRecommendationSection from "../components/product/ProductRecommendationSection";
 import ManufacturedProductSection from "../components/product/ManufacturedProductSection";
+import { EmailComposerModal } from "../components/EmailComposerModal";
 
 import SupplierProductModal from "../components/product/modals/SupplierProductModal";
 
