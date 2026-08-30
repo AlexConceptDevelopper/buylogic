@@ -8,10 +8,28 @@ export const UNIT_LABELS: Record<ProductUnit, string> = {
   KG: "Kilogramme",
   G: "Gramme",
   L: "Litre",
-  ML: "Millilitre",
+  MTR: "Mètre",
 };
 
 export const TYPE_LABELS: Record<ProductType, string> = {
   PURCHASED: "Acheté",
   MANUFACTURED: "Fabriqué",
+};
+
+export const getUnitLabel = (unit: ProductUnit, quantity: number): string => {
+  const baseLabel = UNIT_LABELS[unit] || unit;
+  
+  if (quantity > 1) {
+    switch (unit) {
+      case "UNIT": return "Unités";
+      case "BOX": return "Boîtes";
+      case "SET": return "Lots / Sets";
+      case "KG": return "Kilogrammes";
+      case "G": return "Grammes";
+      case "L": return "Litres";
+      case "MTR": return "Mètres";
+      default: return baseLabel + "s";
+    }
+  }
+  return baseLabel;
 };

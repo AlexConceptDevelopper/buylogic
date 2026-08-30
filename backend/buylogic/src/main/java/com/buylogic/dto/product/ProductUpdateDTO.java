@@ -29,8 +29,9 @@ public class ProductUpdateDTO {
 
     private String description;
 
-    @Pattern(regexp = "UNIT|KG|L", message = "Unit must be UNIT, KG or L.")
+    @Pattern(regexp = "UNIT|BOX|SET|KG|L|G|MTR", message = "Unit must be UNIT, BOX, SET, KG, L, G or MTR.")
     private String unit;
+    
     private Boolean fractional;
 
     @PositiveOrZero
@@ -44,4 +45,13 @@ public class ProductUpdateDTO {
     private String type;
 
     private List<ProductCompositionDTO> components;
+
+    // Failsafe manuel si Lombok coince sur ce champ dans l'IDE
+    public Boolean getFractional() {
+        return fractional;
+    }
+
+    public void setFractional(Boolean fractional) {
+        this.fractional = fractional;
+    }
 }

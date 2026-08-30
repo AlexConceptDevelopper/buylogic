@@ -7,7 +7,7 @@ export type ProductUnit =
   | "KG"
   | "G"
   | "L"
-  | "ML";
+  | "MTR";
 
 export interface ProductCompositionDTO {
   idChildProduct: number;

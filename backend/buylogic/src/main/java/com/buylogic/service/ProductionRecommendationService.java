@@ -17,6 +17,7 @@ import com.buylogic.mapper.ProductionRecommendationMapper;
 import com.buylogic.model.Consumption;
 import com.buylogic.model.Product;
 import com.buylogic.model.ProductionRecommendation;
+import com.buylogic.model.enums.ProductType;
 import com.buylogic.repository.global.ConsumptionRepository;
 import com.buylogic.repository.global.ProductRepository;
 import com.buylogic.repository.global.ProductionRecommendationRepository;
@@ -66,6 +67,13 @@ public class ProductionRecommendationService {
         Product product = productRepository.findByIdProductAndCompany_IdCompany(productId, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Product not found with id: " + productId));
+
+        // SÉCURITÉ : Si ce n'est pas un produit fabriqué, on supprime l'éventuelle reco de production et on stoppe net
+        if (product.getType() != ProductType.MANUFACTURED) {
+            productionRecommendationRepository.findByProduct_IdProductAndCompany_IdCompany(productId, companyId)
+                    .ifPresent(productionRecommendationRepository::delete);
+            return;
+        }
 
         ProductionRecommendation recommendation = productionRecommendationRepository
                 .findByProduct_IdProductAndCompany_IdCompany(productId, companyId)

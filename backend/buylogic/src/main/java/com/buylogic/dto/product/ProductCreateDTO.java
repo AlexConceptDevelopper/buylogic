@@ -29,7 +29,7 @@ public class ProductCreateDTO {
 
     private String description;
 
-    @Pattern(regexp = "UNIT|BOX|SET|KG|L|G|ML", message = "Unit must be UNIT, BOX, SET, KG, L, G or ML.")
+    @Pattern(regexp = "UNIT|BOX|SET|KG|L|G|ML|MTR", message = "Unit must be UNIT, BOX, SET, KG, L, G or MTR.")
     private String unit;
     private Boolean fractional;
 

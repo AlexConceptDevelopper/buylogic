@@ -23,6 +23,6 @@ public class ProductDTO {
     private Boolean fractional;
     private BigDecimal currentStock;
     private Boolean active;
-    private String type; // ou directement l'Enum ProductType selon tes préférences
+    private String type; 
     private List<ProductCompositionDTO> components;
 }

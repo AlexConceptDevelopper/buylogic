@@ -230,7 +230,6 @@ public class PurchaseRecommendationService {
         BigDecimal targetStock = reorderPoint.add(dailyConsumption.multiply(TARGET_COVERAGE_DAYS));
         BigDecimal recommendedQuantity = targetStock.subtract(currentStock);
 
-
         if (recommendedQuantity.compareTo(BigDecimal.ZERO) < 0) {
             recommendedQuantity = BigDecimal.ZERO;
         }
@@ -258,7 +257,14 @@ public class PurchaseRecommendationService {
         }
 
         String unit = recommendation.getProduct().getUnit();
-        if ("UNIT".equalsIgnoreCase(unit) || "BOX".equalsIgnoreCase(unit) || "SET".equalsIgnoreCase(unit)) {
+        if (unit != null && ("UNIT".equalsIgnoreCase(unit) ||
+                "BOX".equalsIgnoreCase(unit) ||
+                "SET".equalsIgnoreCase(unit) ||
+                "KG".equalsIgnoreCase(unit) ||
+                "L".equalsIgnoreCase(unit) ||
+                "G".equalsIgnoreCase(unit) ||
+                "ML".equalsIgnoreCase(unit))) {
+
             recommendedQuantity = recommendedQuantity.setScale(0, RoundingMode.CEILING);
         }
 

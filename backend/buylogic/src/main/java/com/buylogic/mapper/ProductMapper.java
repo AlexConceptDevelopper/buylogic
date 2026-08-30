@@ -15,112 +15,110 @@ import com.buylogic.model.enums.ProductType;
 @Component
 public class ProductMapper {
 
-        public ProductDTO toDTO(Product product) {
-                if (product == null) {
-                        return null;
-                }
-
-                ProductDTO dto = new ProductDTO();
-
-                dto.setIdProduct(product.getIdProduct());
-
-                dto.setIdCompany(
-                                product.getCompany() != null
-                                                ? product.getCompany().getIdCompany()
-                                                : null);
-
-                dto.setReference(product.getReference());
-                dto.setName(product.getName());
-                dto.setDescription(product.getDescription());
-                dto.setUnit(product.getUnit());
-                dto.setFractional(product.getFractional());
-                dto.setCurrentStock(product.getCurrentStock());
-                dto.setActive(product.getActive());
-
-                // Mapping du type vers le DTO (String)
-                dto.setType(product.getType() != null ? product.getType().name() : ProductType.PURCHASED.name());
-
-                // 🟢 CORRECTION : Mapper la liste des composants (recette)
-                // Mapping de la liste des composants (recette)
-                if (product.getComponents() != null) {
-                        dto.setComponents(
-                                        product.getComponents().stream().map(comp -> {
-                                                ProductCompositionDTO compDto = new ProductCompositionDTO();
-                                                compDto.setIdChildProduct(comp.getChildProduct().getIdProduct());
-                                                compDto.setQuantity(comp.getQuantity());
-                                                return compDto;
-                                        }).collect(Collectors.toList()));
-                } else {
-                        dto.setComponents(new java.util.ArrayList<>());
-                }
-
-                return dto;
+    public ProductDTO toDTO(Product product) {
+        if (product == null) {
+            return null;
         }
 
-        public Product toEntity(
-                        ProductCreateDTO dto,
-                        Company company) {
+        ProductDTO dto = new ProductDTO();
 
-                if (dto == null) {
-                        return null;
-                }
+        dto.setIdProduct(product.getIdProduct());
+        dto.setIdCompany(
+                product.getCompany() != null
+                        ? product.getCompany().getIdCompany()
+                        : null);
 
-                Product product = new Product();
+        dto.setReference(product.getReference());
+        dto.setName(product.getName());
+        dto.setDescription(product.getDescription());
+        dto.setUnit(product.getUnit());
+        dto.setFractional(product.getFractional());
+        dto.setCurrentStock(product.getCurrentStock());
+        dto.setActive(product.getActive());
 
-                product.setCompany(company);
-                product.setReference(dto.getReference());
-                product.setName(dto.getName());
-                product.setDescription(dto.getDescription());
-                product.setUnit(
-                                dto.getUnit() != null && !dto.getUnit().isBlank()
-                                                ? dto.getUnit()
-                                                : "UNIT");
-                product.setFractional(
-                                dto.getFractional() != null
-                                                ? dto.getFractional()
-                                                : true);
-                product.setCurrentStock(
-                                dto.getCurrentStock() != null
-                                                ? dto.getCurrentStock()
-                                                : java.math.BigDecimal.ZERO);
-                product.setActive(true);
+        // Mapping du type vers le DTO (String)
+        dto.setType(product.getType() != null ? product.getType().name() : ProductType.PURCHASED.name());
 
-                // Mapping du type depuis le DTO (String vers Enum)
-                product.setType(
-                                dto.getType() != null && !dto.getType().isBlank()
-                                                ? ProductType.valueOf(dto.getType())
-                                                : ProductType.PURCHASED);
-
-                return product;
+        // Mapping de la liste des composants (recette)
+        if (product.getComponents() != null) {
+            dto.setComponents(
+                    product.getComponents().stream().map(comp -> {
+                        ProductCompositionDTO compDto = new ProductCompositionDTO();
+                        compDto.setIdChildProduct(comp.getChildProduct().getIdProduct());
+                        compDto.setQuantity(comp.getQuantity());
+                        return compDto;
+                    }).collect(Collectors.toList()));
+        } else {
+            dto.setComponents(new java.util.ArrayList<>());
         }
 
-        public void updateEntity(
-                        Product product,
-                        ProductUpdateDTO dto,
-                        Company company) {
+        return dto;
+    }
 
-                product.setCompany(company);
-                product.setReference(dto.getReference());
-                product.setName(dto.getName());
-                product.setDescription(dto.getDescription());
-                product.setUnit(
-                                dto.getUnit() != null && !dto.getUnit().isBlank()
-                                                ? dto.getUnit()
-                                                : "UNIT");
-                product.setFractional(
-                                dto.getFractional() != null
-                                                ? dto.getFractional()
-                                                : true);
-                product.setCurrentStock(
-                                dto.getCurrentStock() != null
-                                                ? dto.getCurrentStock()
-                                                : java.math.BigDecimal.ZERO);
-                product.setActive(dto.getActive());
+    public Product toEntity(
+            ProductCreateDTO dto,
+            Company company) {
 
-                // Mise à jour du type
-                product.setType(
-                                dto.getType() != null && !dto.getType().isBlank()
-                                                ? ProductType.valueOf(dto.getType())
-                                                : ProductType.PURCHASED);
+        if (dto == null) {
+            return null;
         }
+
+        Product product = new Product();
+
+        product.setCompany(company);
+        product.setReference(dto.getReference());
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setUnit(
+                dto.getUnit() != null && !dto.getUnit().isBlank()
+                        ? dto.getUnit()
+                        : "UNIT");
+        product.setFractional(
+                dto.getFractional() != null
+                        ? dto.getFractional()
+                        : true);
+        product.setCurrentStock(
+                dto.getCurrentStock() != null
+                        ? dto.getCurrentStock()
+                        : java.math.BigDecimal.ZERO);
+        product.setActive(true);
+
+        // Mapping du type depuis le DTO (String vers Enum)
+        product.setType(
+                dto.getType() != null && !dto.getType().isBlank()
+                        ? ProductType.valueOf(dto.getType())
+                        : ProductType.PURCHASED);
+
+        return product;
+    }
+
+    public void updateEntity(
+            Product product,
+            ProductUpdateDTO dto,
+            Company company) {
+
+        product.setCompany(company);
+        product.setReference(dto.getReference());
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setUnit(
+                dto.getUnit() != null && !dto.getUnit().isBlank()
+                        ? dto.getUnit()
+                        : "UNIT");
+        product.setFractional(
+                dto.getFractional() != null
+                        ? dto.getFractional()
+                        : true);
+        product.setCurrentStock(
+                dto.getCurrentStock() != null
+                        ? dto.getCurrentStock()
+                        : java.math.BigDecimal.ZERO);
+        product.setActive(dto.getActive());
+
+        // Mise à jour du type
+        product.setType(
+                dto.getType() != null && !dto.getType().isBlank()
+                        ? ProductType.valueOf(dto.getType())
+                        : ProductType.PURCHASED);
+    }
 }
