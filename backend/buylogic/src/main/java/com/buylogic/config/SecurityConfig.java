@@ -29,20 +29,20 @@ public class SecurityConfig {
                         JwtAuthFilter jwtAuthFilter) throws Exception {
 
                 http
-                        .cors(Customizer.withDefaults())
-                        .csrf(csrf -> csrf.disable())
-                        .sessionManagement(session -> session.sessionCreationPolicy(
-                                        SessionCreationPolicy.STATELESS))
-                        .addFilterBefore(
-                                        jwtAuthFilter,
-                                        UsernamePasswordAuthenticationFilter.class)
-                        .authorizeHttpRequests(auth -> auth
-                                        .requestMatchers("/auth/**").permitAll()
-                                        .requestMatchers(
-                                                        HttpMethod.OPTIONS,
-                                                        "/**")
-                                        .permitAll()
-                                        .anyRequest().authenticated());
+                                .cors(Customizer.withDefaults())
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
+                                .addFilterBefore(
+                                                jwtAuthFilter,
+                                                UsernamePasswordAuthenticationFilter.class)
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/auth/**").permitAll()
+                                                .requestMatchers(
+                                                                HttpMethod.OPTIONS,
+                                                                "/**")
+                                                .permitAll()
+                                                .anyRequest().authenticated());
 
                 return http.build();
         }
@@ -57,7 +57,10 @@ public class SecurityConfig {
                 CorsConfiguration configuration = new CorsConfiguration();
 
                 configuration.setAllowedOrigins(
-                                List.of("http://localhost:5173"));
+                                List.of(
+                                                "http://localhost:5173",
+                                                "https://www.buylogic.fr",
+                                                "https://buylogic.fr"));
                 configuration.setAllowedMethods(
                                 List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 configuration.setAllowedHeaders(
