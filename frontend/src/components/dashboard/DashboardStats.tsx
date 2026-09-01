@@ -73,7 +73,7 @@ export default function DashboardStats() {
 
   const activePurchaseOrders = purchaseOrders.filter(
     (order) =>
-      order.status === "ORDERED" || order.status === "PARTIALLY_RECEIVED",
+      order.status === "CONFIRMED" || order.status === "PARTIALLY_RECEIVED",
   ).length;
 
   const priorityRecommendations = recommendations.filter(
