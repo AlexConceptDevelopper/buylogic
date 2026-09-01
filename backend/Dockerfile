@@ -1,8 +1,7 @@
 # Étape 1 : Build de l'application avec Maven
 FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /app
-COPY . .
-# Ajout des droits d'exécution sur le mvnw
+COPY backend/ .
 RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
