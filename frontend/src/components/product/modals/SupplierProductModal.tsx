@@ -4,6 +4,7 @@ import type {
   SupplierProduct,
   SupplierProductCreate,
 } from "../../../types/supplierProduct";
+import { UNIT_LABELS } from "../../../constants/product.constants";
 
 interface SupplierProductModalProps {
   open: boolean;
@@ -45,7 +46,6 @@ export default function SupplierProductModal({
   );
 
   return (
-    /* Ajout de py-6 et my-auto pour garantir une marge en haut et en bas */
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 px-6 py-6 backdrop-blur-sm">
       <div
         role="dialog"
@@ -297,13 +297,11 @@ export default function SupplierProductModal({
                 className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/40 focus:ring-2 focus:ring-cyan-400/10 disabled:opacity-50"
               >
                 <option value="">Sélectionner</option>
-                <option value="UNIT">UNIT</option>
-                <option value="BOX">BOX</option>
-                <option value="SET">SET</option>
-                <option value="KG">KG</option>
-                <option value="G">G</option>
-                <option value="L">L</option>
-                <option value="ML">ML</option>
+                {Object.entries(UNIT_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

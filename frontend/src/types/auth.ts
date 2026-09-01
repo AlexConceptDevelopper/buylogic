@@ -1,9 +1,3 @@
-import type {
-  ConsumptionMode,
-  ConsumptionSource,
-  ProductManagementMode,
-} from "./companyConfiguration";
-
 export interface LoginRequest {
   email: string;
   password: string;
@@ -23,9 +17,7 @@ export interface RegisterRequest {
   companyName: string;
   email: string;
   password: string;
-  productManagementMode: ProductManagementMode;
-  consumptionMode: ConsumptionMode;
-  consumptionSource: ConsumptionSource;
+  productManagementMode: string;
 }
 export interface RegisterResponse {
   userId: number;

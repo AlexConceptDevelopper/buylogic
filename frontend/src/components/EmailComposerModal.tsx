@@ -99,7 +99,7 @@ ${companyName ? `Société : ${companyName}` : ""}`
     setCcList(ccList.filter((email) => email !== emailToRemove));
   };
 
-  const handleSendSubmit = async (e: React.FormEvent) => {
+  const handleSendSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     await onSend({
       to,

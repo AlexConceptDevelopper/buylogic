@@ -17,7 +17,7 @@ import StockPage from "./pages/StockPage";
 import PurchaseOrdersPage from "./pages/PurchaseOrdersPage";
 import PurchaseOrderDetailPage from "./pages/PurchaseOrderDetailPage";
 import PurchaseOrderFormPage from "./pages/PurchaseOrderFormPage";
-import ConsumptionImportPage from "./pages/ConsumptionImportPage";
+import ConsumptionImportPage from "./pages/ImportHubPage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import { ReceivePurchaseOrderPage } from "./pages/ReceivePurchaseOrderPage";
 

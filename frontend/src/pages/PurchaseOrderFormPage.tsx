@@ -9,7 +9,7 @@ import {
 import { getPurchaseOrderItemsByPurchaseOrderId } from "../api/purchaseOrderItem.api";
 import { getSuppliers } from "../api/supplier.api";
 import { getSupplierProducts } from "../api/supplierProduct.api";
-import { getProducts } from "../api/product.api"; 
+import { getProducts } from "../api/product.api";
 import useAsync from "../hooks/useAsync";
 
 import { OrderStatus } from "../types/OrderStatus";
@@ -25,6 +25,7 @@ interface OrderLineForm {
   quantityOrdered: number;
   unitPrice: number;
   minOrderQuantity: number;
+  packagingUnit?: string;
 }
 
 export default function PurchaseOrderFormPage() {
@@ -34,7 +35,9 @@ export default function PurchaseOrderFormPage() {
   const orderId = id ? Number(id) : null;
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>([]);
+  const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>(
+    [],
+  );
   const [products, setProducts] = useState<Product[]>([]);
 
   const [idSupplier, setIdSupplier] = useState<number>(1);
@@ -53,11 +56,12 @@ export default function PurchaseOrderFormPage() {
   // 1. Charger les fournisseurs, les associations et le catalogue produits au montage
   useEffect(() => {
     const loadInitialData = async () => {
-      const [suppliersData, supplierProductsData, productsData] = await Promise.all([
-        executeSuppliers(() => getSuppliers()),
-        executeSupplierProducts(() => getSupplierProducts()),
-        executeProducts(() => getProducts()),
-      ]);
+      const [suppliersData, supplierProductsData, productsData] =
+        await Promise.all([
+          executeSuppliers(() => getSuppliers()),
+          executeSupplierProducts(() => getSupplierProducts()),
+          executeProducts(() => getProducts()),
+        ]);
 
       if (suppliersData && suppliersData.length > 0) {
         setSuppliers(suppliersData);
@@ -83,17 +87,25 @@ export default function PurchaseOrderFormPage() {
         reference: sp.supplierReference || productInfo?.reference,
         defaultPrice: sp.unitPrice,
         minOrderQuantity: sp.minimumOrderQuantity,
+        packagingUnit: sp.packagingUnit,
+        packagingQuantity: sp.packagingQuantity,
       };
     });
 
   // 3. Charger la commande existante en mode édition
   useEffect(() => {
-    if (isEditing && orderId && Number.isInteger(orderId) && products.length > 0 && supplierProducts.length > 0) {
+    if (
+      isEditing &&
+      orderId &&
+      Number.isInteger(orderId) &&
+      products.length > 0 &&
+      supplierProducts.length > 0
+    ) {
       const loadExistingOrder = async () => {
         const orderData = await executeOrder(() =>
           getPurchaseOrderById(orderId),
         );
-        
+
         let activeSupplierId = idSupplier;
         if (orderData) {
           activeSupplierId = orderData.idSupplier;
@@ -108,24 +120,33 @@ export default function PurchaseOrderFormPage() {
         const itemsData = await executeItems(() =>
           getPurchaseOrderItemsByPurchaseOrderId(orderId),
         );
-        
+
         if (itemsData && itemsData.length > 0) {
           const mappedItems: OrderLineForm[] = itemsData.map(
             (item: PurchaseOrderItem) => {
               const foundProduct = products.find(
-                (p) => p.idProduct === item.idProduct
+                (p) => p.idProduct === item.idProduct,
               );
-              
+
               // Chercher dans le SupplierProduct pour récupérer la bonne référence fournisseur
               const foundSp = supplierProducts.find(
-                (sp) => sp.idSupplier === activeSupplierId && sp.idProduct === item.idProduct
+                (sp) =>
+                  sp.idSupplier === activeSupplierId &&
+                  sp.idProduct === item.idProduct,
               );
 
               return {
                 idProduct: item.idProduct,
-                productName: item.productName ?? foundProduct?.name ?? `Produit #${item.idProduct}`,
-                productReference: foundSp?.supplierReference ?? item.productReference ?? foundProduct?.reference,
-                quantityOrdered: item.quantityOrdered ?? foundSp?.minimumOrderQuantity ?? 1,
+                productName:
+                  item.productName ??
+                  foundProduct?.name ??
+                  `Produit #${item.idProduct}`,
+                productReference:
+                  foundSp?.supplierReference ??
+                  item.productReference ??
+                  foundProduct?.reference,
+                quantityOrdered:
+                  item.quantityOrdered ?? foundSp?.minimumOrderQuantity ?? 1,
                 unitPrice: item.unitPrice ?? foundSp?.unitPrice ?? 0,
                 minOrderQuantity: foundSp?.minimumOrderQuantity ?? 1,
               };
@@ -137,11 +158,18 @@ export default function PurchaseOrderFormPage() {
 
       void loadExistingOrder();
     }
-  }, [isEditing, orderId, products, supplierProducts, executeOrder, executeItems]);
+  }, [
+    isEditing,
+    orderId,
+    products,
+    supplierProducts,
+    executeOrder,
+    executeItems,
+  ]);
 
   const handleSupplierChange = (newSupplierId: number) => {
     setIdSupplier(newSupplierId);
-    setItems([]); 
+    setItems([]);
   };
 
   const handleAddItem = (product: any) => {
@@ -162,6 +190,7 @@ export default function PurchaseOrderFormPage() {
           quantityOrdered: product.minOrderQuantity ?? 1,
           unitPrice: product.defaultPrice ?? 0,
           minOrderQuantity: product.minOrderQuantity ?? 1,
+          packagingUnit: product.packagingUnit,
         },
       ]);
     }
@@ -169,7 +198,10 @@ export default function PurchaseOrderFormPage() {
 
   const handleUpdateItemQuantity = (index: number, quantity: number) => {
     const updated = [...items];
-    updated[index].quantityOrdered = Math.max(1, isNaN(quantity) ? 1 : quantity);
+    updated[index].quantityOrdered = Math.max(
+      1,
+      isNaN(quantity) ? 1 : quantity,
+    );
     setItems(updated);
   };
 
@@ -188,7 +220,7 @@ export default function PurchaseOrderFormPage() {
     0,
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (items.length === 0) {
       alert("Veuillez ajouter au moins un produit à la commande.");
@@ -291,7 +323,9 @@ export default function PurchaseOrderFormPage() {
           </h2>
           <div className="flex flex-wrap gap-3">
             {currentSupplierProducts.length === 0 ? (
-              <p className="text-xs text-slate-500 italic">Aucun produit associé à ce fournisseur.</p>
+              <p className="text-xs text-slate-500 italic">
+                Aucun produit associé à ce fournisseur.
+              </p>
             ) : (
               currentSupplierProducts.map((prod) => (
                 <button
@@ -300,9 +334,10 @@ export default function PurchaseOrderFormPage() {
                   onClick={() => handleAddItem(prod)}
                   className="cursor-pointer rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:border-cyan-400/30 hover:bg-cyan-400/10 hover:text-cyan-300"
                 >
-                  + {prod.name} ({prod.defaultPrice.toFixed(2)} €){" "}
+                  + {prod.name} ({prod.defaultPrice.toFixed(2)} € /{" "}
+                  {prod.packagingUnit}){" "}
                   <span className="text-slate-500 font-normal">
-                    | Min: {prod.minOrderQuantity}
+                    | Min: {prod.minOrderQuantity} {prod.packagingUnit}
                   </span>
                 </button>
               ))
@@ -349,26 +384,35 @@ export default function PurchaseOrderFormPage() {
                         </td>
                         <td className="py-4 text-right">
                           <div className="flex flex-col items-end gap-1">
-                            <input
-                              type="number"
-                              min="1"
-                              value={item.quantityOrdered ?? 1}
-                              onChange={(e) =>
-                                handleUpdateItemQuantity(
-                                  index,
-                                  Number(e.target.value),
-                                )
-                              }
-                              className={`w-20 rounded-lg border bg-slate-900 px-3 py-1.5 text-right text-sm text-white outline-none ${
-                                isBelowMin
-                                  ? "border-rose-500/80 focus:border-rose-400"
-                                  : "border-white/10 focus:border-cyan-400/40"
-                              }`}
-                            />
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="number"
+                                min="1"
+                                value={item.quantityOrdered ?? 1}
+                                onChange={(e) =>
+                                  handleUpdateItemQuantity(
+                                    index,
+                                    Number(e.target.value),
+                                  )
+                                }
+                                className={`w-20 rounded-lg border bg-slate-900 px-3 py-1.5 text-right text-sm text-white outline-none ${
+                                  isBelowMin
+                                    ? "border-rose-500/80 focus:border-rose-400"
+                                    : "border-white/10 focus:border-cyan-400/40"
+                                }`}
+                              />
+                              {/* Affichage de l'unité à côté de l'input */}
+                              {item.packagingUnit && (
+                                <span className="text-xs text-slate-400 font-medium">
+                                  {item.packagingUnit}
+                                </span>
+                              )}
+                            </div>
                             <span
                               className={`text-[10px] ${isBelowMin ? "text-rose-400 font-bold" : "text-slate-500"}`}
                             >
-                              Min requis : {item.minOrderQuantity}
+                              Min requis : {item.minOrderQuantity}{" "}
+                              {item.packagingUnit}
                             </span>
                           </div>
                         </td>

@@ -1,15 +1,10 @@
 import { useState } from "react";
-import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { register } from "../api/auth.api";
-import type {
-  ConsumptionMode,
-  ConsumptionSource,
-  ProductManagementMode,
-} from "../types/companyConfiguration";
+import type { ProductManagementMode } from "../types/companyConfiguration";
 
-type OnboardingStep = 1 | 2 | 3 | 4;
+type OnboardingStep = 1 | 2;
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -25,16 +20,10 @@ export default function RegisterPage() {
   const [productManagementMode, setProductManagementMode] =
     useState<ProductManagementMode | null>(null);
 
-  const [consumptionMode, setConsumptionMode] =
-    useState<ConsumptionMode | null>(null);
-
-  const [consumptionSource, setConsumptionSource] =
-    useState<ConsumptionSource | null>(null);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const stepLabels = ["Compte", "Produits", "Stock", "Données"];
+  const stepLabels = ["Compte", "Produits"];
 
   const optionClassName = (selected: boolean) =>
     [
@@ -44,73 +33,40 @@ export default function RegisterPage() {
         : "border-white/10 bg-slate-950/50 hover:border-white/20 hover:bg-white/5",
     ].join(" ");
 
-  const validateCurrentStep = () => {
+  const handleNextStep = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     setError("");
 
-    if (step === 1) {
-      if (
-        !firstName.trim() ||
-        !lastName.trim() ||
-        !companyName.trim() ||
-        !email.trim() ||
-        !password
-      ) {
-        setError("Veuillez compléter tous les champs obligatoires.");
-        return false;
-      }
-
-      if (password.length < 8) {
-        setError("Le mot de passe doit contenir au moins 8 caractères.");
-        return false;
-      }
-    }
-
-    if (step === 2 && !productManagementMode) {
-      setError(
-        "Sélectionnez le fonctionnement qui correspond à votre entreprise.",
-      );
-      return false;
-    }
-
-    if (step === 3 && !consumptionMode) {
-      setError("Sélectionnez la manière dont vos ventes impactent le stock.");
-      return false;
-    }
-
-    return true;
-  };
-
-  const goNext = () => {
-    if (!validateCurrentStep()) {
+    if (
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !companyName.trim() ||
+      !email.trim() ||
+      !password
+    ) {
+      setError("Veuillez compléter tous les champs obligatoires.");
       return;
     }
 
-    setError("");
-    if (step < 4) {
-      setStep((current) => (current + 1) as OnboardingStep);
+    if (password.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères.");
+      return;
     }
+
+    setStep(2);
   };
 
-  const goBack = () => {
+  const handlePrevStep = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     setError("");
-
-    if (step > 1) {
-      setStep((current) => (current - 1) as OnboardingStep);
-    }
+    setStep(1);
   };
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleFinalSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
 
-    // Si on n'est pas à la dernière étape, "Entrée" fait juste avancer
-    if (step < 4) {
-      goNext();
-      return;
-    }
-
-    // À l'étape 4, on vérifie STRICTEMENT tout avant d'envoyer la requête API
-    if (!productManagementMode || !consumptionMode || !consumptionSource) {
-      setError("Veuillez sélectionner toutes les options de configuration.");
+    if (!productManagementMode) {
+      setError("Veuillez sélectionner le mode de gestion des produits.");
       return;
     }
 
@@ -125,8 +81,6 @@ export default function RegisterPage() {
         email,
         password,
         productManagementMode,
-        consumptionMode,
-        consumptionSource,
       });
 
       navigate("/login");
@@ -182,7 +136,7 @@ export default function RegisterPage() {
                 </p>
               </div>
 
-              <div className="mt-8 grid grid-cols-4 gap-2">
+              <div className="mt-8 grid grid-cols-2 gap-2">
                 {stepLabels.map((label, index) => {
                   const currentStep = (index + 1) as OnboardingStep;
                   const active = currentStep === step;
@@ -213,7 +167,8 @@ export default function RegisterPage() {
                 })}
               </div>
 
-              <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+              {/* Formulaire unique géré proprement selon l'étape */}
+              <form onSubmit={step === 2 ? handleFinalSubmit : (e) => e.preventDefault()} className="mt-8 space-y-5">
                 {step === 1 && (
                   <div className="space-y-5">
                     <div className="grid gap-5 sm:grid-cols-2">
@@ -230,7 +185,6 @@ export default function RegisterPage() {
                           value={firstName}
                           onChange={(event) => setFirstName(event.target.value)}
                           autoComplete="given-name"
-                          required
                           className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
                           placeholder="Alex"
                         />
@@ -249,7 +203,6 @@ export default function RegisterPage() {
                           value={lastName}
                           onChange={(event) => setLastName(event.target.value)}
                           autoComplete="family-name"
-                          required
                           className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
                           placeholder="Dupont"
                         />
@@ -269,7 +222,6 @@ export default function RegisterPage() {
                         value={companyName}
                         onChange={(event) => setCompanyName(event.target.value)}
                         autoComplete="organization"
-                        required
                         className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
                         placeholder="Boulangerie Dupont"
                       />
@@ -288,7 +240,6 @@ export default function RegisterPage() {
                         value={email}
                         onChange={(event) => setEmail(event.target.value)}
                         autoComplete="email"
-                        required
                         className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
                         placeholder="vous@entreprise.fr"
                       />
@@ -307,8 +258,6 @@ export default function RegisterPage() {
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
                         autoComplete="new-password"
-                        minLength={8}
-                        required
                         className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
                         placeholder="8 caractères minimum"
                       />
@@ -387,142 +336,6 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                {step === 3 && (
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      Lorsqu'un produit est vendu, comment votre stock
-                      évolue-t-il ?
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-500">
-                      BuyLogic utilise cette information pour déterminer ce qui
-                      doit réellement être déduit du stock.
-                    </p>
-
-                    <div className="mt-6 space-y-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setConsumptionMode("DIRECT_STOCK_OUT");
-                          setError("");
-                        }}
-                        className={optionClassName(
-                          consumptionMode === "DIRECT_STOCK_OUT",
-                        )}
-                      >
-                        <p className="text-sm font-bold text-white">
-                          Le produit vendu sort directement du stock
-                        </p>
-                        <p className="mt-2 text-xs leading-5 text-slate-500">
-                          Exemple : vous revendez directement un produit acheté
-                          auprès d'un fournisseur.
-                        </p>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setConsumptionMode("COMPOSITION");
-                          setError("");
-                        }}
-                        className={optionClassName(
-                          consumptionMode === "COMPOSITION",
-                        )}
-                      >
-                        <p className="text-sm font-bold text-white">
-                          La vente consomme plusieurs produits ou composants
-                        </p>
-                        <p className="mt-2 text-xs leading-5 text-slate-500">
-                          Exemple : un produit vendu est composé de plusieurs
-                          éléments suivis en stock.
-                        </p>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setConsumptionMode("MIXED");
-                          setError("");
-                        }}
-                        className={optionClassName(consumptionMode === "MIXED")}
-                      >
-                        <p className="text-sm font-bold text-white">
-                          Les deux selon les produits
-                        </p>
-                        <p className="mt-2 text-xs leading-5 text-slate-500">
-                          Certaines ventes sortent directement du stock et
-                          d'autres entraînent la consommation de composants.
-                        </p>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {step === 4 && (
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      Comment renseignez-vous vos consommations ?
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-500">
-                      Cette information permet à BuyLogic d'adapter les écrans
-                      d'import et de saisie à votre organisation.
-                    </p>
-
-                    <div className="mt-6 space-y-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setConsumptionSource("CSV");
-                          setError("");
-                        }}
-                        className={optionClassName(consumptionSource === "CSV")}
-                      >
-                        <p className="text-sm font-bold text-white">
-                          J'importe des fichiers CSV
-                        </p>
-                        <p className="mt-2 text-xs leading-5 text-slate-500">
-                          Les données peuvent provenir d'un logiciel de caisse,
-                          de gestion ou d'un export interne.
-                        </p>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setConsumptionSource("MANUAL");
-                          setError("");
-                        }}
-                        className={optionClassName(
-                          consumptionSource === "MANUAL",
-                        )}
-                      >
-                        <p className="text-sm font-bold text-white">
-                          Je saisis les consommations manuellement
-                        </p>
-                        <p className="mt-2 text-xs leading-5 text-slate-500">
-                          J'enregistre directement les sorties dans BuyLogic.
-                        </p>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setConsumptionSource("MIXED");
-                          setError("");
-                        }}
-                        className={optionClassName(
-                          consumptionSource === "MIXED",
-                        )}
-                      >
-                        <p className="text-sm font-bold text-white">Les deux</p>
-                        <p className="mt-2 text-xs leading-5 text-slate-500">
-                          J'utilise le CSV pour certaines données et la saisie
-                          manuelle pour d'autres.
-                        </p>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
                 {error && (
                   <div
                     role="alert"
@@ -536,7 +349,7 @@ export default function RegisterPage() {
                   {step > 1 ? (
                     <button
                       type="button"
-                      onClick={goBack}
+                      onClick={handlePrevStep}
                       disabled={loading}
                       className="cursor-pointer rounded-xl border border-white/10 px-5 py-3.5 text-sm font-semibold text-slate-300 transition hover:border-white/20 hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                     >
@@ -546,10 +359,10 @@ export default function RegisterPage() {
                     <div />
                   )}
 
-                  {step < 4 ? (
+                  {step < 2 ? (
                     <button
                       type="button"
-                      onClick={goNext}
+                      onClick={handleNextStep}
                       disabled={loading}
                       className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
                     >
@@ -582,7 +395,6 @@ export default function RegisterPage() {
 
             <div className="relative hidden overflow-hidden border-l border-white/5 bg-linear-to-br from-cyan-400/10 via-slate-900 to-blue-500/10 p-10 lg:flex lg:flex-col lg:justify-between">
               <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
-
               <div className="relative">
                 <div className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-400/5 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
                   Offre découverte
@@ -595,7 +407,6 @@ export default function RegisterPage() {
                   vos propres données.
                 </p>
               </div>
-
               <div className="relative mt-10 space-y-3">
                 <div className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-4">
                   <p className="text-xl font-black text-white">
@@ -605,15 +416,12 @@ export default function RegisterPage() {
                     Pour découvrir l'ensemble de l'expérience BuyLogic
                   </p>
                 </div>
-
                 <div className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-4 text-sm text-slate-300">
                   ✓ Aucune carte bancaire
                 </div>
-
                 <div className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-4 text-sm text-slate-300">
                   ✓ Aucun prélèvement automatique
                 </div>
-
                 <div className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-4 text-sm text-slate-300">
                   ✓ Votre entreprise reste isolée des autres
                 </div>

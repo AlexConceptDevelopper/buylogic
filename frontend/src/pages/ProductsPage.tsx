@@ -24,12 +24,18 @@ import { ProductCreateModal } from "../components/productsPage/ProductCreateModa
 import { ProductEditModal } from "../components/productsPage/ProductEditModal";
 import { ProductProduceModal } from "../components/productsPage/ProductProduceModal";
 
+const PAGE_SIZE = 10;
+
 export default function ProductsPage() {
   const { user } = useAuth();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+
+  // Nouveaux états pour la recherche et la pagination
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
@@ -108,14 +114,35 @@ export default function ProductsPage() {
     void loadSupplierData();
   }, [executeSupplierProducts, executeSuppliers]);
 
-  const displayedProducts = products.filter((p) => {
+  // Remise à la page 1 lorsqu'on change de filtre ou de recherche
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeTab, showArchived]);
+
+  // Filtrage combiné (archives, onglets, recherche)
+  const filteredProducts = products.filter((p) => {
     const matchesArchive = showArchived ? !p.active : p.active;
     if (!matchesArchive) return false;
 
-    if (activeTab === "PURCHASED") return p.type === "PURCHASED";
-    if (activeTab === "MANUFACTURED") return p.type === "MANUFACTURED";
+    if (activeTab === "PURCHASED" && p.type !== "PURCHASED") return false;
+    if (activeTab === "MANUFACTURED" && p.type !== "MANUFACTURED") return false;
+
+    if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase();
+      const matchesName = p.name.toLowerCase().includes(query);
+      const matchesRef = p.reference?.toLowerCase().includes(query) ?? false;
+      if (!matchesName && !matchesRef) return false;
+    }
+
     return true;
   });
+
+  // Calcul de la pagination
+  const totalPages = Math.ceil(filteredProducts.length / PAGE_SIZE) || 1;
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
 
   const handleToggleArchive = async (product: Product) => {
     const updatedProduct = await executeUpdateAsync(() =>
@@ -356,18 +383,31 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {displayedProducts.length === 0 ? (
+      {/* Barre de recherche */}
+      <div className="mt-6">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Rechercher par nom ou référence..."
+          className="w-full rounded-xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-400/50"
+        />
+      </div>
+
+      {filteredProducts.length === 0 ? (
         <section className="mt-8 rounded-2xl border border-white/5 bg-slate-900/70 p-10 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-400/5 text-2xl text-cyan-300">
             📦
           </div>
           <h2 className="mt-5 text-lg font-semibold text-white">
-            {showArchived ? "Aucun produit archivé" : "Aucun produit"}
+            {searchQuery ? "Aucun résultat trouvé" : (showArchived ? "Aucun produit archivé" : "Aucun produit")}
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-            {showArchived ? "Vous n'avez aucun produit dans les archives." : "Commencez par créer votre premier produit."}
+            {searchQuery
+              ? "Essayez de modifier votre recherche."
+              : (showArchived ? "Vous n'avez aucun produit dans les archives." : "Commencez par créer votre premier produit.")}
           </p>
-          {!showArchived && (
+          {!showArchived && !searchQuery && (
             <button
               type="button"
               onClick={() => {
@@ -420,12 +460,12 @@ export default function ProductsPage() {
               <p className="mt-1 text-xs text-slate-500">Cliquez sur un produit pour consulter son détail.</p>
             </div>
             <span className="text-xs font-semibold text-slate-400">
-              {displayedProducts.length} élément{displayedProducts.length > 1 ? "s" : ""}
+              {filteredProducts.length} élément{filteredProducts.length > 1 ? "s" : ""}
             </span>
           </div>
 
           <div className="divide-y divide-white/5">
-            {displayedProducts.map((product) => {
+            {paginatedProducts.map((product) => {
               const productSupplierNames = supplierProducts
                 .filter((item) => item.idProduct === product.idProduct && item.active)
                 .map((item) => suppliers.find((supplier) => supplier.idSupplier === item.idSupplier)?.name)
@@ -549,6 +589,31 @@ export default function ProductsPage() {
               );
             })}
           </div>
+
+          {/* Barre de pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-white/5 px-6 py-4 bg-slate-900/50">
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                className="cursor-pointer rounded-xl border border-white/10 px-4 py-2 text-xs font-semibold text-slate-300 transition hover:border-white/20 hover:bg-white/5 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Précédent
+              </button>
+              <span className="text-xs text-slate-400">
+                Page <strong className="text-white">{currentPage}</strong> sur <strong className="text-white">{totalPages}</strong>
+              </span>
+              <button
+                type="button"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                className="cursor-pointer rounded-xl border border-white/10 px-4 py-2 text-xs font-semibold text-slate-300 transition hover:border-white/20 hover:bg-white/5 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Suivant
+              </button>
+            </div>
+          )}
         </section>
       )}
 

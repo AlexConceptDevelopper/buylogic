@@ -119,14 +119,32 @@ export default function StockPage() {
     }
   };
 
-  const handleOpenBulkModal = () => {
+  const handleOpenBulkModal = async () => {
     setSingleProductTarget(null);
     setBulkQuantity(0);
     setBulkReason("AJUSTEMENT");
     setBulkCustomReason("");
-    setHasInitialStock(false);
-    setBulkActionType("ADD");
     setBulkModalOpen(true);
+
+    try {
+      const checks = await Promise.all(
+        selectedProductIds.map((id) => checkHasInitialStock(id))
+      );
+      
+      // Si TOUS les produits sélectionnés n'ont pas encore de stock initial
+      const allUninitialized = checks.every((exists) => !exists);
+      
+      // hasInitialStock devient true si au moins un produit a déjà été initialisé
+      setHasInitialStock(!allUninitialized);
+      setBulkActionType(allUninitialized ? "SET" : "ADD");
+      if (allUninitialized) {
+        setBulkReason("STOCK_INITIAL");
+      }
+    } catch (err) {
+      console.error("Erreur vérification stock initial groupé", err);
+      setHasInitialStock(false);
+      setBulkActionType("SET");
+    }
   };
 
   const handleApplyStock = async () => {
@@ -302,7 +320,7 @@ export default function StockPage() {
             </span>
             <button
               type="button"
-              onClick={handleOpenBulkModal}
+              onClick={() => void handleOpenBulkModal()}
               className="rounded-lg bg-cyan-400 px-3 py-1.5 text-xs font-bold text-slate-950 hover:bg-cyan-300 transition cursor-pointer"
             >
               Ajuster la sélection
@@ -390,7 +408,7 @@ export default function StockPage() {
                   Type d'action
                 </label>
                 <div className="mt-2 grid grid-cols-3 gap-2">
-                  {(!singleProductTarget || !hasInitialStock) && (
+                  {!hasInitialStock && (
                     <button
                       type="button"
                       onClick={() => setBulkActionType("SET")}
@@ -437,7 +455,7 @@ export default function StockPage() {
                   onChange={(e) => setBulkReason(e.target.value)}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 p-3 text-sm text-white outline-none focus:border-cyan-400"
                 >
-                  {singleProductTarget && !hasInitialStock && (
+                  {!hasInitialStock && (
                     <option value="STOCK_INITIAL">STOCK_INITIAL</option>
                   )}
                   <option value="INVENTAIRE">Inventaire physique</option>

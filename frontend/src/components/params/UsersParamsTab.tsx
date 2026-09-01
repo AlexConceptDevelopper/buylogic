@@ -27,7 +27,7 @@ interface UsersParamsTabProps {
   setRole: (val: string) => void;
   password: string;
   setPassword: (val: string) => void;
-  handleSubmitUser: (e: React.FormEvent) => void;
+  handleSubmitUser: (e: React.SyntheticEvent) => void;
 
   // États de la suppression
   userToDeleteId: number | null;

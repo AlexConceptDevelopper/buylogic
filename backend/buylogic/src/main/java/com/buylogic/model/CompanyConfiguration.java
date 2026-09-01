@@ -2,8 +2,6 @@ package com.buylogic.model;
 
 import java.time.LocalDateTime;
 
-import com.buylogic.model.enums.ConsumptionMode;
-import com.buylogic.model.enums.ConsumptionSource;
 import com.buylogic.model.enums.ProductManagementMode;
 
 import jakarta.persistence.*;
@@ -38,20 +36,6 @@ public class CompanyConfiguration {
         length = 30
     )
     private ProductManagementMode productManagementMode;
-
-    @Enumerated(EnumType.STRING)
-    @Column(
-        nullable = false,
-        length = 30
-    )
-    private ConsumptionMode consumptionMode;
-
-    @Enumerated(EnumType.STRING)
-    @Column(
-        nullable = false,
-        length = 20
-    )
-    private ConsumptionSource consumptionSource;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

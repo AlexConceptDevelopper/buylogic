@@ -36,18 +36,18 @@ public class AuthService {
                         RegisterRequest request) {
 
                 String email = request.email()
-                                .trim()
-                                .toLowerCase();
+                            .trim()
+                            .toLowerCase();
 
                 if (appUserRepository.existsByEmail(email)) {
                         throw new IllegalArgumentException(
-                                        "A user with this email already exists.");
+                                    "A user with this email already exists.");
                 }
 
                 Company company = new Company();
 
                 company.setName(
-                                request.companyName().trim());
+                            request.companyName().trim());
 
                 company.setEmail(email);
 
@@ -58,13 +58,7 @@ public class AuthService {
                 configuration.setCompany(company);
 
                 configuration.setProductManagementMode(
-                                request.productManagementMode());
-
-                configuration.setConsumptionMode(
-                                request.consumptionMode());
-
-                configuration.setConsumptionSource(
-                                request.consumptionSource());
+                            request.productManagementMode());
 
                 company.setConfiguration(configuration);
 
@@ -87,14 +81,14 @@ public class AuthService {
                 user.setEmail(email);
 
                 user.setPasswordHash(
-                                passwordEncoder.encode(
-                                                request.password()));
+                            passwordEncoder.encode(
+                                        request.password()));
 
                 user.setFirstName(
-                                request.firstName().trim());
+                            request.firstName().trim());
 
                 user.setLastName(
-                                request.lastName().trim());
+                            request.lastName().trim());
 
                 user.setRole(Role.OWNER);
 
@@ -103,53 +97,53 @@ public class AuthService {
                 AppUser savedUser = appUserRepository.save(user);
 
                 return new RegisterResponse(
-                                savedUser.getIdUser(),
-                                savedCompany.getIdCompany(),
-                                savedUser.getEmail(),
-                                savedUser.getRole().name(),
-                                "Account created successfully.");
+                            savedUser.getIdUser(),
+                            savedCompany.getIdCompany(),
+                            savedUser.getEmail(),
+                            savedUser.getRole().name(),
+                            "Account created successfully.");
         }
 
         public LoginResponse login(
                         LoginRequest request) {
 
                 String email = request.email()
-                                .trim()
-                                .toLowerCase();
+                            .trim()
+                            .toLowerCase();
 
                 AppUser user = appUserRepository
-                                .findByEmail(email)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "Invalid email or password."));
+                            .findByEmail(email)
+                            .orElseThrow(() -> new IllegalArgumentException(
+                                        "Invalid email or password."));
 
                 if (!Boolean.TRUE.equals(
-                                user.getActive())) {
+                            user.getActive())) {
 
                         throw new IllegalArgumentException(
-                                        "Invalid email or password.");
+                                    "Invalid email or password.");
                 }
 
                 if (!passwordEncoder.matches(
-                                request.password(),
-                                user.getPasswordHash())) {
+                            request.password(),
+                            user.getPasswordHash())) {
 
                         throw new IllegalArgumentException(
-                                        "Invalid email or password.");
+                                    "Invalid email or password.");
                 }
 
                 Company company = user.getCompany();
 
                 String token = jwtUtil.generateToken(
-                                user.getIdUser(),
-                                user.getEmail(),
-                                user.getRole().name(),
-                                company.getIdCompany());
+                            user.getIdUser(),
+                            user.getEmail(),
+                            user.getRole().name(),
+                            company.getIdCompany());
 
                 return new LoginResponse(
-                                token,
-                                user.getIdUser(),
-                                company.getIdCompany(),
-                                user.getEmail(),
-                                user.getRole().name());
+                            token,
+                            user.getIdUser(),
+                            company.getIdCompany(),
+                            user.getEmail(),
+                            user.getRole().name());
         }
 }

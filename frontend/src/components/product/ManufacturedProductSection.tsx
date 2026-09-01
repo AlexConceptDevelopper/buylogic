@@ -47,7 +47,7 @@ export default function ManufacturedProductSection({
     setIsOpen(true);
   };
 
-  const handleSaveIngredient = async (e: React.FormEvent) => {
+  const handleSaveIngredient = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setFormError(null);
 

@@ -65,7 +65,7 @@ const loadOrder = async (orderId: number) => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!id) return;
 

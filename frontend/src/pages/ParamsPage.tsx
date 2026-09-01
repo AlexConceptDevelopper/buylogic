@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
 import { getUsers, createUser, updateUser, deleteUser } from "../api/user.api";
 import { getCompanies, updateCompany } from "../api/company.api";
+import { getCompanyConfiguration } from "../api/companyConfiguration.api";
 import useAsync from "../hooks/useAsync";
 import type { User, UserCreate, UserUpdate } from "../types/user";
 import type { Company } from "../types/company";
+import type { CompanyConfiguration } from "../types/companyConfiguration";
 import CompanyParamsTab from "../components/params/CompagnyParamTab";
 import UsersParamsTab from "../components/params/UsersParamsTab";
 
 export default function ParamsPage() {
   const [activeTab, setActiveTab] = useState<"company" | "users">("company");
 
-  // --- États Entreprise ---
+  // --- États Entreprise & Configuration ---
   const [company, setCompany] = useState<Company | null>(null);
+  const [configuration, setConfiguration] = useState<CompanyConfiguration | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // --- États Utilisateurs ---
@@ -29,6 +32,7 @@ export default function ParamsPage() {
 
   const { loading: usersLoading, error: usersError, execute: executeUsers } = useAsync<User[]>();
   const { execute: executeCompany } = useAsync<any>();
+  const { execute: executeConfig } = useAsync<CompanyConfiguration>();
   const { loading: actionLoading, execute: executeAction } = useAsync<any>();
 
   useEffect(() => {
@@ -40,9 +44,14 @@ export default function ParamsPage() {
       if (dataCompanies && dataCompanies.length > 0) {
         setCompany(dataCompanies[0]);
       }
+
+      const dataConfig = await executeConfig(() => getCompanyConfiguration());
+      if (dataConfig) {
+        setConfiguration(dataConfig);
+      }
     };
     void loadData();
-  }, [executeUsers, executeCompany]);
+  }, [executeUsers, executeCompany, executeConfig]);
 
   const formatRole = (roleValue: string) => {
     switch (roleValue?.toUpperCase()) {
@@ -77,11 +86,12 @@ export default function ParamsPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmitUser = async (e: React.FormEvent) => {
+ const handleSubmitUser = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
     if (editingUser) {
-      const updateData: UserUpdate = { firstName, lastName, department, role };
+      // On retire "role" d'ici pour ne pas perturber le backend lors d'une simple modif
+      const updateData: UserUpdate = { firstName, lastName, department };
       const updated = await executeAction(() => updateUser(editingUser.idUser, updateData));
       if (updated) {
         setUsers((prev) =>
@@ -98,7 +108,7 @@ export default function ParamsPage() {
         firstName,
         lastName,
         department,
-        role,
+        role, // Le rôle reste utile uniquement à la création si besoin
       };
       const created = await executeAction(() => createUser(createData));
       if (created) {
@@ -118,7 +128,7 @@ export default function ParamsPage() {
     setUserToDeleteId(null);
   };
 
-  const handleSaveCompany = async (e: React.FormEvent) => {
+  const handleSaveCompany = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!company) return;
 
@@ -200,6 +210,7 @@ export default function ParamsPage() {
           <CompanyParamsTab
             company={company}
             setCompany={setCompany}
+            configuration={configuration}
             actionLoading={actionLoading}
             onSaveCompany={handleSaveCompany}
             successMessage={successMessage}
@@ -225,7 +236,7 @@ export default function ParamsPage() {
             setFirstName={setFirstName}
             lastName={lastName}
             setLastName={setLastName}
-            department={department}         
+            department={department}        
             setDepartment={setDepartment}
             role={role}
             setRole={setRole}

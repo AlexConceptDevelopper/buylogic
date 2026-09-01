@@ -21,7 +21,6 @@ public class CompanyConfigurationService {
     private final CompanyConfigurationRepository companyConfigurationRepository;
 
     public CompanyConfigurationDTO getCurrent() {
-
         Integer companyId = getCurrentCompanyId();
 
         CompanyConfiguration configuration = companyConfigurationRepository
@@ -30,36 +29,21 @@ public class CompanyConfigurationService {
                         "Company configuration not found."));
 
         CompanyConfigurationDTO dto = new CompanyConfigurationDTO();
-
-        dto.setIdCompanyConfiguration(
-                configuration.getIdCompanyConfiguration());
-
-        dto.setIdCompany(
-                configuration.getCompany().getIdCompany());
-
-        dto.setProductManagementMode(
-                configuration.getProductManagementMode());
-
-        dto.setConsumptionMode(
-                configuration.getConsumptionMode());
-
-        dto.setConsumptionSource(
-                configuration.getConsumptionSource());
+        dto.setIdCompanyConfiguration(configuration.getIdCompanyConfiguration());
+        dto.setIdCompany(configuration.getCompany().getIdCompany());
+        dto.setProductManagementMode(configuration.getProductManagementMode());
 
         return dto;
     }
 
     private Integer getCurrentCompanyId() {
-
         Authentication authentication = SecurityContextHolder
                 .getContext()
                 .getAuthentication();
 
         if (authentication == null
                 || !(authentication.getPrincipal() instanceof JwtPrincipal principal)) {
-
-            throw new IllegalStateException(
-                    "Authenticated company not found.");
+            throw new IllegalStateException("Authenticated company not found.");
         }
 
         return principal.companyId();
