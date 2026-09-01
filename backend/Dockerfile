@@ -1,7 +1,10 @@
-# Étape 1 : Build de l'application avec Maven
+# Étape 1 : Build de l'application
 FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /app
-COPY backend/ .
+
+# Copie tout le contenu du dossier du projet Spring Boot (pom.xml, src, mvnw, etc.) dans /app
+COPY buylogic/ .
+
 RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
