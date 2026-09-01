@@ -1,5 +1,5 @@
 # Étape 1 : Build de l'application
-FROM eclipse-temurin:21-jdk-jammy AS build
+FROM eclipse-temurin:24-jdk-jammy AS build
 WORKDIR /app
 
 # Copie tout le contenu du dossier du projet Spring Boot (pom.xml, src, mvnw, etc.) dans /app
