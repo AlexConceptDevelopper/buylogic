@@ -28,22 +28,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-       private final JwtAuthFilter jwtAuthFilter;
+        private final JwtAuthFilter jwtAuthFilter;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http
-                        .cors(Customizer.withDefaults())
-                        .csrf(csrf -> csrf.disable())
-                        .sessionManagement(session -> session.sessionCreationPolicy(
-                                        SessionCreationPolicy.STATELESS))
-                        .addFilterBefore(
-                                        jwtAuthFilter,
-                                        UsernamePasswordAuthenticationFilter.class)
-                        .authorizeHttpRequests(auth -> auth
-                                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
-                                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                        .anyRequest().authenticated());
+                                .cors(Customizer.withDefaults())
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                                .anyRequest().authenticated());
 
                 return http.build();
         }
