@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "https://api.buylogic.fr/api";
+const API_URL = import.meta.env.VITE_API_URL || "https://api.buylogic.fr";
 
 export async function apiFetch<T>(
   endpoint: string,
