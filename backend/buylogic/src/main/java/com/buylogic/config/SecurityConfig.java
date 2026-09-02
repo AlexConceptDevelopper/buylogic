@@ -20,32 +20,30 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.buylogic.security.JwtAuthFilter;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(
-                        HttpSecurity http,
-                        JwtAuthFilter jwtAuthFilter) throws Exception {
+       private final JwtAuthFilter jwtAuthFilter;
 
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http
-                                .cors(Customizer.withDefaults())
-                                .csrf(csrf -> csrf.disable())
-                                .sessionManagement(session -> session.sessionCreationPolicy(
-                                                SessionCreationPolicy.STATELESS))
-                                .addFilterBefore(
-                                                jwtAuthFilter,
-                                                UsernamePasswordAuthenticationFilter.class)
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/auth/**", "/api/auth/**").permitAll()
-                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                                .requestMatchers(
-                                                                HttpMethod.OPTIONS,
-                                                                "/**")
-                                                .permitAll()
-                                                .anyRequest().authenticated());
+                        .cors(Customizer.withDefaults())
+                        .csrf(csrf -> csrf.disable())
+                        .sessionManagement(session -> session.sessionCreationPolicy(
+                                        SessionCreationPolicy.STATELESS))
+                        .addFilterBefore(
+                                        jwtAuthFilter,
+                                        UsernamePasswordAuthenticationFilter.class)
+                        .authorizeHttpRequests(auth -> auth
+                                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                        .anyRequest().authenticated());
 
                 return http.build();
         }
