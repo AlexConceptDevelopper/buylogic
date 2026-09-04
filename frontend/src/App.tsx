@@ -7,6 +7,7 @@ import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import { AuthProvider } from "./context/AuthContext";
 import NotificationsPage from "./pages/NotificationsPage";
 import ParamsPage from "./pages/ParamsPage";
@@ -19,7 +20,11 @@ import PurchaseOrderDetailPage from "./pages/PurchaseOrderDetailPage";
 import PurchaseOrderFormPage from "./pages/PurchaseOrderFormPage";
 import ConsumptionImportPage from "./pages/ImportHubPage";
 import RecommendationsPage from "./pages/RecommendationsPage";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard"; 
 import { ReceivePurchaseOrderPage } from "./pages/ReceivePurchaseOrderPage";
+import SuperAdminLoginPage from "./pages/SuperAdminLoginPage";
+import SuperAdminRoute from "./components/SuperAdminRoute";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 export default function App() {
   return (
@@ -28,9 +33,12 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Private */}
+          {/* Private (Utilisateurs classiques) */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
@@ -52,6 +60,11 @@ export default function App() {
                 <Route path="/params" element={<ParamsPage />} />
               </Route>
             </Route>
+          </Route>
+
+          {/* Espace Super-Admin (Isolé avec son propre token) */}
+          <Route element={<SuperAdminRoute />}>
+            <Route path="/super-admin" element={<SuperAdminDashboard />} />
           </Route>
         </Routes>
       </AuthProvider>

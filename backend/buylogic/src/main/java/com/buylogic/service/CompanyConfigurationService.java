@@ -22,18 +22,11 @@ public class CompanyConfigurationService {
 
     public CompanyConfigurationDTO getCurrent() {
         Integer companyId = getCurrentCompanyId();
-        System.out.println(">>> COMPANY ID EXTRAIT DU JWT : " + companyId);
 
         CompanyConfiguration configuration = companyConfigurationRepository
                 .findByCompany_IdCompany(companyId)
-                .orElseGet(() -> {
-                    System.out.println(">>> AUCUNE CONFIG TROUVEE EN BASE POUR CE COMPANY ID !");
-                    return null;
-                });
-
-        if (configuration == null) {
-            throw new ResourceNotFoundException("Company configuration not found.");
-        }
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Company configuration not found."));
 
         CompanyConfigurationDTO dto = new CompanyConfigurationDTO();
         dto.setIdCompanyConfiguration(configuration.getIdCompanyConfiguration());

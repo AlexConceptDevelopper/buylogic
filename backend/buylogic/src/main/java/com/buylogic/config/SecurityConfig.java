@@ -39,9 +39,10 @@ public class SecurityConfig {
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/auth/**", "/api/auth/**").permitAll()
-                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                                .anyRequest().authenticated());
+                                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                                        .requestMatchers("/admin/**").hasRole("SUPER_OWNER")
+                                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                        .anyRequest().authenticated());
 
                 return http.build();
         }

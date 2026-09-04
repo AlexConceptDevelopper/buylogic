@@ -19,8 +19,7 @@ public class JwtUtil {
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(
-            properties.secret().getBytes(StandardCharsets.UTF_8)
-        );
+                properties.secret().getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(
@@ -30,63 +29,76 @@ public class JwtUtil {
             Integer companyId) {
 
         return Jwts.builder()
-            .subject(email)
-            .claim("userId", userId)
-            .claim("role", role)
-            .claim("companyId", companyId)
-            .issuedAt(new Date())
-            .expiration(
-                new Date(
-                    System.currentTimeMillis()
-                        + properties.expiration()
-                )
-            )
-            .signWith(getSigningKey())
-            .compact();
+                .subject(email)
+                .claim("userId", userId)
+                .claim("role", role)
+                .claim("companyId", companyId)
+                .issuedAt(new Date())
+                .expiration(
+                        new Date(
+                                System.currentTimeMillis()
+                                        + properties.expiration()))
+                .signWith(getSigningKey())
+                .compact();
     }
 
     public String extractEmail(String token) {
         return Jwts.parser()
-            .verifyWith(getSigningKey())
-            .build()
-            .parseSignedClaims(token)
-            .getPayload()
-            .getSubject();
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
     }
 
     public Integer extractUserId(String token) {
         return Jwts.parser()
-            .verifyWith(getSigningKey())
-            .build()
-            .parseSignedClaims(token)
-            .getPayload()
-            .get("userId", Integer.class);
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("userId", Integer.class);
     }
 
     public String extractRole(String token) {
         return Jwts.parser()
-            .verifyWith(getSigningKey())
-            .build()
-            .parseSignedClaims(token)
-            .getPayload()
-            .get("role", String.class);
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
     }
 
     public Integer extractCompanyId(String token) {
-        return Jwts.parser()
-            .verifyWith(getSigningKey())
-            .build()
-            .parseSignedClaims(token)
-            .getPayload()
-            .get("companyId", Integer.class);
+        try {
+            return Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("companyId", Integer.class);
+        } catch (Exception e) {
+            return null; // Si c'est un Super-Admin, il n'a pas de companyId
+        }
+    }
+
+    public String generateSuperAdminToken(Integer superAdminId, String email, String role) {
+        return Jwts.builder()
+                .subject(email)
+                .claim("userId", superAdminId)
+                .claim("role", role)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + properties.expiration()))
+                .signWith(getSigningKey())
+                .compact();
     }
 
     public boolean isTokenValid(String token) {
         try {
             Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token);
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token);
 
             return true;
         } catch (Exception e) {

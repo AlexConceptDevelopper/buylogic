@@ -45,6 +45,9 @@ export default function PurchaseOrderFormPage() {
     new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   );
   const [items, setItems] = useState<OrderLineForm[]>([]);
+  
+  // État pour filtrer les produits du fournisseur par recherche textuelle
+  const [searchProductTerm, setSearchProductTerm] = useState<string>("");
 
   const { loading: saving, execute: executeSave } = useAsync<any>();
   const { execute: executeOrder } = useAsync<any>();
@@ -90,7 +93,11 @@ export default function PurchaseOrderFormPage() {
         packagingUnit: sp.packagingUnit,
         packagingQuantity: sp.packagingQuantity,
       };
-    });
+    })
+    .filter((prod) =>
+      prod.name.toLowerCase().includes(searchProductTerm.toLowerCase()) ||
+      (prod.reference && prod.reference.toLowerCase().includes(searchProductTerm.toLowerCase()))
+    );
 
   // 3. Charger la commande existante en mode édition
   useEffect(() => {
@@ -128,7 +135,6 @@ export default function PurchaseOrderFormPage() {
                 (p) => p.idProduct === item.idProduct,
               );
 
-              // Chercher dans le SupplierProduct pour récupérer la bonne référence fournisseur
               const foundSp = supplierProducts.find(
                 (sp) =>
                   sp.idSupplier === activeSupplierId &&
@@ -170,6 +176,7 @@ export default function PurchaseOrderFormPage() {
   const handleSupplierChange = (newSupplierId: number) => {
     setIdSupplier(newSupplierId);
     setItems([]);
+    setSearchProductTerm("");
   };
 
   const handleAddItem = (product: any) => {
@@ -318,30 +325,74 @@ export default function PurchaseOrderFormPage() {
         </div>
 
         <div className="rounded-2xl border border-white/5 bg-slate-900/70 p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-white">
-            Ajouter des produits (fournisseur sélectionné)
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            {currentSupplierProducts.length === 0 ? (
-              <p className="text-xs text-slate-500 italic">
-                Aucun produit associé à ce fournisseur.
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-semibold text-white">
+                Catalogue du fournisseur
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Clique sur "Ajouter" pour inclure un produit dans la commande.
               </p>
-            ) : (
-              currentSupplierProducts.map((prod) => (
-                <button
-                  key={prod.idProduct}
-                  type="button"
-                  onClick={() => handleAddItem(prod)}
-                  className="cursor-pointer rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:border-cyan-400/30 hover:bg-cyan-400/10 hover:text-cyan-300"
-                >
-                  + {prod.name} ({prod.defaultPrice.toFixed(2)} € /{" "}
-                  {prod.packagingUnit}){" "}
-                  <span className="text-slate-500 font-normal">
-                    | Min: {prod.minOrderQuantity} {prod.packagingUnit}
-                  </span>
-                </button>
-              ))
-            )}
+            </div>
+            {/* Barre de recherche */}
+            <input
+              type="text"
+              placeholder="Filtrer par nom ou référence..."
+              value={searchProductTerm}
+              onChange={(e) => setSearchProductTerm(e.target.value)}
+              className="rounded-xl border border-white/10 bg-slate-900 px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-400/40 sm:w-64"
+            />
+          </div>
+
+          {/* Tableau style Excel pour les produits du fournisseur */}
+          <div className="max-h-72 overflow-y-auto rounded-xl border border-white/5">
+            <table className="w-full min-w-120 border-collapse text-left">
+              <thead className="sticky top-0 bg-slate-950/90 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 border-b border-white/5">
+                <tr>
+                  <th className="p-3">Produit / Référence</th>
+                  <th className="p-3 text-right">Prix catalogue</th>
+                  <th className="p-3.5 text-right">Min. requis</th>
+                  <th className="p-3.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 text-xs">
+                {currentSupplierProducts.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="p-6 text-center text-slate-500 italic">
+                      Aucun produit trouvé pour ce fournisseur.
+                    </td>
+                  </tr>
+                ) : (
+                  currentSupplierProducts.map((prod) => (
+                    <tr key={prod.idProduct} className="transition hover:bg-white/2">
+                      <td className="p-3">
+                        <span className="font-semibold text-slate-200 block">{prod.name}</span>
+                        {prod.reference && (
+                          <span className="text-[10px] text-cyan-400 uppercase tracking-widest font-medium">
+                            Réf : {prod.reference}
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-3 text-right text-slate-300 font-medium">
+                        {prod.defaultPrice.toFixed(2)} € / {prod.packagingUnit || "UNIT"}
+                      </td>
+                      <td className="p-3.5 text-right text-slate-400">
+                        {prod.minOrderQuantity} {prod.packagingUnit || ""}
+                      </td>
+                      <td className="p-3.5 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleAddItem(prod)}
+                          className="cursor-pointer rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-3 py-1.5 font-semibold text-cyan-300 transition hover:bg-cyan-400/20"
+                        >
+                          + Ajouter
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -401,7 +452,6 @@ export default function PurchaseOrderFormPage() {
                                     : "border-white/10 focus:border-cyan-400/40"
                                 }`}
                               />
-                              {/* Affichage de l'unité à côté de l'input */}
                               {item.packagingUnit && (
                                 <span className="text-xs text-slate-400 font-medium">
                                   {item.packagingUnit}

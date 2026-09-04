@@ -22,4 +22,7 @@ public interface AppUserRepository
         Integer idUser,
         Integer companyId
     );
+
+    //reset password token
+    Optional<AppUser> findByResetToken(String resetToken);
 }

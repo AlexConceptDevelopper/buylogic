@@ -21,6 +21,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -30,6 +33,7 @@ public class AuthService {
         private final SubscriptionRepository subscriptionRepository;
         private final PasswordEncoder passwordEncoder;
         private final JwtUtil jwtUtil;
+        private final EmailService emailService; // Ajouté ici pour l'injection automatique via Lombok
 
         @Transactional
         public RegisterResponse register(
@@ -145,5 +149,42 @@ public class AuthService {
                             company.getIdCompany(),
                             user.getEmail(),
                             user.getRole().name());
+        }
+
+        @Transactional
+        public void processForgotPassword(String email) {
+                if (email == null) {
+                        return;
+                }
+                String normalizedEmail = email.trim().toLowerCase();
+                appUserRepository.findByEmail(normalizedEmail).ifPresent(user -> {
+                        String token = UUID.randomUUID().toString();
+                        user.setResetToken(token);
+                        user.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
+                        appUserRepository.save(user);
+
+ 
+                        emailService.sendPasswordResetEmail(user.getEmail(), token);
+                });
+        }
+
+        @Transactional
+        public boolean resetPassword(String token, String newPassword) {
+                if (token == null || newPassword == null) {
+                        return false;
+                }
+
+                AppUser user = appUserRepository.findByResetToken(token).orElse(null);
+
+                if (user == null || user.getResetTokenExpiresAt() == null || user.getResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
+                        return false;
+                }
+
+                user.setPasswordHash(passwordEncoder.encode(newPassword));
+                user.setResetToken(null);
+                user.setResetTokenExpiresAt(null);
+                appUserRepository.save(user);
+
+                return true;
         }
 }

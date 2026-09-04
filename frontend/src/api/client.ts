@@ -4,7 +4,10 @@ export async function apiFetch<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T | null> {
-  const token = localStorage.getItem("token");
+  // Sélection dynamique du token selon la route (admin vs classique)
+  const isSuperAdminRoute = endpoint.startsWith("/admin");
+  const tokenKey = isSuperAdminRoute ? "super_admin_token" : "token";
+  const token = localStorage.getItem(tokenKey);
 
   const headers = new Headers(options.headers);
 
@@ -36,7 +39,7 @@ export async function apiFetch<T>(
       }
 
       if (response.status === 401) {
-        localStorage.removeItem("token");
+        localStorage.removeItem(tokenKey);
       }
 
       throw new Error(message);

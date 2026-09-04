@@ -26,4 +26,5 @@ public class CompanyUpdateDTO {
     private String address;
     private String receptionHours;
     private String logoUrl;
+    private Boolean active;
 }

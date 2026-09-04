@@ -19,9 +19,7 @@ public class CompanyConfigurationController {
 
     @GetMapping
     public ResponseEntity<CompanyConfigurationDTO> getCurrent() {
-        System.out.println(">>> REQUETE RECUE SUR /company-configuration");
         return ResponseEntity.ok(
-                companyConfigurationService.getCurrent()
-        );
+                companyConfigurationService.getCurrent());
     }
 }
