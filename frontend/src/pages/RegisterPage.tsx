@@ -22,6 +22,7 @@ export default function RegisterPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isEmailAlreadyExists, setIsEmailAlreadyExists] = useState(false);
 
   const stepLabels = ["Compte", "Produits"];
 
@@ -36,6 +37,7 @@ export default function RegisterPage() {
   const handleNextStep = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setError("");
+    setIsEmailAlreadyExists(false);
 
     if (
       !firstName.trim() ||
@@ -59,6 +61,7 @@ export default function RegisterPage() {
   const handlePrevStep = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setError("");
+    setIsEmailAlreadyExists(false);
     setStep(1);
   };
 
@@ -71,6 +74,7 @@ export default function RegisterPage() {
     }
 
     setError("");
+    setIsEmailAlreadyExists(false);
     setLoading(true);
 
     try {
@@ -84,12 +88,18 @@ export default function RegisterPage() {
       });
 
       navigate("/login");
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Impossible de créer votre compte.",
-      );
+    } catch (err: any) {
+      const message = err instanceof Error ? err.message : "Impossible de créer votre compte.";
+      
+      // Si l'API renvoie l'erreur de doublon sur l'email
+      if (message.toLowerCase().includes("already exists")) {
+        setError("Un compte existe déjà avec cette adresse e-mail.");
+        setIsEmailAlreadyExists(true);
+        // Optionnel : on peut le ramener à l'étape 1 pour qu'il puisse changer d'email ou se connecter
+        setStep(1);
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -167,7 +177,6 @@ export default function RegisterPage() {
                 })}
               </div>
 
-              {/* Formulaire unique géré proprement selon l'étape */}
               <form onSubmit={step === 2 ? handleFinalSubmit : (e) => e.preventDefault()} className="mt-8 space-y-5">
                 {step === 1 && (
                   <div className="space-y-5">
@@ -339,9 +348,17 @@ export default function RegisterPage() {
                 {error && (
                   <div
                     role="alert"
-                    className="rounded-xl border border-red-400/20 bg-red-400/5 px-4 py-3 text-sm text-red-300"
+                    className="rounded-xl border border-red-400/20 bg-red-400/5 px-4 py-3 text-sm text-red-300 space-y-1"
                   >
-                    {error}
+                    <p>{error}</p>
+                    {isEmailAlreadyExists && (
+                      <p className="text-xs">
+                        Vous avez déjà un compte ?{" "}
+                        <Link to="/login" className="font-bold underline hover:text-white">
+                          Connectez-vous ici
+                        </Link>
+                      </p>
+                    )}
                   </div>
                 )}
 
