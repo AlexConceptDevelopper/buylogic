@@ -177,20 +177,6 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              <div className="mt-6 flex items-center gap-3">
-                <div className="h-px flex-1 bg-white/5" />
-                <span className="text-xs text-slate-600">ou</span>
-                <div className="h-px flex-1 bg-white/5" />
-              </div>
-
-              <button
-                type="button"
-                disabled
-                className="mt-6 w-full cursor-not-allowed rounded-xl border border-white/10 bg-white/3 px-4 py-3.5 text-sm font-semibold text-slate-500"
-              >
-                Continuer avec Google
-              </button>
-
               <div className="mt-6 text-center text-sm text-slate-500">
                 Pas encore de compte ?{" "}
                 <Link
