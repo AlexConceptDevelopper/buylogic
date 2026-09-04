@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,9 +26,7 @@ public class AuthController {
 
         RegisterResponse response = authService.register(request);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+        return ResponseEntity.ok(response); // Passe en 200 OK
     }
 
     @PostMapping("/login")
