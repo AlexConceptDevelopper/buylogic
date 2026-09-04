@@ -39,9 +39,7 @@ public class AuthService {
         public RegisterResponse register(
                         RegisterRequest request) {
 
-                String email = request.email()
-                            .trim()
-                            .toLowerCase();
+                String email = request.email().trim().toLowerCase();
 
                 if (appUserRepository.existsByEmail(email)) {
                         throw new IllegalArgumentException(
