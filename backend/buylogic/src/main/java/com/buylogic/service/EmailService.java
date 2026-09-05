@@ -1,16 +1,11 @@
 package com.buylogic.service;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -26,15 +21,10 @@ public class EmailService {
     @Value("${brevo.api.key:}")
     private String brevoApiKey;
 
-    private final JavaMailSender mailSender;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
-
     /**
-     * Envoie un e-mail avec un PDF en pièce jointe via SMTP.
+     * Envoie un e-mail avec un PDF en pièce jointe via l'API HTTP de Brevo (Port 443).
      */
     public void sendEmailWithAttachment(
             String toEmail,
@@ -43,24 +33,37 @@ public class EmailService {
             byte[] pdfBytes,
             String attachmentName) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            String url = "https://api.brevo.com/v3/smtp/email";
 
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject(subject);
-            helper.setText(body);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", brevoApiKey);
 
-            helper.addAttachment(attachmentName, new ByteArrayResource(pdfBytes));
+            // Encodage du PDF en Base64 exigé par l'API Brevo pour les pièces jointes
+            String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
 
-            mailSender.send(message);
-        } catch (MessagingException e) {
+            Map<String, Object> emailPayload = Map.of(
+                "sender", Map.of("email", fromEmail, "name", "BuyLogic"),
+                "to", List.of(Map.of("email", toEmail)),
+                "subject", subject,
+                "textContent", body,
+                "attachment", List.of(Map.of(
+                    "content", base64Pdf,
+                    "name", attachmentName
+                ))
+            );
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(emailPayload, headers);
+
+            restTemplate.postForEntity(url, entity, String.class);
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Échec de l'envoi de l'e-mail avec pièce jointe : " + subject, e);
         }
     }
 
     /**
-     * Envoie l'e-mail de réinitialisation de mot de passe via l'API HTTP de Brevo (Port 443 - Anti-blocage Railway).
+     * Envoie l'e-mail de réinitialisation de mot de passe via l'API HTTP de Brevo.
      */
     public void sendPasswordResetEmail(String to, String token) {
         String subject = "Réinitialisation de votre mot de passe BuyLogic";
@@ -97,19 +100,17 @@ public class EmailService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("api-key", brevoApiKey);
 
-            Map<String, Object> body = Map.of(
+            Map<String, Object> emailPayload = Map.of(
                 "sender", Map.of("email", fromEmail, "name", "BuyLogic"),
                 "to", List.of(Map.of("email", to)),
                 "subject", subject,
                 "htmlContent", htmlBody
             );
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(emailPayload, headers);
 
-            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
-            System.out.println(">>> E-mail HTML de réinitialisation envoyé avec succès via Brevo API à : " + to + " (Status: " + response.getStatusCode() + ")");
+            restTemplate.postForEntity(url, entity, String.class);
         } catch (Exception e) {
-            System.err.println(">>> ERREUR LORS DE L'ENVOI DE L'EMAIL VIA BREVO API : " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Échec de l'envoi de l'e-mail de réinitialisation", e);
         }
