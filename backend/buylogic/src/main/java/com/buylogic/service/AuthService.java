@@ -16,8 +16,7 @@ import com.buylogic.security.JwtUtil;
 
 import jakarta.transaction.Transactional;
 
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,164 +24,139 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
-        private final CompanyRepository companyRepository;
-        private final AppUserRepository appUserRepository;
-        private final SubscriptionRepository subscriptionRepository;
-        private final PasswordEncoder passwordEncoder;
-        private final JwtUtil jwtUtil;
-        private final EmailService emailService; // Ajouté ici pour l'injection automatique via Lombok
+    private final CompanyRepository companyRepository;
+    private final AppUserRepository appUserRepository;
+    private final SubscriptionRepository subscriptionRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
-        @Transactional
-        public RegisterResponse register(
-                        RegisterRequest request) {
+    public AuthService(
+            CompanyRepository companyRepository,
+            AppUserRepository appUserRepository,
+            SubscriptionRepository subscriptionRepository,
+            PasswordEncoder passwordEncoder,
+            JwtUtil jwtUtil,
+            @Lazy EmailService emailService) {
+        this.companyRepository = companyRepository;
+        this.appUserRepository = appUserRepository;
+        this.subscriptionRepository = subscriptionRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+        this.emailService = emailService;
+    }
 
-                String email = request.email().trim().toLowerCase();
+    @Transactional
+    public RegisterResponse register(RegisterRequest request) {
+        // ... (reste du code inchangé)
+        String email = request.email().trim().toLowerCase();
 
-                if (appUserRepository.existsByEmail(email)) {
-                        throw new IllegalArgumentException(
-                                    "A user with this email already exists.");
-                }
-
-                Company company = new Company();
-
-                company.setName(
-                            request.companyName().trim());
-
-                company.setEmail(email);
-
-                company.setActive(true);
-
-                CompanyConfiguration configuration = new CompanyConfiguration();
-
-                configuration.setCompany(company);
-
-                configuration.setProductManagementMode(
-                            request.productManagementMode());
-
-                company.setConfiguration(configuration);
-
-                Company savedCompany = companyRepository.save(company);
-
-                Subscription subscription = new Subscription();
-
-                subscription.setCompany(savedCompany);
-
-                subscription.setPlan("PRO");
-
-                subscription.setStatus("TRIAL");
-
-                subscriptionRepository.save(subscription);
-
-                AppUser user = new AppUser();
-
-                user.setCompany(savedCompany);
-
-                user.setEmail(email);
-
-                user.setPasswordHash(
-                            passwordEncoder.encode(
-                                        request.password()));
-
-                user.setFirstName(
-                            request.firstName().trim());
-
-                user.setLastName(
-                            request.lastName().trim());
-
-                user.setRole(Role.OWNER);
-
-                user.setActive(true);
-
-                AppUser savedUser = appUserRepository.save(user);
-
-                return new RegisterResponse(
-                            savedUser.getIdUser(),
-                            savedCompany.getIdCompany(),
-                            savedUser.getEmail(),
-                            savedUser.getRole().name(),
-                            "Account created successfully.");
+        if (appUserRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("A user with this email already exists.");
         }
 
-        public LoginResponse login(
-                        LoginRequest request) {
+        Company company = new Company();
+        company.setName(request.companyName().trim());
+        company.setEmail(email);
+        company.setActive(true);
 
-                String email = request.email()
-                            .trim()
-                            .toLowerCase();
+        CompanyConfiguration configuration = new CompanyConfiguration();
+        configuration.setCompany(company);
+        configuration.setProductManagementMode(request.productManagementMode());
+        company.setConfiguration(configuration);
 
-                AppUser user = appUserRepository
-                            .findByEmail(email)
-                            .orElseThrow(() -> new IllegalArgumentException(
-                                        "Invalid email or password."));
+        Company savedCompany = companyRepository.save(company);
 
-                if (!Boolean.TRUE.equals(
-                            user.getActive())) {
+        Subscription subscription = new Subscription();
+        subscription.setCompany(savedCompany);
+        subscription.setPlan("PRO");
+        subscription.setStatus("TRIAL");
+        subscriptionRepository.save(subscription);
 
-                        throw new IllegalArgumentException(
-                                    "Invalid email or password.");
-                }
+        AppUser user = new AppUser();
+        user.setCompany(savedCompany);
+        user.setEmail(email);
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setFirstName(request.firstName().trim());
+        user.setLastName(request.lastName().trim());
+        user.setRole(Role.OWNER);
+        user.setActive(true);
 
-                if (!passwordEncoder.matches(
-                            request.password(),
-                            user.getPasswordHash())) {
+        AppUser savedUser = appUserRepository.save(user);
 
-                        throw new IllegalArgumentException(
-                                    "Invalid email or password.");
-                }
+        return new RegisterResponse(
+                savedUser.getIdUser(),
+                savedCompany.getIdCompany(),
+                savedUser.getEmail(),
+                savedUser.getRole().name(),
+                "Account created successfully.");
+    }
 
-                Company company = user.getCompany();
+    public LoginResponse login(LoginRequest request) {
+        String email = request.email().trim().toLowerCase();
 
-                String token = jwtUtil.generateToken(
-                            user.getIdUser(),
-                            user.getEmail(),
-                            user.getRole().name(),
-                            company.getIdCompany());
+        AppUser user = appUserRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
 
-                return new LoginResponse(
-                            token,
-                            user.getIdUser(),
-                            company.getIdCompany(),
-                            user.getEmail(),
-                            user.getRole().name());
+        if (!Boolean.TRUE.equals(user.getActive())) {
+            throw new IllegalArgumentException("Invalid email or password.");
         }
 
-        @Transactional
-        public void processForgotPassword(String email) {
-                if (email == null) {
-                        return;
-                }
-                String normalizedEmail = email.trim().toLowerCase();
-                appUserRepository.findByEmail(normalizedEmail).ifPresent(user -> {
-                        String token = UUID.randomUUID().toString();
-                        user.setResetToken(token);
-                        user.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
-                        appUserRepository.save(user);
-
- 
-                        emailService.sendPasswordResetEmail(user.getEmail(), token);
-                });
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("Invalid email or password.");
         }
 
-        @Transactional
-        public boolean resetPassword(String token, String newPassword) {
-                if (token == null || newPassword == null) {
-                        return false;
-                }
+        Company company = user.getCompany();
 
-                AppUser user = appUserRepository.findByResetToken(token).orElse(null);
+        String token = jwtUtil.generateToken(
+                user.getIdUser(),
+                user.getEmail(),
+                user.getRole().name(),
+                company.getIdCompany());
 
-                if (user == null || user.getResetTokenExpiresAt() == null || user.getResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
-                        return false;
-                }
+        return new LoginResponse(
+                token,
+                user.getIdUser(),
+                company.getIdCompany(),
+                user.getEmail(),
+                user.getRole().name());
+    }
 
-                user.setPasswordHash(passwordEncoder.encode(newPassword));
-                user.setResetToken(null);
-                user.setResetTokenExpiresAt(null);
-                appUserRepository.save(user);
-
-                return true;
+    @Transactional
+    public void processForgotPassword(String email) {
+        if (email == null) {
+            return;
         }
+        String normalizedEmail = email.trim().toLowerCase();
+        appUserRepository.findByEmail(normalizedEmail).ifPresent(user -> {
+            String token = UUID.randomUUID().toString();
+            user.setResetToken(token);
+            user.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
+            appUserRepository.save(user);
+
+            emailService.sendPasswordResetEmail(user.getEmail(), token);
+        });
+    }
+
+    @Transactional
+    public boolean resetPassword(String token, String newPassword) {
+        if (token == null || newPassword == null) {
+            return false;
+        }
+
+        AppUser user = appUserRepository.findByResetToken(token).orElse(null);
+
+        if (user == null || user.getResetTokenExpiresAt() == null || user.getResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            return false;
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setResetToken(null);
+        user.setResetTokenExpiresAt(null);
+        appUserRepository.save(user);
+
+        return true;
+    }
 }
