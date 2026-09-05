@@ -3,6 +3,16 @@ import type { Company, CompanyCreate, CompanyUpdate } from "../types/company";
 import type { CompanyConfiguration } from "../types/companyConfiguration";
 import type { User, UserUpdate } from "../types/user";
 
+export interface AuditLog {
+  id: number;
+  timestamp: string;
+  action: string;
+  actor: string;
+  ipAddress: string;
+  status: "SUCCESS" | "WARNING" | "CRITICAL";
+  details: string;
+}
+
 // ==========================================
 // SECTION : GESTION DES ENTREPRISES (COMPANIES)
 // ==========================================
@@ -70,6 +80,20 @@ export function adminUpdateUser(id: number, dto: UserUpdate) {
 // Soft delete ou suppression utilisateur selon ton back
 export function adminDeleteUser(id: number) {
   return apiFetch<void>(`/admin/users/${id}`, {
+    method: "DELETE",
+  });
+}
+
+// ==========================================
+// SECTION : GESTION DES JOURNAUX D'AUDIT
+// ==========================================
+
+export function adminGetAuditLogs() {
+  return apiFetch<AuditLog[]>("/admin/logs");
+}
+
+export function adminDeleteAuditLog(id: number) {
+  return apiFetch<void>(`/admin/audit-logs/${id}`, {
     method: "DELETE",
   });
 }

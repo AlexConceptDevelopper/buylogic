@@ -1,5 +1,8 @@
 package com.buylogic.exception;
 
+import com.buylogic.model.AuditLog;
+import com.buylogic.service.AdminService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
@@ -10,6 +13,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final AdminService adminService;
+
+    public GlobalExceptionHandler(AdminService adminService) {
+        this.adminService = adminService;
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(
@@ -70,7 +79,27 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(
-            Exception exception) {
+            Exception exception, HttpServletRequest request) {
+
+        // 📝 Enregistrement automatique du crash dans les logs d'audit
+        try {
+            String details = exception.getMessage() != null ? exception.getMessage() : "Erreur interne inconnue";
+            if (details.length() > 255) {
+                details = details.substring(0, 252) + "...";
+            }
+
+            String ipAddress = request.getRemoteAddr();
+
+            adminService.createAuditLog(
+                "SYSTEM_CRASH_EXCEPTION",
+                "System / Uncaught",
+                ipAddress != null ? ipAddress : "Internal",
+                AuditLog.AuditStatus.CRITICAL,
+                "Route: " + request.getRequestURI() + " | Erreur: " + details
+            );
+        } catch (Exception logEx) {
+            System.err.println("Impossible d'enregistrer le log de crash : " + logEx.getMessage());
+        }
 
         ApiError error = new ApiError(
             LocalDateTime.now(),

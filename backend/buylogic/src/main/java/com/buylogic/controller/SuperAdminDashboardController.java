@@ -2,6 +2,7 @@ package com.buylogic.controller;
 
 import com.buylogic.dto.appuser.AppUserDTO;
 import com.buylogic.dto.appuser.AppUserUpdateDTO;
+import com.buylogic.dto.AuditLogResponseDto;
 import com.buylogic.dto.company.CompanyConfigurationDTO;
 import com.buylogic.dto.company.CompanyDTO;
 import com.buylogic.dto.company.CompanyUpdateDTO;
@@ -10,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin")
@@ -82,5 +85,29 @@ public class SuperAdminDashboardController {
             @PathVariable Integer id, 
             @RequestBody CompanyConfigurationDTO dto) {
         return ResponseEntity.ok(adminService.updateCompanyConfiguration(id, dto));
+    }
+
+    // ==========================================
+    // SECTION : GESTION DES JOURNAUX D'AUDIT
+    // ==========================================
+
+    @GetMapping("/logs")
+    public ResponseEntity<List<AuditLogResponseDto>> getAllAuditLogs() {
+        return ResponseEntity.ok(adminService.findAllAuditLogs());
+    }
+
+    @DeleteMapping("/audit-logs/{id}")
+    public ResponseEntity<Void> deleteAuditLog(@PathVariable Long id) {
+        adminService.deleteAuditLog(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    //Health
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, String>> checkSystemHealth() {
+        Map<String, String> response = new HashMap<>();
+        response.put("status", "UP");
+        response.put("service", "BuyLogic Core API");
+        return ResponseEntity.ok(response);
     }
 }
