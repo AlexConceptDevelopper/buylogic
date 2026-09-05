@@ -34,6 +34,11 @@
       "name": "app.frontend.url",
       "type": "java.lang.String",
       "description": "Base URL of the frontend application for email redirection links."
+    },
+    {
+      "name": "brevo.api.key",
+      "type": "java.lang.String",
+      "description": "API key for Brevo transactional email REST API."
     }
   ]
 }
