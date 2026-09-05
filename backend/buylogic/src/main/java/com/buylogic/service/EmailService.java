@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     private final JavaMailSender mailSender;
 
     @Value("${app.mail.from}")
@@ -62,10 +65,16 @@ public class EmailService {
             helper.setTo(to);
             helper.setSubject("Réinitialisation de votre mot de passe BuyLogic");
 
-            String resetUrl = "http://localhost:5173/reset-password?token=" + token;
+            String resetUrl = frontendUrl + "/reset-password?token=" + token;
 
             String htmlBody = """
-                    <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Réinitialisation de mot de passe</title>
+                    </head>
+                    <body style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
                         <h2>Réinitialisation de votre mot de passe</h2>
                         <p>Bonjour,</p>
                         <p>Vous avez demandé la réinitialisation de votre mot de passe pour votre compte BuyLogic.</p>
@@ -77,7 +86,8 @@ public class EmailService {
                         <p>Ou copiez ce lien dans votre navigateur :</p>
                         <p><a href="%s">%s</a></p>
                         <p style="color: #64748b; font-size: 12px; margin-top: 30px;">Ce lien expire dans 15 minutes. Si vous n'avez pas fait cette demande, vous pouvez ignorer cet e-mail.</p>
-                    </div>
+                    </body>
+                    </html>
                     """
                     .formatted(resetUrl, resetUrl, resetUrl);
 

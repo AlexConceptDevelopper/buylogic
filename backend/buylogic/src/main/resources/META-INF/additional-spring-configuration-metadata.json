@@ -29,6 +29,11 @@
       "name": "app.mail.from",
       "type": "java.lang.String",
       "description": "Default sender email address."
+    },
+    {
+      "name": "app.frontend.url",
+      "type": "java.lang.String",
+      "description": "Base URL of the frontend application for email redirection links."
     }
   ]
 }
