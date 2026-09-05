@@ -5,9 +5,14 @@ import jakarta.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.*;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmailService {
@@ -15,18 +20,21 @@ public class EmailService {
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-    private final JavaMailSender mailSender;
-
     @Value("${app.mail.from}")
     private String fromEmail;
+
+    @Value("${brevo.api.key:}")
+    private String brevoApiKey;
+
+    private final JavaMailSender mailSender;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 
     /**
-     * Envoie un e-mail avec un PDF en pièce jointe en utilisant le sujet et le
-     * corps préparés par le front-end.
+     * Envoie un e-mail avec un PDF en pièce jointe via SMTP.
      */
     public void sendEmailWithAttachment(
             String toEmail,
@@ -47,12 +55,12 @@ public class EmailService {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            throw new RuntimeException("Échec de l'envoi de l'e-mail : " + subject, e);
+            throw new RuntimeException("Échec de l'envoi de l'e-mail avec pièce jointe : " + subject, e);
         }
     }
 
     /**
-     * Envoie l'e-mail de réinitialisation de mot de passe via SMTP Gmail.
+     * Envoie l'e-mail de réinitialisation de mot de passe via l'API HTTP de Brevo (Port 443 - Anti-blocage Railway).
      */
     public void sendPasswordResetEmail(String to, String token) {
         String subject = "Réinitialisation de votre mot de passe BuyLogic";
@@ -83,19 +91,27 @@ public class EmailService {
                 .formatted(resetUrl, resetUrl, resetUrl);
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            String url = "https://api.brevo.com/v3/smtp/email";
 
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlBody, true);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", brevoApiKey);
 
-            mailSender.send(message);
-            System.out.println(">>> E-mail HTML de réinitialisation envoyé avec succès via Gmail à : " + to);
+            Map<String, Object> body = Map.of(
+                "sender", Map.of("email", fromEmail, "name", "BuyLogic"),
+                "to", List.of(Map.of("email", to)),
+                "subject", subject,
+                "htmlContent", htmlBody
+            );
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            System.out.println(">>> E-mail HTML de réinitialisation envoyé avec succès via Brevo API à : " + to + " (Status: " + response.getStatusCode() + ")");
         } catch (Exception e) {
-            System.err.println(">>> ERREUR LORS DE L'ENVOI DE L'EMAIL GMAIL : " + e.getMessage());
+            System.err.println(">>> ERREUR LORS DE L'ENVOI DE L'EMAIL VIA BREVO API : " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Échec de l'envoi de l'e-mail de réinitialisation", e);
         }
     }
 }
