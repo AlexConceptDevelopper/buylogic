@@ -5,9 +5,15 @@ import jakarta.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.*;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmailService {
@@ -19,6 +25,14 @@ public class EmailService {
 
     @Value("${app.mail.from}")
     private String fromEmail;
+
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
+
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -34,6 +48,9 @@ public class EmailService {
             String body,
             byte[] pdfBytes,
             String attachmentName) {
+        // Si on est en prod sur Railway, l'API HTTP Mailtrap ne supporte pas facilement les pièces jointes binaires en JSON brut.
+        // On force le passage par l'API ou on gère via l'infrastructure si nécessaire, 
+        // mais pour le password reset c'est la cible principale. Ici on garde le comportement ou l'alternative HTTP si besoin.
         try {
             MimeMessage message = mailSender.createMimeMessage();
             // true active le mode multipart (nécessaire pour les pièces jointes)
@@ -57,47 +74,73 @@ public class EmailService {
      * Envoie l'e-mail de réinitialisation de mot de passe.
      */
     public void sendPasswordResetEmail(String to, String token) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        String subject = "Réinitialisation de votre mot de passe BuyLogic";
+        String resetUrl = frontendUrl + "/reset-password?token=" + token;
 
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject("Réinitialisation de votre mot de passe BuyLogic");
+        String htmlBody = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Réinitialisation de mot de passe</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+                    <h2>Réinitialisation de votre mot de passe</h2>
+                    <p>Bonjour,</p>
+                    <p>Vous avez demandé la réinitialisation de votre mot de passe pour votre compte BuyLogic.</p>
+                    <p style="margin: 30px 0;">
+                        <a href="%s" style="background-color: #06b6d4; color: #09090b; padding: 12px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                            Réinitialiser mon mot de passe
+                        </a>
+                    </p>
+                    <p>Ou copiez ce lien dans votre navigateur :</p>
+                    <p><a href="%s">%s</a></p>
+                    <p style="color: #64748b; font-size: 12px; margin-top: 30px;">Ce lien expire dans 15 minutes. Si vous n'avez pas fait cette demande, vous pouvez ignorer cet e-mail.</p>
+                </body>
+                </html>
+                """
+                .formatted(resetUrl, resetUrl, resetUrl);
 
-            String resetUrl = frontendUrl + "/reset-password?token=" + token;
+        // Si on est en prod (sur Railway), on passe par l'API HTTP Mailtrap (Port 443 HTTPS) pour contourner le blocage des ports SMTP
+        if ("prod".equalsIgnoreCase(activeProfile)) {
+            try {
+                String url = "https://send.api.mailtrap.io/api/send";
 
-            String htmlBody = """
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Réinitialisation de mot de passe</title>
-                    </head>
-                    <body style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
-                        <h2>Réinitialisation de votre mot de passe</h2>
-                        <p>Bonjour,</p>
-                        <p>Vous avez demandé la réinitialisation de votre mot de passe pour votre compte BuyLogic.</p>
-                        <p style="margin: 30px 0;">
-                            <a href="%s" style="background-color: #06b6d4; color: #09090b; padding: 12px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-                                Réinitialiser mon mot de passe
-                            </a>
-                        </p>
-                        <p>Ou copiez ce lien dans votre navigateur :</p>
-                        <p><a href="%s">%s</a></p>
-                        <p style="color: #64748b; font-size: 12px; margin-top: 30px;">Ce lien expire dans 15 minutes. Si vous n'avez pas fait cette demande, vous pouvez ignorer cet e-mail.</p>
-                    </body>
-                    </html>
-                    """
-                    .formatted(resetUrl, resetUrl, resetUrl);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("Authorization", "Bearer " + mailPassword);
 
-            helper.setText(htmlBody, true); // true active le mode HTML
+                Map<String, Object> body = new HashMap<>();
+                body.put("from", Map.of("email", fromEmail, "name", "BuyLogic"));
+                body.put("to", List.of(Map.of("email", to)));
+                body.put("subject", subject);
+                body.put("html", htmlBody);
 
-            mailSender.send(message);
-            System.out.println(">>> E-mail HTML de réinitialisation envoyé avec succès à : " + to);
-        } catch (Exception e) {
-            System.err.println(">>> ERREUR LORS DE L'ENVOI DE L'EMAIL : " + e.getMessage());
-            e.printStackTrace();
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+                ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+                
+                System.out.println(">>> E-mail HTML envoyé via API Mailtrap (HTTPS) avec succès à : " + to + " - Status: " + response.getStatusCode());
+            } catch (Exception e) {
+                System.err.println(">>> ERREUR LORS DE L'ENVOI API MAILTRAP : " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            // En local, on garde ton code JavaMail d'origine intact
+            try {
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+                helper.setFrom(fromEmail);
+                helper.setTo(to);
+                helper.setSubject(subject);
+                helper.setText(htmlBody, true); // true active le mode HTML
+
+                mailSender.send(message);
+                System.out.println(">>> E-mail HTML de réinitialisation envoyé avec succès en local à : " + to);
+            } catch (Exception e) {
+                System.err.println(">>> ERREUR LORS DE L'ENVOI DE L'EMAIL : " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 }
