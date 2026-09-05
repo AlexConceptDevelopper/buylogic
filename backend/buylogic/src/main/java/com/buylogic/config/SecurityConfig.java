@@ -17,6 +17,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
 import com.buylogic.security.JwtAuthFilter;
 
@@ -31,6 +33,11 @@ public class SecurityConfig {
         private final JwtAuthFilter jwtAuthFilter;
 
         @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+                return config.getAuthenticationManager();
+        }
+
+        @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http
                                 .cors(Customizer.withDefaults())
@@ -39,10 +46,10 @@ public class SecurityConfig {
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                                 .authorizeHttpRequests(auth -> auth
-                                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
-                                        .requestMatchers("/admin/**").hasRole("SUPER_OWNER")
-                                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                        .anyRequest().authenticated());
+                                                .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                                                .requestMatchers("/admin/**").hasRole("SUPER_OWNER")
+                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                                .anyRequest().authenticated());
 
                 return http.build();
         }
