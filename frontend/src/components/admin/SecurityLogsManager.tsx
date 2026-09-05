@@ -269,7 +269,7 @@ export default function SecurityLogsManager() {
 
             <div className="flex justify-end gap-3 p-6 border-t border-white/10 bg-slate-950/40">
               <button
-                onClick={(e) => {
+                onClick={() => {
                   setSelectedLog(null);
                   setLogToDelete(selectedLog);
                 }}
