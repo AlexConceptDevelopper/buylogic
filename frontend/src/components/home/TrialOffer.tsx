@@ -2,10 +2,9 @@ import { Link } from "react-router-dom";
 
 export default function TrialOffer() {
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-20">
+    <section className="mx-auto max-w-7xl px-6">
       <div className="relative overflow-hidden rounded-3xl border border-cyan-400/20 bg-linear-to-br from-cyan-400/10 via-slate-900 to-blue-500/10 p-6 shadow-2xl shadow-cyan-500/5 md:p-8">
         <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
-
         <div className="pointer-events-none absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
 
         <div className="relative flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
@@ -19,7 +18,6 @@ export default function TrialOffer() {
               <h2 className="text-3xl font-black tracking-tight md:text-4xl">
                 30 jours gratuits.
               </h2>
-
               <span className="pb-1 text-sm font-semibold text-cyan-300">
                 Pour vraiment voir ce que BuyLogic apporte.
               </span>
@@ -35,11 +33,9 @@ export default function TrialOffer() {
               <div className="rounded-xl border border-white/5 bg-white/3 px-3.5 py-2 text-xs font-semibold text-slate-300">
                 ✓ Aucune carte bancaire
               </div>
-
               <div className="rounded-xl border border-white/5 bg-white/3 px-3.5 py-2 text-xs font-semibold text-slate-300">
                 ✓ Aucun prélèvement automatique
               </div>
-
               <div className="rounded-xl border border-white/5 bg-white/3 px-3.5 py-2 text-xs font-semibold text-slate-300">
                 ✓ Vos données restent les vôtres
               </div>
@@ -51,13 +47,10 @@ export default function TrialOffer() {
               <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-500">
                 Pendant 30 jours
               </p>
-
               <p className="mt-2 text-2xl font-black text-white">0,00 €</p>
-
               <p className="mt-1 text-xs text-slate-500">
                 Aucun moyen de paiement requis
               </p>
-
               <Link
                 to="/register"
                 className="mt-4 block w-full cursor-pointer rounded-xl bg-cyan-400 px-4 py-3 text-center text-sm font-bold text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:-translate-y-0.5 hover:bg-cyan-300"

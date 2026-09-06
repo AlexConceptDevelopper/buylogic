@@ -26,7 +26,7 @@ export default function Navbar() {
             </p>
 
             <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500">
-              Smart purchasing
+              Acheter au bon moment
             </p>
           </div>
         </Link>

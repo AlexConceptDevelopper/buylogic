@@ -20,9 +20,9 @@ export default function HowItWorksSection() {
           </h2>
 
           <p className="mt-5 max-w-xl leading-7 text-slate-400">
-            Stocks, consommations, commandes en cours, fournisseurs et
-            délais sont croisés pour construire une vision réaliste de
-            votre situation.
+            Stocks, consommations, commandes en cours, nomenclatures d'atelier et
+            délais fournisseurs sont croisés pour construire une vision réaliste de
+            votre activité.
           </p>
         </div>
 
@@ -30,19 +30,19 @@ export default function HowItWorksSection() {
           <Step
             number="01"
             title="Collecter"
-            text="BuyLogic rassemble les informations de votre activité."
+            text="BuyLogic rassemble vos flux de ventes, mouvements de stock et consommations d'atelier."
           />
 
           <Step
             number="02"
             title="Analyser"
-            text="Les tendances de consommation et les risques sont identifiés."
+            text="Les tendances, les ruptures imminentes et l'impact de vos fabrications sont identifiés."
           />
 
           <Step
             number="03"
             title="Recommander"
-            text="Vous obtenez une décision claire : quoi commander, quand et chez qui."
+            text="Vous obtenez une décision claire : quoi commander, quand, en quelle quantité et chez quel fournisseur."
           />
         </div>
       </div>

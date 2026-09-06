@@ -4,9 +4,9 @@ export default function FeaturesSection() {
   return (
     <section
       id="features"
-      className="mt-24 border-y border-white/5 bg-slate-900/30"
+      className="border-y border-white/5 bg-slate-900/30 py-12"
     >
-      <div className="mx-auto max-w-7xl px-6 py-24">
+      <div className="mx-auto max-w-7xl px-6">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400">
             Un seul objectif
@@ -41,7 +41,6 @@ export default function FeaturesSection() {
             description="Ne plus immobiliser inutilement votre trésorerie dans des produits qui dorment."
           />
 
-          {/* Nouvelles cartes pour refléter tes ajouts récents */}
           <FeatureCard
             number="04"
             title="Gestion des assemblages"

@@ -1,0 +1,37 @@
+import { Link } from "react-router-dom";
+
+export default function LegalMentions() {
+  return (
+    <div className="min-h-screen bg-slate-950 px-6 py-16 text-slate-300">
+      <div className="mx-auto max-w-3xl space-y-8">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-cyan-400 transition hover:text-cyan-300"
+        >
+          ← Retour à l'accueil
+        </Link>
+
+        <h1 className="text-3xl font-bold text-white">Mentions Légales</h1>
+        
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold text-white">1. Édition du site</h2>
+          <p>Le présent site, accessible à l'URL buylogic.fr, est édité par :</p>
+          <div className="rounded-xl border border-white/5 bg-slate-900/50 p-4 text-sm text-slate-400 space-y-1">
+            <p><strong className="text-white">Statut :</strong> Micro-entreprise</p>
+            <p><strong className="text-white">SIRET :</strong> [À compléter]</p>
+            <p><strong className="text-white">Adresse :</strong> [À compléter]</p>
+            <p><strong className="text-white">Contact :</strong> contact@buylogic.fr</p>
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold text-white">2. Hébergement</h2>
+          <p>Le site est hébergé par :</p>
+          <div className="rounded-xl border border-white/5 bg-slate-900/50 p-4 text-sm text-slate-400">
+            [Nom de l'hébergeur, ex: Railway / Vercel] et ses coordonnées.
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}

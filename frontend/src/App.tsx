@@ -25,6 +25,9 @@ import { ReceivePurchaseOrderPage } from "./pages/ReceivePurchaseOrderPage";
 import SuperAdminLoginPage from "./pages/SuperAdminLoginPage";
 import SuperAdminRoute from "./components/SuperAdminRoute";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import LegalMentions from "./pages/LegalMentions";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 export default function App() {
   return (
@@ -37,6 +40,9 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/mentions-legales" element={<LegalMentions />} />
+          <Route path="/cgu" element={<TermsOfService />} />
+          <Route path="/confidentialite" element={<PrivacyPolicy />} />
 
           {/* Private (Utilisateurs classiques) */}
           <Route element={<ProtectedRoute />}>
