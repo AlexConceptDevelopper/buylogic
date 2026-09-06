@@ -27,173 +27,152 @@ import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 @Transactional(readOnly = true)
 public class CompanyService {
 
-    private final CompanyRepository companyRepository;
-    private final CompanyMapper companyMapper;
-    private final Cloudinary cloudinary;
+        private final CompanyRepository companyRepository;
+        private final CompanyMapper companyMapper;
+        private final Cloudinary cloudinary;
 
-    public CompanyService(
-            CompanyRepository companyRepository,
-            CompanyMapper companyMapper,
-            @Value("${cloudinary.cloud_name}") String cloudName,
-            @Value("${cloudinary.api_key}") String apiKey,
-            @Value("${cloudinary.api_secret}") String apiSecret) {
-        this.companyRepository = companyRepository;
-        this.companyMapper = companyMapper;
-        this.cloudinary = new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", cloudName,
-                "api_key", apiKey,
-                "api_secret", apiSecret,
-                "secure", true));
-    }
-
-    public List<CompanyDTO> getAll() {
-        Company company = getCurrentCompany();
-
-        return List.of(
-                companyMapper.toDTO(company)
-        );
-    }
-
-    public CompanyDTO getById(Integer id) {
-        Company company = getCurrentCompany();
-
-        if (!company.getIdCompany().equals(id)) {
-            throw new ResourceNotFoundException(
-                    "Company not found with id: " + id
-            );
+        public CompanyService(
+                        CompanyRepository companyRepository,
+                        CompanyMapper companyMapper,
+                        @Value("${cloudinary.cloud_name}") String cloudName,
+                        @Value("${cloudinary.api_key}") String apiKey,
+                        @Value("${cloudinary.api_secret}") String apiSecret) {
+                this.companyRepository = companyRepository;
+                this.companyMapper = companyMapper;
+                this.cloudinary = new Cloudinary(ObjectUtils.asMap(
+                                "cloud_name", cloudName,
+                                "api_key", apiKey,
+                                "api_secret", apiSecret,
+                                "secure", true));
         }
 
-        return companyMapper.toDTO(company);
-    }
+        public List<CompanyDTO> getAll() {
+                Company company = getCurrentCompany();
 
-    @Transactional
-    public CompanyDTO create(CompanyCreateDTO dto) {
-
-        if (dto.getEmail() != null
-                && !dto.getEmail().isBlank()
-                && companyRepository.existsByEmail(dto.getEmail())) {
-
-            throw new ConflictException(
-                    "A company with this email already exists."
-            );
+                return List.of(
+                                companyMapper.toDTO(company));
         }
 
-        Company company = companyMapper.toEntity(dto);
+        public CompanyDTO getById(Integer id) {
+                Company company = getCurrentCompany();
 
-        Company savedCompany =
-                companyRepository.save(company);
+                if (!company.getIdCompany().equals(id)) {
+                        throw new ResourceNotFoundException(
+                                        "Company not found with id: " + id);
+                }
 
-        return companyMapper.toDTO(savedCompany);
-    }
-
-    @Transactional
-    public CompanyDTO update(
-            Integer id,
-            CompanyUpdateDTO dto) {
-
-        Company company = getCurrentCompany();
-
-        if (!company.getIdCompany().equals(id)) {
-            throw new ResourceNotFoundException(
-                    "Company not found with id: " + id
-            );
+                return companyMapper.toDTO(company);
         }
 
-        if (dto.getEmail() != null
-                && !dto.getEmail().isBlank()) {
+        @Transactional
+        public CompanyDTO create(CompanyCreateDTO dto) {
 
-            boolean emailExists =
-                    companyRepository.findByEmail(
-                            dto.getEmail()
-                    )
-                    .filter(existingCompany ->
-                            !existingCompany
-                                    .getIdCompany()
-                                    .equals(id)
-                    )
-                    .isPresent();
+                if (dto.getEmail() != null
+                                && !dto.getEmail().isBlank()
+                                && companyRepository.existsByEmail(dto.getEmail())) {
 
-            if (emailExists) {
-                throw new ConflictException(
-                        "A company with this email already exists."
-                );
-            }
+                        throw new ConflictException(
+                                        "A company with this email already exists.");
+                }
+
+                Company company = companyMapper.toEntity(dto);
+
+                Company savedCompany = companyRepository.save(company);
+
+                return companyMapper.toDTO(savedCompany);
         }
 
-        companyMapper.updateEntity(
-                company,
-                dto
-        );
+        @Transactional
+        public CompanyDTO update(
+                        Integer id,
+                        CompanyUpdateDTO dto) {
 
-        Company updatedCompany =
-                companyRepository.save(company);
+                Company company = getCurrentCompany();
 
-        return companyMapper.toDTO(updatedCompany);
-    }
+                if (!company.getIdCompany().equals(id)) {
+                        throw new ResourceNotFoundException(
+                                        "Company not found with id: " + id);
+                }
 
-    @Transactional
-    public CompanyDTO updateLogo(Integer id, MultipartFile file) {
-        Company company = getCurrentCompany();
+                if (dto.getEmail() != null
+                                && !dto.getEmail().isBlank()) {
 
-        if (!company.getIdCompany().equals(id)) {
-            throw new ResourceNotFoundException(
-                    "Company not found with id: " + id
-            );
+                        boolean emailExists = companyRepository.findByEmail(
+                                        dto.getEmail())
+                                        .filter(existingCompany -> !existingCompany
+                                                        .getIdCompany()
+                                                        .equals(id))
+                                        .isPresent();
+
+                        if (emailExists) {
+                                throw new ConflictException(
+                                                "A company with this email already exists.");
+                        }
+                }
+
+                companyMapper.updateEntity(
+                                company,
+                                dto);
+
+                Company updatedCompany = companyRepository.save(company);
+
+                return companyMapper.toDTO(updatedCompany);
         }
 
-        try {
-            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                    "folder", "company_logos",
-                    "resource_type", "image"
-            ));
+        @Transactional
+        public CompanyDTO updateLogo(Integer id, MultipartFile file) {
+                Company company = getCurrentCompany();
 
-            String logoUrl = uploadResult.get("secure_url").toString();
+                if (!company.getIdCompany().equals(id)) {
+                        throw new ResourceNotFoundException(
+                                        "Company not found with id: " + id);
+                }
 
-            company.setLogoUrl(logoUrl);
-            Company savedCompany = companyRepository.save(company);
+                try {
+                        Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+                                        "folder", "company_logos",
+                                        "resource_type", "image"));
 
-            return companyMapper.toDTO(savedCompany);
+                        String logoUrl = uploadResult.get("secure_url").toString();
 
-        } catch (IOException e) {
-            throw new RuntimeException("Échec de l'upload du logo vers Cloudinary", e);
-        }
-    }
+                        company.setLogoUrl(logoUrl);
+                        Company savedCompany = companyRepository.save(company);
 
-    @Transactional
-    public void delete(Integer id) {
+                        return companyMapper.toDTO(savedCompany);
 
-        Company company = getCurrentCompany();
-
-        if (!company.getIdCompany().equals(id)) {
-            throw new ResourceNotFoundException(
-                    "Company not found with id: " + id
-            );
+                } catch (IOException e) {
+                        throw new RuntimeException("Échec de l'upload du logo vers Cloudinary", e);
+                }
         }
 
-        companyRepository.delete(company);
-    }
+        @Transactional
+        public void delete(Integer id) {
 
-    private Company getCurrentCompany() {
-        Authentication authentication =
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication();
+                Company company = getCurrentCompany();
 
-        if (authentication == null
-                || !(authentication.getPrincipal()
-                instanceof JwtPrincipal principal)) {
+                if (!company.getIdCompany().equals(id)) {
+                        throw new ResourceNotFoundException(
+                                        "Company not found with id: " + id);
+                }
 
-            throw new IllegalStateException(
-                    "Authenticated company not found."
-            );
+                companyRepository.delete(company);
         }
 
-        return companyRepository
-                .findById(principal.companyId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Authenticated company not found."
-                        )
-                );
-    }
+        private Company getCurrentCompany() {
+                Authentication authentication = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication();
+
+                if (authentication == null
+                                || !(authentication.getPrincipal() instanceof JwtPrincipal principal)) {
+
+                        throw new IllegalStateException(
+                                        "Authenticated company not found.");
+                }
+
+                return companyRepository
+                                .findById(principal.companyId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Authenticated company not found."));
+        }
 }

@@ -71,7 +71,6 @@ public class AuthService {
 
         Subscription subscription = new Subscription();
         subscription.setCompany(savedCompany);
-        subscription.setPlan("PRO");
         subscription.setStatus("TRIAL");
         subscriptionRepository.save(subscription);
 

@@ -24,9 +24,6 @@ public class Subscription {
     )
     private Company company;
 
-    @Column(nullable = false, length = 50)
-    private String plan = "PRO";
-
     @Column(nullable = false, length = 30)
     private String status = "TRIAL";
 
@@ -35,6 +32,17 @@ public class Subscription {
 
     @Column(nullable = false)
     private LocalDateTime trialEnd;
+
+    // --- Ajouts Stripe ---
+    @Column(length = 100)
+    private String stripeCustomerId;
+
+    @Column(length = 100)
+    private String stripeSubscriptionId;
+
+    @Column(length = 50)
+    private String stripeStatus;
+    // ---------------------
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

@@ -20,4 +20,8 @@ public class CompanyDTO {
     private String address;
     private String receptionHours;
     private String logoUrl;
+
+    private Long remainingTrialDays;
+    private Boolean trialExpired;
+    private String subscriptionStatus;
 }

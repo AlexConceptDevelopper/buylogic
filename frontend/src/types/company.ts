@@ -8,6 +8,9 @@ export interface Company {
   address?: string;
   receptionHours?: string;
   logoUrl?: string;
+  remainingTrialDays: number;
+  trialExpired: boolean;
+  subscriptionStatus?: string;
 }
 
 export interface CompanyCreate {

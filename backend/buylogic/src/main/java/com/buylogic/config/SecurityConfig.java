@@ -47,6 +47,7 @@ public class SecurityConfig {
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                                                .requestMatchers("/billing/webhook").permitAll()
                                                 .requestMatchers("/admin/**").hasRole("SUPER_OWNER")
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .anyRequest().authenticated());
