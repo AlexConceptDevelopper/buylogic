@@ -11,9 +11,16 @@ export default function SecurityLogsManager() {
   const [filter, setFilter] = useState<string>("ALL");
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   
-  // État pour stocker le log en attente de confirmation de suppression
+  // États pour la sélection multiple et la pagination
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+
+  // États pour les modales de confirmation
   const [logToDelete, setLogToDelete] = useState<AuditLog | null>(null);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState<boolean>(false);
   const [actionId, setActionId] = useState<number | null>(null);
+  const [isBulkDeleting, setIsBulkDeleting] = useState<boolean>(false);
 
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -29,16 +36,23 @@ export default function SecurityLogsManager() {
       });
   }, []);
 
+  // Réinitialiser la page courante si on change de filtre ou de taille de page
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedIds([]);
+  }, [filter, itemsPerPage]);
+
   const handleDeleteClick = (e: React.MouseEvent, log: AuditLog) => {
     e.stopPropagation();
-    setLogToDelete(log); // Ouvre la modale de confirmation
+    setLogToDelete(log);
   };
 
   const executeDelete = async (log: AuditLog) => {
     setActionId(log.id);
     try {
       await adminDeleteAuditLog(log.id);
-      setLogs(logs.filter((l) => l.id !== log.id));
+      setLogs((prev) => prev.filter((l) => l.id !== log.id));
+      setSelectedIds((prev) => prev.filter((id) => id !== log.id));
       if (selectedLog?.id === log.id) {
         setSelectedLog(null);
       }
@@ -54,8 +68,64 @@ export default function SecurityLogsManager() {
     }
   };
 
+  // Suppression groupée
+  const executeBulkDelete = async () => {
+    setIsBulkDeleting(true);
+    try {
+      // Exécute les suppressions en parallèle
+      await Promise.all(selectedIds.map((id) => adminDeleteAuditLog(id)));
+      
+      setLogs((prev) => prev.filter((l) => !selectedIds.includes(l.id)));
+      if (selectedLog && selectedIds.includes(selectedLog.id)) {
+        setSelectedLog(null);
+      }
+      
+      setActionMessage({ 
+        type: 'success', 
+        text: `${selectedIds.length} journal(aux) d'audit ont été supprimés avec succès.` 
+      });
+      setSelectedIds([]);
+      setTimeout(() => setActionMessage(null), 3000);
+    } catch (err) {
+      console.error("Erreur lors de la suppression groupée :", err);
+      setActionMessage({ type: 'error', text: "Impossible de supprimer certains journaux d'audit." });
+      setTimeout(() => setActionMessage(null), 4000);
+    } finally {
+      setIsBulkDeleting(false);
+      setIsBulkDeleteModalOpen(false);
+    }
+  };
+
   const filteredLogs =
     filter === "ALL" ? logs : logs.filter((log) => log.status === filter);
+
+  // Logique de pagination
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentLogs = filteredLogs.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleSelectAllCurrentPage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      const pageIds = currentLogs.map((l) => l.id);
+      // Ajoute les IDs de la page courante sans doublons
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...pageIds])));
+    } else {
+      const pageIds = currentLogs.map((l) => l.id);
+      setSelectedIds((prev) => prev.filter((id) => !pageIds.includes(id)));
+    }
+  };
+
+  const handleSelectOne = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
+    e.stopPropagation();
+    if (e.target.checked) {
+      setSelectedIds((prev) => [...prev, id]);
+    } else {
+      setSelectedIds((prev) => prev.filter((item_id) => item_id !== id));
+    }
+  };
+
+  const isAllCurrentPageSelected = 
+    currentLogs.length > 0 && currentLogs.every((l) => selectedIds.includes(l.id));
 
   return (
     <div className="space-y-6">
@@ -100,6 +170,29 @@ export default function SecurityLogsManager() {
         </div>
       </div>
 
+      {/* Barre d'actions groupées (Sticky / Conditionnelle) */}
+      {selectedIds.length > 0 && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between animate-fadeIn">
+          <div className="text-xs text-red-300 font-medium">
+            <strong className="text-white">{selectedIds.length}</strong> journal(aux) sélectionné(s)
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setSelectedIds([])}
+              className="text-xs text-slate-400 hover:text-white transition cursor-pointer"
+            >
+              Tout désélectionner
+            </button>
+            <button
+              onClick={() => setIsBulkDeleteModalOpen(true)}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition shadow-lg shadow-red-600/20 cursor-pointer"
+            >
+              Supprimer la sélection ({selectedIds.length})
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tableau des logs */}
       <div className="rounded-2xl border border-white/10 bg-slate-950/40 overflow-hidden">
         {loading ? (
@@ -115,6 +208,15 @@ export default function SecurityLogsManager() {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-white/10 bg-slate-900/60 text-slate-400 uppercase tracking-wider font-semibold">
+                  <th className="p-4 w-10 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isAllCurrentPageSelected}
+                      onChange={handleSelectAllCurrentPage}
+                      className="rounded border-white/20 bg-slate-900 text-red-500 focus:ring-red-500 focus:ring-offset-slate-950 cursor-pointer"
+                      title="Tout sélectionner sur cette page"
+                    />
+                  </th>
                   <th className="p-4">Horodatage</th>
                   <th className="p-4">Action</th>
                   <th className="p-4">Acteur</th>
@@ -125,55 +227,109 @@ export default function SecurityLogsManager() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-slate-300">
-                {filteredLogs.map((log) => (
-                  <tr
-                    key={log.id}
-                    onClick={() => setSelectedLog(log)}
-                    className="hover:bg-slate-900/50 transition cursor-pointer group"
-                  >
-                    <td className="p-4 font-mono text-slate-400 whitespace-nowrap">
-                      {log.timestamp}
-                    </td>
-                    <td className="p-4 font-bold text-white group-hover:text-red-400 transition">
-                      {log.action}
-                    </td>
-                    <td className="p-4 text-slate-300">{log.actor}</td>
-                    <td className="p-4 font-mono text-slate-400">
-                      {log.ipAddress}
-                    </td>
-                    <td className="p-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider ${
-                          log.status === "SUCCESS"
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : "bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse"
-                        }`}
-                      >
-                        {log.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-slate-400 max-w-xs truncate">
-                      {log.details}
-                    </td>
-                    <td className="p-4 text-right whitespace-nowrap">
-                      <button
-                        onClick={(e) => handleDeleteClick(e, log)}
-                        disabled={actionId === log.id}
-                        className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition text-xs font-semibold cursor-pointer disabled:opacity-50"
-                        title="Supprimer ce log"
-                      >
-                        {actionId === log.id ? "..." : "Supprimer"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {currentLogs.map((log) => {
+                  const isSelected = selectedIds.includes(log.id);
+                  return (
+                    <tr
+                      key={log.id}
+                      onClick={() => setSelectedLog(log)}
+                      className={`hover:bg-slate-900/50 transition cursor-pointer group ${
+                        isSelected ? "bg-red-500/5" : ""
+                      }`}
+                    >
+                      <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => handleSelectOne(e, log.id)}
+                          className="rounded border-white/20 bg-slate-900 text-red-500 focus:ring-red-500 focus:ring-offset-slate-950 cursor-pointer"
+                        />
+                      </td>
+                      <td className="p-4 font-mono text-slate-400 whitespace-nowrap">
+                        {log.timestamp}
+                      </td>
+                      <td className="p-4 font-bold text-white group-hover:text-red-400 transition">
+                        {log.action}
+                      </td>
+                      <td className="p-4 text-slate-300">{log.actor}</td>
+                      <td className="p-4 font-mono text-slate-400">
+                        {log.ipAddress}
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider ${
+                            log.status === "SUCCESS"
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : "bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse"
+                          }`}
+                        >
+                          {log.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-slate-400 max-w-xs truncate">
+                        {log.details}
+                      </td>
+                      <td className="p-4 text-right whitespace-nowrap">
+                        <button
+                          onClick={(e) => handleDeleteClick(e, log)}
+                          disabled={actionId === log.id}
+                          className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition text-xs font-semibold cursor-pointer disabled:opacity-50"
+                          title="Supprimer ce log"
+                        >
+                          {actionId === log.id ? "..." : "Supprimer"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
+
+        {/* Contrôles de Pagination */}
+        {!loading && filteredLogs.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-white/10 bg-slate-900/30 gap-4 text-xs text-slate-400">
+            <div className="flex items-center space-x-2">
+              <span>Afficher</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="bg-slate-950 border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-red-500 cursor-pointer"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+              </select>
+              <span>sur {filteredLogs.length} résultats</span>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Précédent
+              </button>
+              
+              <span className="px-2 font-mono text-white">
+                Page {currentPage} / {totalPages}
+              </span>
+
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Suivant
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Modale de Confirmation de Suppression */}
+      {/* Modale de Confirmation de Suppression Unique */}
       {logToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="w-full max-w-md rounded-2xl border border-red-500/20 bg-slate-900 p-6 shadow-2xl space-y-4">
@@ -196,6 +352,36 @@ export default function SecurityLogsManager() {
                 className="px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-500 transition disabled:opacity-50 cursor-pointer"
               >
                 {actionId === logToDelete.id ? "Suppression..." : "Confirmer la suppression"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modale de Confirmation de Suppression Groupée */}
+      {isBulkDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-md rounded-2xl border border-red-500/20 bg-slate-900 p-6 shadow-2xl space-y-4">
+            <h3 className="text-sm font-bold text-white">Confirmer la suppression multiple</h3>
+            <p className="text-xs text-slate-400">
+              Êtes-vous sûr de vouloir supprimer <strong className="text-white">{selectedIds.length}</strong> journaux d'audit sélectionnés ? Cette action est irréversible.
+            </p>
+            <div className="flex justify-end space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsBulkDeleteModalOpen(false)}
+                disabled={isBulkDeleting}
+                className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={() => void executeBulkDelete()}
+                disabled={isBulkDeleting}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-500 transition disabled:opacity-50 cursor-pointer"
+              >
+                {isBulkDeleting ? "Suppression en cours..." : `Confirmer (${selectedIds.length})`}
               </button>
             </div>
           </div>
