@@ -222,4 +222,12 @@ public class CompanyService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Authenticated company not found."));
     }
+
+    @Transactional
+    public CompanyDTO completeOnboarding() {
+        Company company = getCurrentCompany();
+        company.setOnboardingCompleted(true);
+        Company savedCompany = companyRepository.save(company);
+        return companyMapper.toDTO(savedCompany);
+    }
 }

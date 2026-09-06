@@ -4,7 +4,8 @@ import DashboardStats from "../components/dashboard/DashboardStats";
 import StockAlerts from "../components/dashboard/StockAlerts";
 import RecommendationPreview from "../components/dashboard/RecommendationPreview";
 import RecentOrders from "../components/dashboard/RecentOrders";
-import { getCompanies } from "../api/company.api";
+import OnboardingBanner from "../components/dashboard/OnboardingBanner";
+import { getCompanies, completeOnboarding } from "../api/company.api";
 import type { Company } from "../types/company";
 
 export default function DashboardPage() {
@@ -20,6 +21,15 @@ export default function DashboardPage() {
       .catch((err) => console.error("Erreur chargement company", err));
   }, []);
 
+  const handleCompleteOnboarding = async () => {
+    try {
+      const updated = await completeOnboarding();
+      setCompany(updated);
+    } catch (err) {
+      console.error("Erreur validation onboarding", err);
+    }
+  };
+
   return (
     <div className="min-h-full bg-slate-950">
       <div className="mx-auto max-w-7xl px-6 py-8">
@@ -27,6 +37,13 @@ export default function DashboardPage() {
           remainingTrialDays={company?.remainingTrialDays} 
           trialExpired={company?.trialExpired} 
         />
+
+        {/* Affichage conditionnel de l'onboarding si non complété */}
+        {company && !company.onboardingCompleted && (
+          <div className="mt-6">
+            <OnboardingBanner onComplete={handleCompleteOnboarding} />
+          </div>
+        )}
 
         <div className="mt-8">
           <DashboardStats />

@@ -29,6 +29,9 @@ public class Company {
     @Column(nullable = false)
     private Boolean active = true;
 
+    @Column(nullable = false)
+    private Boolean onboardingCompleted = false;
+
     @Column(length = 50)
     private String siret;
 

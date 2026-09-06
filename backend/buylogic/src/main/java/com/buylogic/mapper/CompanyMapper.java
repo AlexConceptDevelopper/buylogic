@@ -33,6 +33,7 @@ public class CompanyMapper {
         dto.setEmail(company.getEmail());
         dto.setPhone(company.getPhone());
         dto.setActive(company.getActive());
+        dto.setOnboardingCompleted(company.getOnboardingCompleted());
         dto.setSiret(company.getSiret()); 
         dto.setAddress(company.getAddress()); 
         dto.setReceptionHours(company.getReceptionHours());

@@ -4,6 +4,7 @@ export interface Company {
   email: string;
   phone?: string;
   active: boolean;
+  onboardingCompleted: boolean;
   siret?: string;
   address?: string;
   receptionHours?: string;

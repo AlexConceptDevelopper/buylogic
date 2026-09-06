@@ -16,6 +16,7 @@ public class CompanyDTO {
     private String email;
     private String phone;
     private Boolean active;
+    private Boolean onboardingCompleted;
     private String siret;
     private String address;
     private String receptionHours;

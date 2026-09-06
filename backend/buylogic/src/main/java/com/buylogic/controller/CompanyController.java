@@ -64,6 +64,7 @@ public class CompanyController {
                 companyService.updateLogo(id, file));
     }
 
+    //hard delete pour respecter le RGPD, on supprime la société et toutes les données associées (utilisateurs, produits, fournisseurs, commandes d'achat, etc.)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable Integer id) {
@@ -71,5 +72,12 @@ public class CompanyController {
         companyService.delete(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    // Endpoint pour marquer l'onboarding comme terminé
+    @PatchMapping("/onboarding/complete")
+    public ResponseEntity<CompanyDTO> completeOnboarding() {
+        CompanyDTO updatedCompany = companyService.completeOnboarding();
+        return ResponseEntity.ok(updatedCompany);
     }
 }

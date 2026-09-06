@@ -42,3 +42,9 @@ export function deleteCompany(id: number) {
     method: "DELETE",
   });
 }
+
+export function completeOnboarding() {
+  return apiFetch<Company>("/companies/onboarding/complete", {
+    method: "PATCH",
+  });
+}
