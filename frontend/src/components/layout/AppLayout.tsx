@@ -24,6 +24,11 @@ export default function AppLayout() {
       path: "/dashboard",
       icon: "⌂",
     },
+        {
+      label: "Fournisseurs",
+      path: "/suppliers",
+      icon: "◉",
+    },
     {
       label: "Produits",
       path: "/products",
@@ -33,11 +38,6 @@ export default function AppLayout() {
       label: "Gestion de stock",
       path: "/stock",
       icon: "▤",
-    },
-    {
-      label: "Fournisseurs",
-      path: "/suppliers",
-      icon: "◉",
     },
     {
       label: "Commandes",

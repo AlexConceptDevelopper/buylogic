@@ -116,7 +116,8 @@ public class StripeService {
         subscription.setStripeStatus("active");
         subscription.setStatus("PAID");
 
-        // Si l'entreprise avait été désactivée par le soft delete de l'essai, on la réactive automatiquement au paiement !
+        // Si l'entreprise avait été désactivée par le soft delete de l'essai, on la
+        // réactive automatiquement au paiement !
         if (!company.getActive()) {
             company.setActive(true);
             companyRepository.save(company);
@@ -124,14 +125,28 @@ public class StripeService {
 
         subscriptionRepository.save(subscription);
 
-        // 📝 Log d'audit pour tracer le succès du paiement et l'activation de l'abonnement
+        // 📝 Log d'audit pour tracer le succès du paiement et l'activation de
+        // l'abonnement
         AuditLog auditLog = new AuditLog();
         auditLog.setAction("STRIPE_PAYMENT_SUCCESS");
         auditLog.setActor("StripeWebhook");
         auditLog.setIpAddress("Stripe");
         auditLog.setStatus(AuditLog.AuditStatus.SUCCESS);
-        auditLog.setDetails(String.format("Paiement validé pour l'entreprise ID %d (%s). Abonnement passé à PAID.", 
+        auditLog.setDetails(String.format("Paiement validé pour l'entreprise ID %d (%s). Abonnement passé à PAID.",
                 company.getIdCompany(), company.getName()));
         auditLogRepository.save(auditLog);
+    }
+
+    public void cancelSubscription(String stripeSubscriptionId) {
+        if (stripeSubscriptionId == null || stripeSubscriptionId.isBlank()) {
+            return;
+        }
+        try {
+            com.stripe.model.Subscription subscription = com.stripe.model.Subscription.retrieve(stripeSubscriptionId);
+            subscription.cancel();
+        } catch (StripeException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Échec de la résiliation de l'abonnement Stripe: " + e.getMessage(), e);
+        }
     }
 }

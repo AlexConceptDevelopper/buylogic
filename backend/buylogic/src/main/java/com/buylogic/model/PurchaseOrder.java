@@ -61,7 +61,7 @@ public class PurchaseOrder {
     @Column(name = "is_auto_recommended", nullable = false)
     private Boolean isAutoRecommended = false;
 
-    @OneToMany(mappedBy = "purchaseOrder")
+    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseOrderItem> items;
 
     @PrePersist

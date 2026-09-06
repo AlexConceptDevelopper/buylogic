@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Company } from "../../types/company";
 import type { CompanyConfiguration } from "../../types/companyConfiguration";
-import { uploadCompanyLogo } from "../../api/company.api";
+import { uploadCompanyLogo, deleteCompany } from "../../api/company.api";
 import useAsync from "../../hooks/useAsync";
 
 interface CompanyParamsTabProps {
@@ -24,6 +24,13 @@ export default function CompanyParamsTab({
   const { execute: executeUpload } = useAsync<Company>();
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // États pour la modale de suppression de l'entreprise
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [confirmCompanyName, setConfirmCompanyName] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletionSuccess, setDeletionSuccess] = useState(false); // Nouvel état pour le message de succès
 
   if (!company) {
     return <div className="mt-8 text-slate-400">Chargement des informations de l'entreprise...</div>;
@@ -64,6 +71,38 @@ export default function CompanyParamsTab({
     }
   };
 
+  const handleDeleteCompanySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (confirmCompanyName !== company.name) {
+      setDeleteError("Le nom de l'entreprise ne correspond pas.");
+      return;
+    }
+    setDeleteError(null);
+    setIsDeleting(true);
+
+    try {
+      await deleteCompany(company.idCompany);
+      
+      // 1. On nettoie le stockage local pour éviter les requêtes parasites (/users/me en 403)
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      sessionStorage.clear();
+
+      // 2. On affiche le message de succès dans la modale
+      setIsDeleting(false);
+      setDeletionSuccess(true);
+
+      // 3. On redirige proprement après 3 secondes pour laisser le temps de lire
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 3000);
+
+    } catch (err: any) {
+      setDeleteError(err.message || "Une erreur est survenue lors de la suppression de l'entreprise.");
+      setIsDeleting(false);
+    }
+  };
+
   const isManufactured =
     (configuration?.productManagementMode as string) === "MANUFACTURED" ||
     (configuration?.productManagementMode as string) === "PRODUCTION";
@@ -73,169 +112,266 @@ export default function CompanyParamsTab({
     : "Achat / revente";
 
   return (
-    <div className="mt-8 rounded-2xl border border-white/5 bg-slate-900/70 p-6">
-      <div className="border-b border-white/5 pb-4">
-        <p className="text-sm font-semibold text-white">Coordonnées et Infos Légales</p>
-        <p className="mt-0.5 text-xs text-slate-500">
-          Ces informations ainsi que votre logo apparaîtront sur vos bons de commande PDF.
-        </p>
-      </div>
-
-      {successMessage && (
-        <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
-          {successMessage}
+    <div className="mt-8 space-y-6">
+      {/* Conteneur principal des paramètres */}
+      <div className="rounded-2xl border border-white/5 bg-slate-900/70 p-6">
+        <div className="border-b border-white/5 pb-4">
+          <p className="text-sm font-semibold text-white">Coordonnées et Infos Légales</p>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Ces informations ainsi que votre logo apparaîtront sur vos bons de commande PDF.
+          </p>
         </div>
-      )}
 
-      {uploadError && (
-        <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
-          {uploadError}
-        </div>
-      )}
+        {successMessage && (
+          <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+            {successMessage}
+          </div>
+        )}
 
-      {/* Grille globale englobant le formulaire à gauche et l'info BuyLogic à droite */}
-      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
-        
-        {/* Formulaire à gauche (Prend 2 colonnes) */}
-        <form onSubmit={onSaveCompany} className="space-y-6 lg:col-span-2">
-          {/* Section Logo Cloudinary */}
-          <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-slate-950 p-4 sm:flex-row sm:items-center">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-900 text-slate-500 overflow-hidden">
-              {company.logoUrl ? (
-                <img src={company.logoUrl} alt="Logo entreprise" className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-xs">Logo</span>
-              )}
-            </div>
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Logo de l'entreprise
-                </label>
-                <span className="text-[10px] text-slate-500">PNG, JPG, WEBP, SVG • Max : 2 Mo</span>
+        {uploadError && (
+          <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+            {uploadError}
+          </div>
+        )}
+
+        {/* Grille globale englobant le formulaire à gauche et l'info BuyLogic à droite */}
+        <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
+          
+          {/* Formulaire à gauche (Prend 2 colonnes) */}
+          <form onSubmit={onSaveCompany} className="space-y-6 lg:col-span-2">
+            {/* Section Logo Cloudinary */}
+            <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-slate-950 p-4 sm:flex-row sm:items-center">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-900 text-slate-500 overflow-hidden">
+                {company.logoUrl ? (
+                  <img src={company.logoUrl} alt="Logo entreprise" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-xs">Logo</span>
+                )}
               </div>
-              <input
-                type="file"
-                accept="image/png, image/jpeg, image/webp, image/svg+xml"
-                onChange={handleFileChange}
-                disabled={uploading}
-                className="w-full text-xs text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-400 file:text-slate-950 hover:file:bg-cyan-300 file:cursor-pointer cursor-pointer disabled:opacity-50"
-              />
-              {uploading && <p className="text-xs text-cyan-400">Téléversement en cours...</p>}
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Logo de l'entreprise
+                  </label>
+                  <span className="text-[10px] text-slate-500">PNG, JPG, WEBP, SVG • Max : 2 Mo</span>
+                </div>
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                  onChange={handleFileChange}
+                  disabled={uploading}
+                  className="w-full text-xs text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-400 file:text-slate-950 hover:file:bg-cyan-300 file:cursor-pointer cursor-pointer disabled:opacity-50"
+                />
+                {uploading && <p className="text-xs text-cyan-400">Téléversement en cours...</p>}
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Nom de l'entreprise
+                </label>
+                <input
+                  type="text"
+                  value={company.name ?? ""}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-cyan-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Email de contact
+                </label>
+                <input
+                  type="email"
+                  value={company.email ?? ""}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-cyan-400 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Téléphone
+                </label>
+                <input
+                  type="text"
+                  value={company.phone ?? ""}
+                  onChange={(e) => handleChange("phone", e.target.value)}
+                  placeholder="Ex: 01 23 45 67 89"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-cyan-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  SIRET / N° Immatriculation
+                </label>
+                <input
+                  type="text"
+                  value={company.siret ?? ""}
+                  onChange={(e) => handleChange("siret", e.target.value)}
+                  placeholder="Ex: 123 456 789 00012"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-cyan-400 focus:outline-none"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Nom de l'entreprise
+                Horaires de réception
               </label>
               <input
                 type="text"
-                value={company.name ?? ""}
-                onChange={(e) => handleChange("name", e.target.value)}
+                value={company.receptionHours ?? ""}
+                onChange={(e) => handleChange("receptionHours", e.target.value)}
+                placeholder="Ex: 8h-12h / 14h-17h"
                 className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-cyan-400 focus:outline-none"
               />
             </div>
+
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Email de contact
+                Adresse postale de l'agence
               </label>
-              <input
-                type="email"
-                value={company.email ?? ""}
-                onChange={(e) => handleChange("email", e.target.value)}
+              <textarea
+                rows={3}
+                value={company.address ?? ""}
+                onChange={(e) => handleChange("address", e.target.value)}
+                placeholder="Numéro, rue, code postal, ville..."
                 className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-cyan-400 focus:outline-none"
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Téléphone
-              </label>
-              <input
-                type="text"
-                value={company.phone ?? ""}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                placeholder="Ex: 01 23 45 67 89"
-                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-cyan-400 focus:outline-none"
-              />
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={actionLoading || uploading}
+                className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-50"
+              >
+                {actionLoading ? "Enregistrement..." : "Enregistrer les modifications"}
+              </button>
             </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                SIRET / N° Immatriculation
-              </label>
-              <input
-                type="text"
-                value={company.siret ?? ""}
-                onChange={(e) => handleChange("siret", e.target.value)}
-                placeholder="Ex: 123 456 789 00012"
-                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-cyan-400 focus:outline-none"
-              />
-            </div>
-          </div>
+          </form>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Horaires de réception
-            </label>
-            <input
-              type="text"
-              value={company.receptionHours ?? ""}
-              onChange={(e) => handleChange("receptionHours", e.target.value)}
-              placeholder="Ex: 8h-12h / 14h-17h"
-              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-cyan-400 focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Adresse postale de l'agence
-            </label>
-            <textarea
-              rows={3}
-              value={company.address ?? ""}
-              onChange={(e) => handleChange("address", e.target.value)}
-              placeholder="Numéro, rue, code postal, ville..."
-              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-cyan-400 focus:outline-none"
-            />
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={actionLoading || uploading}
-              className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-50"
-            >
-              {actionLoading ? "Enregistrement..." : "Enregistrer les modifications"}
-            </button>
-          </div>
-        </form>
-
-        {/* Bloc BuyLogic à droite (Prend 1 colonne, à l'intérieur du même grand conteneur) */}
-        <div className="space-y-4">
-          <div className="rounded-xl border border-white/5 bg-slate-950 p-5">
-            <p className="text-sm font-semibold text-white">
-              Mode de fonctionnement BuyLogic
-            </p>
-            <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-              Définit la manière dont BuyLogic analyse vos besoins d'achats et de stocks.
-            </p>
-
-            <div className="mt-4 rounded-lg border border-white/5 bg-slate-900 p-3.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
-                Gestion des produits
+          {/* Bloc BuyLogic à droite (Prend 1 colonne) */}
+          <div className="space-y-4">
+            <div className="rounded-xl border border-white/5 bg-slate-950 p-5">
+              <p className="text-sm font-semibold text-white">
+                Mode de fonctionnement BuyLogic
               </p>
-              <p className="mt-1.5 text-sm font-semibold text-slate-200">
-                {managementLabel}
+              <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+                Définit la manière dont BuyLogic analyse vos besoins d'achats et de stocks.
               </p>
+
+              <div className="mt-4 rounded-lg border border-white/5 bg-slate-900 p-3.5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
+                  Gestion des produits
+                </p>
+                <p className="mt-1.5 text-sm font-semibold text-slate-200">
+                  {managementLabel}
+                </p>
+              </div>
             </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* --- ZONE DE DANGER : SUPPRESSION DE L'ENTREPRISE --- */}
+      <div className="rounded-2xl border border-rose-500/20 bg-rose-950/10 p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-rose-400">Zone de danger</p>
+            <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+              La suppression de l'entreprise entraînera la résiliation immédiate de votre abonnement Stripe, 
+              l'effacement de vos fichiers Cloudinary et la purge définitive de toutes vos données métiers.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setConfirmCompanyName("");
+              setDeleteError(null);
+              setDeletionSuccess(false);
+              setIsDeleteModalOpen(true);
+            }}
+            className="cursor-pointer shrink-0 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-xs font-bold text-rose-300 transition hover:bg-rose-500 hover:text-white"
+          >
+            Supprimer l'entreprise
+          </button>
+        </div>
+      </div>
+
+      {/* Modale de confirmation de suppression */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-2xl border border-rose-500/30 bg-slate-900 p-6 shadow-2xl">
+            
+            {deletionSuccess ? (
+              <div className="py-6 text-center space-y-4">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xl">
+                  ✓
+                </div>
+                <p className="text-lg font-bold text-white">Entreprise supprimée avec succès !</p>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Toutes vos données ont bien été purgées. À bientôt sur BuyLogic !
+                </p>
+                <p className="text-[11px] text-cyan-400 animate-pulse pt-2">
+                  Redirection vers la page de connexion...
+                </p>
+              </div>
+            ) : (
+              <>
+                <p className="text-lg font-bold text-rose-400">Êtes-vous absolument sûr ?</p>
+                <p className="mt-2 text-xs text-slate-300 leading-relaxed">
+                  Cette action est <strong className="text-white">irréversible</strong>. Elle supprimera définitivement l'entreprise <span className="text-white font-semibold">{company.name}</span>, résiliera vos paiements et effacera l'ensemble de vos données.
+                </p>
+
+                <form onSubmit={handleDeleteCompanySubmit} className="mt-6 space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      Veuillez taper <span className="text-rose-300 select-all font-mono">{company.name}</span> pour confirmer :
+                    </label>
+                    <input
+                      type="text"
+                      value={confirmCompanyName}
+                      onChange={(e) => setConfirmCompanyName(e.target.value)}
+                      placeholder={company.name}
+                      disabled={isDeleting}
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-rose-500 focus:outline-none disabled:opacity-50"
+                    />
+                  </div>
+
+                  {deleteError && (
+                    <p className="text-xs text-rose-400 font-semibold">{deleteError}</p>
+                  )}
+
+                  <div className="mt-6 flex items-center justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsDeleteModalOpen(false)}
+                      disabled={isDeleting}
+                      className="cursor-pointer rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-400 hover:bg-white/5 hover:text-white disabled:opacity-50"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={confirmCompanyName !== company.name || isDeleting}
+                      className="cursor-pointer rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {isDeleting ? "Suppression en cours..." : "Supprimer définitivement"}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+
           </div>
         </div>
-
-      </div>
+      )}
     </div>
   );
 }

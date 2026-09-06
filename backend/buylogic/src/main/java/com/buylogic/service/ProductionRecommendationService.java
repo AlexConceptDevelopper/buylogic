@@ -68,7 +68,8 @@ public class ProductionRecommendationService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Product not found with id: " + productId));
 
-        // SÉCURITÉ : Si ce n'est pas un produit fabriqué, on supprime l'éventuelle reco de production et on stoppe net
+        // SÉCURITÉ : Si ce n'est pas un produit fabriqué, on supprime l'éventuelle reco
+        // de production et on stoppe net
         if (product.getType() != ProductType.MANUFACTURED) {
             productionRecommendationRepository.findByProduct_IdProductAndCompany_IdCompany(productId, companyId)
                     .ifPresent(productionRecommendationRepository::delete);
@@ -79,7 +80,8 @@ public class ProductionRecommendationService {
                 .findByProduct_IdProductAndCompany_IdCompany(productId, companyId)
                 .orElse(null);
 
-        ProductionRecommendation tempRecommendation = recommendation != null ? recommendation : new ProductionRecommendation();
+        ProductionRecommendation tempRecommendation = recommendation != null ? recommendation
+                : new ProductionRecommendation();
         if (tempRecommendation.getIdProductionRecommendation() == null) {
             tempRecommendation.setProduct(product);
             tempRecommendation.setCompany(product.getCompany());
@@ -88,7 +90,7 @@ public class ProductionRecommendationService {
 
         updateRecommendationValues(tempRecommendation, companyId);
 
-        if (tempRecommendation.getRecommendedQuantity() == null 
+        if (tempRecommendation.getRecommendedQuantity() == null
                 || tempRecommendation.getRecommendedQuantity().compareTo(BigDecimal.ZERO) <= 0) {
             if (tempRecommendation.getIdProductionRecommendation() != null) {
                 productionRecommendationRepository.delete(tempRecommendation);
@@ -157,8 +159,8 @@ public class ProductionRecommendationService {
 
         BigDecimal confidenceScore = consumptions.size() >= 10 ? new BigDecimal("90.00")
                 : consumptions.size() >= 5 ? new BigDecimal("80.00")
-                : consumptions.size() >= 3 ? new BigDecimal("70.00")
-                : new BigDecimal("50.00");
+                        : consumptions.size() >= 3 ? new BigDecimal("70.00")
+                                : new BigDecimal("50.00");
 
         String reason;
         if (currentStock.compareTo(BigDecimal.ZERO) <= 0) {

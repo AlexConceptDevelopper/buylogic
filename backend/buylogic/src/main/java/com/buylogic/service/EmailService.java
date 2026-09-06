@@ -24,7 +24,8 @@ public class EmailService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     /**
-     * Envoie un e-mail avec un PDF en pièce jointe via l'API HTTP de Brevo (Port 443).
+     * Envoie un e-mail avec un PDF en pièce jointe via l'API HTTP de Brevo (Port
+     * 443).
      */
     public void sendEmailWithAttachment(
             String toEmail,
@@ -43,15 +44,13 @@ public class EmailService {
             String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
 
             Map<String, Object> emailPayload = Map.of(
-                "sender", Map.of("email", fromEmail, "name", "BuyLogic"),
-                "to", List.of(Map.of("email", toEmail)),
-                "subject", subject,
-                "textContent", body,
-                "attachment", List.of(Map.of(
-                    "content", base64Pdf,
-                    "name", attachmentName
-                ))
-            );
+                    "sender", Map.of("email", fromEmail, "name", "BuyLogic"),
+                    "to", List.of(Map.of("email", toEmail)),
+                    "subject", subject,
+                    "textContent", body,
+                    "attachment", List.of(Map.of(
+                            "content", base64Pdf,
+                            "name", attachmentName)));
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(emailPayload, headers);
 
@@ -101,11 +100,10 @@ public class EmailService {
             headers.set("api-key", brevoApiKey);
 
             Map<String, Object> emailPayload = Map.of(
-                "sender", Map.of("email", fromEmail, "name", "BuyLogic"),
-                "to", List.of(Map.of("email", to)),
-                "subject", subject,
-                "htmlContent", htmlBody
-            );
+                    "sender", Map.of("email", fromEmail, "name", "BuyLogic"),
+                    "to", List.of(Map.of("email", to)),
+                    "subject", subject,
+                    "htmlContent", htmlBody);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(emailPayload, headers);
 

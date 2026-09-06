@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 interface DashboardHeaderProps {
   remainingTrialDays?: number;
   trialExpired?: boolean;
-  subscriptionStatus?: string; // <-- Ajout de la prop status
+  subscriptionStatus?: string;
 }
 
 export default function DashboardHeader({
@@ -16,28 +16,29 @@ export default function DashboardHeader({
 }: DashboardHeaderProps) {
   const { user } = useAuth();
   const [loadingStripe, setLoadingStripe] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(propRemainingDays !== undefined || propStatus !== undefined);
+  
   const [remainingTrialDays, setRemainingTrialDays] = useState<number | undefined>(propRemainingDays);
   const [trialExpired, setTrialExpired] = useState<boolean | undefined>(propTrialExpired);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | undefined>(propStatus);
 
   useEffect(() => {
-    if (propRemainingDays === undefined && user?.idCompany) {
+    if (user?.idCompany) {
       getCompanyById(user.idCompany)
         .then((company: any) => {
           if (company) {
             setRemainingTrialDays(company.remainingTrialDays);
             setTrialExpired(company.trialExpired);
-            // On récupère le status de l'abonnement depuis l'entité Company ou Subscription liée
+            // On récupère le statut exact (ex: "PAID", "ACTIVE", "TRIAL", etc.)
             setSubscriptionStatus(company.subscriptionStatus || company.status);
           }
         })
-        .catch((err) => console.error("Erreur chargement infos trial", err));
+        .catch((err) => console.error("Erreur chargement infos trial", err))
+        .finally(() => setIsLoaded(true));
     } else {
-      setRemainingTrialDays(propRemainingDays);
-      setTrialExpired(propTrialExpired);
-      setSubscriptionStatus(propStatus);
+      setIsLoaded(true);
     }
-  }, [propRemainingDays, propTrialExpired, propStatus, user?.idCompany]);
+  }, [user?.idCompany]);
 
   const role = user?.role?.toUpperCase();
   const isOwner = role === "OWNER" || role === "SUPER_ADMIN";
@@ -59,8 +60,8 @@ export default function DashboardHeader({
     }
   };
 
-  // Si l'abonnement n'est plus en TRIAL (ex: PAID), on ne veut même pas afficher le bandeau d'essai
-  const isinTrial = !subscriptionStatus || subscriptionStatus === "TRIAL";
+  // Un utilisateur est considéré comme "payant" si son statut n'est pas "TRIAL" (ou s'il est explicitement PAID/ACTIVE)
+  const isPaid = subscriptionStatus === "PAID" || subscriptionStatus === "ACTIVE";
 
   let badgeStyle = "border-cyan-400/20 bg-cyan-400/5 text-cyan-300";
   let dotStyle = "bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]";
@@ -99,37 +100,40 @@ export default function DashboardHeader({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        {/* Le bandeau d'essai ne s'affiche QUE si le statut est TRIAL */}
-        {isinTrial && remainingTrialDays !== undefined && (
-          <div className={`rounded-xl border px-4 py-2.5 flex items-center gap-3 ${badgeStyle}`}>
-            <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${dotStyle}`} />
-              <span className="text-xs font-semibold">{label}</span>
-            </div>
+        {/* On n'affiche le bloc d'abonnement que lorsque l'appel API a fini de tourner */}
+        {isLoaded && (
+          <>
+            {isPaid ? (
+              <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
+                  <span className="text-xs font-semibold text-cyan-300">
+                    Abonnement Pro Actif
+                  </span>
+                </div>
+              </div>
+            ) : (
+              remainingTrialDays !== undefined && (
+                <div className={`rounded-xl border px-4 py-2.5 flex items-center gap-3 ${badgeStyle}`}>
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2 w-2 rounded-full ${dotStyle}`} />
+                    <span className="text-xs font-semibold">{label}</span>
+                  </div>
 
-            {showSubscribeButton && (
-              <button
-                type="button"
-                onClick={handleSubscribe}
-                disabled={loadingStripe}
-                className="cursor-pointer rounded-lg bg-cyan-400 px-3 py-1 text-xs font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-50"
-              >
-                {loadingStripe ? "Redirection..." : "S'abonner"}
-              </button>
+                  {showSubscribeButton && (
+                    <button
+                      type="button"
+                      onClick={handleSubscribe}
+                      disabled={loadingStripe}
+                      className="cursor-pointer rounded-lg bg-cyan-400 px-3 py-1 text-xs font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-50"
+                    >
+                      {loadingStripe ? "Redirection..." : "S'abonner"}
+                    </button>
+                  )}
+                </div>
+              )
             )}
-          </div>
-        )}
-
-        {/* Optionnel : Afficher un badge discret si l'utilisateur a payé */}
-        {!isinTrial && (
-          <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-2.5">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
-              <span className="text-xs font-semibold text-cyan-300">
-                Abonnement Pro Actif
-              </span>
-            </div>
-          </div>
+          </>
         )}
 
         <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 px-4 py-2.5">

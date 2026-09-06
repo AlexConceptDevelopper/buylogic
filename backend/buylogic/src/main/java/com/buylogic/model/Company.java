@@ -47,16 +47,16 @@ public class Company {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "company")
+   @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AppUser> users;
 
-    @OneToMany(mappedBy = "company")
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
 
-    @OneToMany(mappedBy = "company")
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Supplier> suppliers;
 
-    @OneToOne(mappedBy = "company")
+    @OneToOne(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private Subscription subscription;
 
     @OneToOne(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
