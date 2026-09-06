@@ -11,23 +11,24 @@ export default function SecurityLogsManager() {
   const [filter, setFilter] = useState<string>("ALL");
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   
-  // États pour la sélection multiple et la pagination
+  // Sélection multiple et pagination
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
 
-  // États pour les modales de confirmation
+  // Modales et actions
   const [logToDelete, setLogToDelete] = useState<AuditLog | null>(null);
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState<boolean>(false);
   const [actionId, setActionId] = useState<number | null>(null);
   const [isBulkDeleting, setIsBulkDeleting] = useState<boolean>(false);
-
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     adminGetAuditLogs()
-      .then((data) => {
-        setLogs(data || []);
+      .then((res: any) => {
+        // Gère si l'API renvoie un tableau direct ou un objet paginé (ex: Spring Boot Page)
+        const logsData = Array.isArray(res) ? res : res?.content || [];
+        setLogs(logsData);
         setLoading(false);
       })
       .catch((err) => {
@@ -36,7 +37,6 @@ export default function SecurityLogsManager() {
       });
   }, []);
 
-  // Réinitialiser la page courante si on change de filtre ou de taille de page
   useEffect(() => {
     setCurrentPage(1);
     setSelectedIds([]);
@@ -53,9 +53,7 @@ export default function SecurityLogsManager() {
       await adminDeleteAuditLog(log.id);
       setLogs((prev) => prev.filter((l) => l.id !== log.id));
       setSelectedIds((prev) => prev.filter((id) => id !== log.id));
-      if (selectedLog?.id === log.id) {
-        setSelectedLog(null);
-      }
+      if (selectedLog?.id === log.id) setSelectedLog(null);
       setActionMessage({ type: 'success', text: "Le journal d'audit a été supprimé avec succès." });
       setTimeout(() => setActionMessage(null), 3000);
     } catch (err) {
@@ -68,17 +66,12 @@ export default function SecurityLogsManager() {
     }
   };
 
-  // Suppression groupée
   const executeBulkDelete = async () => {
     setIsBulkDeleting(true);
     try {
-      // Exécute les suppressions en parallèle
       await Promise.all(selectedIds.map((id) => adminDeleteAuditLog(id)));
-      
       setLogs((prev) => prev.filter((l) => !selectedIds.includes(l.id)));
-      if (selectedLog && selectedIds.includes(selectedLog.id)) {
-        setSelectedLog(null);
-      }
+      if (selectedLog && selectedIds.includes(selectedLog.id)) setSelectedLog(null);
       
       setActionMessage({ 
         type: 'success', 
@@ -96,10 +89,9 @@ export default function SecurityLogsManager() {
     }
   };
 
-  const filteredLogs =
-    filter === "ALL" ? logs : logs.filter((log) => log.status === filter);
+  const filteredLogs = filter === "ALL" ? logs : logs.filter((log) => log.status === filter);
 
-  // Logique de pagination
+  // Pagination locale
   const totalPages = Math.ceil(filteredLogs.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentLogs = filteredLogs.slice(startIndex, startIndex + itemsPerPage);
@@ -107,7 +99,6 @@ export default function SecurityLogsManager() {
   const handleSelectAllCurrentPage = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
       const pageIds = currentLogs.map((l) => l.id);
-      // Ajoute les IDs de la page courante sans doublons
       setSelectedIds((prev) => Array.from(new Set([...prev, ...pageIds])));
     } else {
       const pageIds = currentLogs.map((l) => l.id);
@@ -129,9 +120,8 @@ export default function SecurityLogsManager() {
 
   return (
     <div className="space-y-6">
-      {/* Alerte de notification intégrée */}
       {actionMessage && (
-        <div className={`p-4 rounded-xl text-xs font-semibold border flex items-center justify-between animate-fadeIn ${
+        <div className={`p-4 rounded-xl text-xs font-semibold border flex items-center justify-between ${
           actionMessage.type === 'success' 
             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
             : 'bg-red-500/10 text-red-400 border-red-500/20'
@@ -141,15 +131,12 @@ export default function SecurityLogsManager() {
         </div>
       )}
 
-      {/* En-tête de section & Filtres */}
+      {/* En-tête & Filtres */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">
-            Journaux d'Audit & Sécurité
-          </h2>
+          <h2 className="text-xl font-bold text-white tracking-tight">Journaux d'Audit & Sécurité</h2>
           <p className="text-xs text-slate-400 mt-1">
-            Traçabilité en temps réel des actions système et tentatives d'accès
-            critiques. (Clique sur une ligne pour voir les détails)
+            Traçabilité en temps réel des actions système et tentatives d'accès critiques.
           </p>
         </div>
 
@@ -159,9 +146,7 @@ export default function SecurityLogsManager() {
               key={st}
               onClick={() => setFilter(st)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                filter === st
-                  ? "bg-red-500 text-slate-950 shadow-md shadow-red-500/20"
-                  : "text-slate-400 hover:text-white"
+                filter === st ? "bg-red-500 text-slate-950 shadow-md shadow-red-500/20" : "text-slate-400 hover:text-white"
               }`}
             >
               {st === "ALL" ? "Tous" : st === "SUCCESS" ? "Succès" : "Critique"}
@@ -170,22 +155,19 @@ export default function SecurityLogsManager() {
         </div>
       </div>
 
-      {/* Barre d'actions groupées (Sticky / Conditionnelle) */}
+      {/* Barre d'actions groupées */}
       {selectedIds.length > 0 && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between animate-fadeIn">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between">
           <div className="text-xs text-red-300 font-medium">
             <strong className="text-white">{selectedIds.length}</strong> journal(aux) sélectionné(s)
           </div>
           <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setSelectedIds([])}
-              className="text-xs text-slate-400 hover:text-white transition cursor-pointer"
-            >
+            <button onClick={() => setSelectedIds([])} className="text-xs text-slate-400 hover:text-white transition cursor-pointer">
               Tout désélectionner
             </button>
             <button
               onClick={() => setIsBulkDeleteModalOpen(true)}
-              className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition shadow-lg shadow-red-600/20 cursor-pointer"
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition cursor-pointer"
             >
               Supprimer la sélection ({selectedIds.length})
             </button>
@@ -193,16 +175,12 @@ export default function SecurityLogsManager() {
         </div>
       )}
 
-      {/* Tableau des logs */}
+      {/* Tableau */}
       <div className="rounded-2xl border border-white/10 bg-slate-950/40 overflow-hidden">
         {loading ? (
-          <div className="text-center py-12 text-slate-400 text-xs">
-            Chargement des journaux de sécurité...
-          </div>
+          <div className="text-center py-12 text-slate-400 text-xs">Chargement des journaux de sécurité...</div>
         ) : filteredLogs.length === 0 ? (
-          <div className="text-center py-12 text-slate-400 text-xs">
-            Aucun journal ne correspond à ce filtre.
-          </div>
+          <div className="text-center py-12 text-slate-400 text-xs">Aucun journal ne correspond à ce filtre.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
@@ -213,8 +191,7 @@ export default function SecurityLogsManager() {
                       type="checkbox"
                       checked={isAllCurrentPageSelected}
                       onChange={handleSelectAllCurrentPage}
-                      className="rounded border-white/20 bg-slate-900 text-red-500 focus:ring-red-500 focus:ring-offset-slate-950 cursor-pointer"
-                      title="Tout sélectionner sur cette page"
+                      className="rounded border-white/20 bg-slate-900 text-red-500 focus:ring-red-500 cursor-pointer"
                     />
                   </th>
                   <th className="p-4">Horodatage</th>
@@ -233,48 +210,35 @@ export default function SecurityLogsManager() {
                     <tr
                       key={log.id}
                       onClick={() => setSelectedLog(log)}
-                      className={`hover:bg-slate-900/50 transition cursor-pointer group ${
-                        isSelected ? "bg-red-500/5" : ""
-                      }`}
+                      className={`hover:bg-slate-900/50 transition cursor-pointer group ${isSelected ? "bg-red-500/5" : ""}`}
                     >
                       <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={(e) => handleSelectOne(e, log.id)}
-                          className="rounded border-white/20 bg-slate-900 text-red-500 focus:ring-red-500 focus:ring-offset-slate-950 cursor-pointer"
+                          className="rounded border-white/20 bg-slate-900 text-red-500 focus:ring-red-500 cursor-pointer"
                         />
                       </td>
-                      <td className="p-4 font-mono text-slate-400 whitespace-nowrap">
-                        {log.timestamp}
-                      </td>
-                      <td className="p-4 font-bold text-white group-hover:text-red-400 transition">
-                        {log.action}
-                      </td>
+                      <td className="p-4 font-mono text-slate-400 whitespace-nowrap">{log.timestamp}</td>
+                      <td className="p-4 font-bold text-white group-hover:text-red-400 transition">{log.action}</td>
                       <td className="p-4 text-slate-300">{log.actor}</td>
-                      <td className="p-4 font-mono text-slate-400">
-                        {log.ipAddress}
-                      </td>
+                      <td className="p-4 font-mono text-slate-400">{log.ipAddress}</td>
                       <td className="p-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider ${
-                            log.status === "SUCCESS"
-                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                              : "bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse"
-                          }`}
-                        >
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider ${
+                          log.status === "SUCCESS"
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            : "bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse"
+                        }`}>
                           {log.status}
                         </span>
                       </td>
-                      <td className="p-4 text-slate-400 max-w-xs truncate">
-                        {log.details}
-                      </td>
+                      <td className="p-4 text-slate-400 max-w-xs truncate">{log.details}</td>
                       <td className="p-4 text-right whitespace-nowrap">
                         <button
                           onClick={(e) => handleDeleteClick(e, log)}
                           disabled={actionId === log.id}
                           className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition text-xs font-semibold cursor-pointer disabled:opacity-50"
-                          title="Supprimer ce log"
                         >
                           {actionId === log.id ? "..." : "Supprimer"}
                         </button>
@@ -287,7 +251,7 @@ export default function SecurityLogsManager() {
           </div>
         )}
 
-        {/* Contrôles de Pagination */}
+        {/* Pagination */}
         {!loading && filteredLogs.length > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-white/10 bg-slate-900/30 gap-4 text-xs text-slate-400">
             <div className="flex items-center space-x-2">
@@ -308,19 +272,15 @@ export default function SecurityLogsManager() {
               <button
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition disabled:opacity-30 cursor-pointer"
               >
                 Précédent
               </button>
-              
-              <span className="px-2 font-mono text-white">
-                Page {currentPage} / {totalPages}
-              </span>
-
+              <span className="px-2 font-mono text-white">Page {currentPage} / {totalPages}</span>
               <button
                 onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition disabled:opacity-30 cursor-pointer"
               >
                 Suivant
               </button>
@@ -329,146 +289,59 @@ export default function SecurityLogsManager() {
         )}
       </div>
 
-      {/* Modale de Confirmation de Suppression Unique */}
+      {/* Modale Suppression Unique */}
       {logToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-red-500/20 bg-slate-900 p-6 shadow-2xl space-y-4">
             <h3 className="text-sm font-bold text-white">Confirmer la suppression</h3>
             <p className="text-xs text-slate-400">
-              Êtes-vous sûr de vouloir supprimer le journal d'audit <strong className="text-white font-mono">#{logToDelete.id} ({logToDelete.action})</strong> ? Cette action est irréversible.
+              Êtes-vous sûr de vouloir supprimer le log <strong className="text-white font-mono">#{logToDelete.id}</strong> ?
             </p>
             <div className="flex justify-end space-x-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setLogToDelete(null)}
-                className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white transition cursor-pointer"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={() => void executeDelete(logToDelete)}
-                disabled={actionId === logToDelete.id}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-500 transition disabled:opacity-50 cursor-pointer"
-              >
-                {actionId === logToDelete.id ? "Suppression..." : "Confirmer la suppression"}
-              </button>
+              <button onClick={() => setLogToDelete(null)} className="px-4 py-2 text-xs text-slate-400 hover:text-white cursor-pointer">Annuler</button>
+              <button onClick={() => void executeDelete(logToDelete)} className="px-4 py-2 text-xs font-semibold bg-red-600 text-white rounded-xl hover:bg-red-500 cursor-pointer">Confirmer</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modale de Confirmation de Suppression Groupée */}
+      {/* Modale Suppression Groupée */}
       {isBulkDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-red-500/20 bg-slate-900 p-6 shadow-2xl space-y-4">
             <h3 className="text-sm font-bold text-white">Confirmer la suppression multiple</h3>
             <p className="text-xs text-slate-400">
-              Êtes-vous sûr de vouloir supprimer <strong className="text-white">{selectedIds.length}</strong> journaux d'audit sélectionnés ? Cette action est irréversible.
+              Supprimer <strong className="text-white">{selectedIds.length}</strong> journaux sélectionnés ?
             </p>
             <div className="flex justify-end space-x-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsBulkDeleteModalOpen(false)}
-                disabled={isBulkDeleting}
-                className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white transition cursor-pointer"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={() => void executeBulkDelete()}
-                disabled={isBulkDeleting}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-500 transition disabled:opacity-50 cursor-pointer"
-              >
-                {isBulkDeleting ? "Suppression en cours..." : `Confirmer (${selectedIds.length})`}
+              <button onClick={() => setIsBulkDeleteModalOpen(false)} className="px-4 py-2 text-xs text-slate-400 hover:text-white cursor-pointer">Annuler</button>
+              <button onClick={() => void executeBulkDelete()} disabled={isBulkDeleting} className="px-4 py-2 text-xs font-semibold bg-red-600 text-white rounded-xl hover:bg-red-500 cursor-pointer">
+                {isBulkDeleting ? "Suppression..." : "Confirmer"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modale de détails du log */}
+      {/* Modale de détails */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
           <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
             <div className="flex justify-between items-center p-6 border-b border-white/10 bg-slate-950/40">
-              <div className="flex items-center space-x-3">
-                <span
-                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider ${
-                    selectedLog.status === "SUCCESS"
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                      : "bg-red-500/10 text-red-400 border border-red-500/20"
-                  }`}
-                >
-                  {selectedLog.status}
-                </span>
-                <h3 className="text-lg font-bold text-white font-mono">
-                  {selectedLog.action}
-                </h3>
-              </div>
-              <button
-                onClick={() => setSelectedLog(null)}
-                className="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition cursor-pointer"
-              >
-                ✕
-              </button>
+              <h3 className="text-lg font-bold text-white font-mono">{selectedLog.action}</h3>
+              <button onClick={() => setSelectedLog(null)} className="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 rounded-lg bg-white/5 cursor-pointer">✕</button>
             </div>
-
             <div className="p-6 space-y-4 text-sm text-slate-300">
               <div className="grid grid-cols-2 gap-4 bg-slate-950/50 p-4 rounded-xl border border-white/5">
-                <div>
-                  <span className="text-xs text-slate-500 block uppercase font-semibold">
-                    Horodatage
-                  </span>
-                  <span className="font-mono text-slate-200">
-                    {selectedLog.timestamp}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-xs text-slate-500 block uppercase font-semibold">
-                    Adresse IP
-                  </span>
-                  <span className="font-mono text-slate-200">
-                    {selectedLog.ipAddress}
-                  </span>
-                </div>
-                <div className="col-span-2 pt-2 border-t border-white/5">
-                  <span className="text-xs text-slate-500 block uppercase font-semibold">
-                    Acteur / Origine
-                  </span>
-                  <span className="text-slate-200 font-medium">
-                    {selectedLog.actor}
-                  </span>
-                </div>
+                <div><span className="text-xs text-slate-500 block">Horodatage</span>{selectedLog.timestamp}</div>
+                <div><span className="text-xs text-slate-500 block">Adresse IP</span>{selectedLog.ipAddress}</div>
               </div>
-
-              <div>
-                <span className="text-xs text-slate-500 block uppercase font-semibold mb-1">
-                  Détails complets de l'événement
-                </span>
-                <div className="bg-slate-950 p-4 rounded-xl border border-white/10 font-mono text-xs text-slate-300 whitespace-pre-wrap max-h-60 overflow-y-auto">
-                  {selectedLog.details}
-                </div>
+              <div className="bg-slate-950 p-4 rounded-xl border border-white/10 font-mono text-xs text-slate-300 whitespace-pre-wrap max-h-60 overflow-y-auto">
+                {selectedLog.details}
               </div>
             </div>
-
             <div className="flex justify-end gap-3 p-6 border-t border-white/10 bg-slate-950/40">
-              <button
-                onClick={() => {
-                  setSelectedLog(null);
-                  setLogToDelete(selectedLog);
-                }}
-                className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl font-semibold transition text-xs cursor-pointer"
-              >
-                Supprimer ce log
-              </button>
-              <button
-                onClick={() => setSelectedLog(null)}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition text-xs cursor-pointer"
-              >
-                Fermer
-              </button>
+              <button onClick={() => setSelectedLog(null)} className="px-4 py-2 bg-white/10 text-white rounded-xl text-xs cursor-pointer">Fermer</button>
             </div>
           </div>
         </div>
