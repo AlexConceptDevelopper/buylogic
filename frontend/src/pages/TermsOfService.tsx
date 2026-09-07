@@ -27,12 +27,12 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-white">3. Responsabilité des données et des contenus (Owners)</h2>
+          <h2 className="text-xl font-semibold text-white">3. Responsabilité des données et des contenus</h2>
           <p>
-            La plateforme agit en qualité de prestataire technique (hébergeur). Les services fournis consistent à mettre à disposition des outils numériques permettant aux utilisateurs dits « Owners » de stocker, gérer et publier des données, des informations ou des documents sous leur seule responsabilité.
+            La plateforme agit en qualité de prestataire technique (hébergeur). Les services fournis consistent à mettre à disposition des outils numériques permettant au créateur ou à la créatrice du compte (directeur, dirigeant(e) ou personne ayant l'autorité légale ou déléguée pour le compte de l'entreprise, ci-après désigné(e) « l'Administrateur(trice) ») de stocker, gérer et publier des données, des informations ou des documents sous sa seule responsabilité.
           </p>
           <p>
-            L'éditeur n'exerce aucun contrôle a priori ou modération systématique des contenus saisis. En conséquence, l'éditeur ne saurait être tenu pour responsable de la nature, de l'exactitude, de la légalité ou de la mise à jour des contenus générés ou intégrés par les Owners. Chaque Owner demeure seul maître et responsable des informations qu'il importe ou gère via la plateforme.
+            L'éditeur n'exerce aucun contrôle a priori ou modération systématique des contenus saisis. En conséquence, l'éditeur ne saurait être tenu pour responsable de la nature, de l'exactitude, de la légalité ou de la mise à jour des contenus générés, importés ou intégrés par l'Administrateur(trice) ou les utilisateurs rattachés à son compte. Chaque entreprise cliente demeure seule maître et responsable des informations qu'elle manipule via la plateforme.
           </p>
         </section>
       </div>
