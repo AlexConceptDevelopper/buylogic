@@ -7,7 +7,7 @@ interface OnboardingBannerProps {
 
 export default function OnboardingBanner({ onComplete }: OnboardingBannerProps) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-slate-900 via-indigo-950/20 to-slate-900 p-6 shadow-xl">
+    <div className="relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-linear-to-br from-slate-900 via-indigo-950/20 to-slate-900 p-6 shadow-xl">
       {/* Effet lumineux décoratif en arrière-plan */}
       <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
 

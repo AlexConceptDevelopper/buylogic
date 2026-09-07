@@ -18,17 +18,22 @@ export default function TermsOfService() {
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-white">1. Objet</h2>
-          <p>Les présentes CGU définissent les règles d'utilisation de la plateforme SaaS BuyLogic, dédiée à la gestion prédictive des achats et des stocks par importation de données.</p>
+          <p>Les présentes CGU définissent les règles d'utilisation de la plateforme SaaS, dédiée à la gestion des équipements et des données par importation.</p>
         </section>
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-white">2. Offre d'essai et Paiements (Stripe)</h2>
-          <p>L'accès à BuyLogic peut inclure une période d'essai de 30 jours sans exigence de carte bancaire. Au-delà, l'accès au service est régi par une souscription payante gérée de manière sécurisée via notre partenaire Stripe.</p>
+          <p>L'accès à la plateforme peut inclure une période d'essai de 30 jours sans exigence de carte bancaire. Au-delà, l'accès au service est régi par une souscription payante gérée de manière sécurisée via notre partenaire Stripe.</p>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-white">3. Responsabilité des données</h2>
-          <p>BuyLogic fournit des analyses et des recommandations basées exclusivement sur les fichiers et données importés par l'utilisateur. L'utilisateur demeure seul maître et responsable de la validation finale de ses commandes auprès de ses fournisseurs.</p>
+          <h2 className="text-xl font-semibold text-white">3. Responsabilité des données et des contenus (Owners)</h2>
+          <p>
+            La plateforme agit en qualité de prestataire technique (hébergeur). Les services fournis consistent à mettre à disposition des outils numériques permettant aux utilisateurs dits « Owners » de stocker, gérer et publier des données, des informations ou des documents sous leur seule responsabilité.
+          </p>
+          <p>
+            L'éditeur n'exerce aucun contrôle a priori ou modération systématique des contenus saisis. En conséquence, l'éditeur ne saurait être tenu pour responsable de la nature, de l'exactitude, de la légalité ou de la mise à jour des contenus générés ou intégrés par les Owners. Chaque Owner demeure seul maître et responsable des informations qu'il importe ou gère via la plateforme.
+          </p>
         </section>
       </div>
     </div>
