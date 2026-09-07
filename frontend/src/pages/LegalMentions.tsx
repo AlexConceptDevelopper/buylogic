@@ -17,9 +17,8 @@ export default function LegalMentions() {
           <h2 className="text-xl font-semibold text-white">1. Édition du site</h2>
           <p>Le présent site, accessible à l'URL buylogic.fr, est édité par :</p>
           <div className="rounded-xl border border-white/5 bg-slate-900/50 p-4 text-sm text-slate-400 space-y-1">
-            <p><strong className="text-white">Statut :</strong> Micro-entreprise</p>
-            <p><strong className="text-white">SIRET :</strong> [À compléter]</p>
-            <p><strong className="text-white">Adresse :</strong> [À compléter]</p>
+            <p><strong className="text-white">Statut :</strong> Micro-entreprise (en cours d'immatriculation)</p>
+            <p><strong className="text-white">SIRET :</strong> En cours d'attribution</p>
             <p><strong className="text-white">Contact :</strong> contact@buylogic.fr</p>
           </div>
         </section>
