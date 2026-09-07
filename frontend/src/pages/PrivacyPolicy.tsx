@@ -22,7 +22,14 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-white">2. Prestataires tiers et sous-traitants</h2>
+          <h2 className="text-xl font-semibold text-white">2. Stockage local et sécurité de session</h2>
+          <p>
+            La plateforme utilise le mécanisme de stockage local (<code className="text-cyan-400 font-mono text-xs">localStorage</code>) du navigateur exclusivement pour stocker un jeton de sécurité (token d'authentification) indispensable au maintien de votre session active. Aucun cookie publicitaire, traceur tiers ou cookie de mesure d'audience n'est déposé sur votre terminal.
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold text-white">3. Prestataires tiers et sous-traitants</h2>
           <p>Pour assurer le bon fonctionnement du service, nous faisons appel à des prestataires techniques tiers de confiance :</p>
           <ul className="list-disc pl-5 space-y-1 text-slate-400">
             <li><strong className="text-slate-200">Stripe :</strong> Gestion sécurisée des transactions de paiement et des abonnements.</li>
@@ -33,7 +40,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-white">3. Vos droits (RGPD)</h2>
+          <h2 className="text-xl font-semibold text-white">4. Vos droits (RGPD)</h2>
           <p>Conformément à la réglementation, vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles en écrivant à : contact@buylogic.fr.</p>
         </section>
       </div>

@@ -26,9 +26,11 @@ export default function LegalMentions() {
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-white">2. Hébergement</h2>
-          <p>Le site est hébergé par :</p>
-          <div className="rounded-xl border border-white/5 bg-slate-900/50 p-4 text-sm text-slate-400">
-            [Nom de l'hébergeur, ex: Railway / Vercel] et ses coordonnées.
+          <p>Le site et les données de l'application sont hébergés par :</p>
+          <div className="rounded-xl border border-white/5 bg-slate-900/50 p-4 text-sm text-slate-400 space-y-1">
+            <p><strong className="text-white">Hébergeur :</strong> Railway Corp.</p>
+            <p><strong className="text-white">Siège social :</strong> San Francisco, CA, USA</p>
+            <p><strong className="text-white">Site web :</strong> https://railway.app</p>
           </div>
         </section>
       </div>
