@@ -29,7 +29,6 @@ export default function DashboardHeader({
           if (company) {
             setRemainingTrialDays(company.remainingTrialDays);
             setTrialExpired(company.trialExpired);
-            // On récupère le statut exact (ex: "PAID", "ACTIVE", "TRIAL", etc.)
             setSubscriptionStatus(company.subscriptionStatus || company.status);
           }
         })
@@ -60,7 +59,6 @@ export default function DashboardHeader({
     }
   };
 
-  // Un utilisateur est considéré comme "payant" si son statut n'est pas "TRIAL" (ou s'il est explicitement PAID/ACTIVE)
   const isPaid = subscriptionStatus === "PAID" || subscriptionStatus === "ACTIVE";
 
   let badgeStyle = "border-cyan-400/20 bg-cyan-400/5 text-cyan-300";
@@ -79,8 +77,8 @@ export default function DashboardHeader({
     dotStyle = "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.7)]";
   }
 
-  const showSubscribeButton =
-    isOwner && (trialExpired || (remainingTrialDays !== undefined && remainingTrialDays <= 7));
+  // Le bouton s'affiche dès que l'utilisateur est Admin/Owner et que l'essai n'est pas déjà converti en payant
+  const showSubscribeButton = isOwner && !isPaid;
 
   return (
     <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
@@ -100,7 +98,6 @@ export default function DashboardHeader({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        {/* On n'affiche le bloc d'abonnement que lorsque l'appel API a fini de tourner */}
         {isLoaded && (
           <>
             {isPaid ? (
