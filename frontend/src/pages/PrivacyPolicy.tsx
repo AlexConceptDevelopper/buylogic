@@ -29,7 +29,17 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-white">3. Prestataires tiers et sous-traitants</h2>
+          <h2 className="text-xl font-semibold text-white">3. Sécurité des mots de passe et des données</h2>
+          <p>
+            Nous accordons une importance capitale à la protection de vos informations. Vos mots de passe ne sont jamais stockés en clair : ils font l'objet d'un hachage cryptographique robuste (via BCrypt) avant d'être enregistrés dans notre base de données.
+          </p>
+          <p>
+            Les communications entre votre navigateur et notre plateforme sont entièrement chiffrées (HTTPS/TLS). De plus, l'architecture multi-tenant de notre application garantit un cloisonnement strict des données entre chaque entreprise, sécurisé par un système d'authentification par jeton JWT.
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold text-white">4. Prestataires tiers et sous-traitants</h2>
           <p>Pour assurer le bon fonctionnement du service, nous faisons appel à des prestataires techniques tiers de confiance :</p>
           <ul className="list-disc pl-5 space-y-1 text-slate-400">
             <li><strong className="text-slate-200">Stripe :</strong> Gestion sécurisée des transactions de paiement et des abonnements.</li>
@@ -40,7 +50,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-white">4. Vos droits (RGPD)</h2>
+          <h2 className="text-xl font-semibold text-white">5. Vos droits (RGPD)</h2>
           <p>Conformément à la réglementation, vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles en écrivant à : contact@buylogic.fr.</p>
         </section>
       </div>
