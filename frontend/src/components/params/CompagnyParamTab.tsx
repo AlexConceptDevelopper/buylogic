@@ -33,13 +33,21 @@ export default function CompanyParamsTab({
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletionSuccess, setDeletionSuccess] = useState(false);
 
-  // États pour la modale et la résiliation de l'abonnement
+  // États pour la modale, la résiliation et le réabonnement
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
-  const [cancelMessage, setCancelMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [loadingStripe, setLoadingStripe] = useState(false);
+  const [cancelMessage, setCancelMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   if (!company) {
-    return <div className="mt-8 text-slate-400">Chargement des informations de l'entreprise...</div>;
+    return (
+      <div className="mt-8 text-slate-400">
+        Chargement des informations de l'entreprise...
+      </div>
+    );
   }
 
   const handleChange = (field: keyof Company, value: any) => {
@@ -52,13 +60,22 @@ export default function CompanyParamsTab({
 
     const MAX_SIZE = 2 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
-      setUploadError("Le logo est trop volumineux. La taille maximale autorisée est de 2 Mo.");
+      setUploadError(
+        "Le logo est trop volumineux. La taille maximale autorisée est de 2 Mo.",
+      );
       return;
     }
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/svg+xml",
+    ];
     if (!allowedTypes.includes(file.type)) {
-      setUploadError("Format non supporté. Veuillez utiliser un fichier PNG, JPG, WEBP ou SVG.");
+      setUploadError(
+        "Format non supporté. Veuillez utiliser un fichier PNG, JPG, WEBP ou SVG.",
+      );
       return;
     }
 
@@ -66,12 +83,17 @@ export default function CompanyParamsTab({
     setUploading(true);
 
     try {
-      const updatedCompany = await executeUpload(() => uploadCompanyLogo(company.idCompany, file));
+      const updatedCompany = await executeUpload(() =>
+        uploadCompanyLogo(company.idCompany, file),
+      );
       if (updatedCompany) {
         setCompany(updatedCompany);
       }
     } catch (err: any) {
-      setUploadError(err.message || "Une erreur est survenue lors du téléversement de l'image.");
+      setUploadError(
+        err.message ||
+          "Une erreur est survenue lors du téléversement de l'image.",
+      );
     } finally {
       setUploading(false);
     }
@@ -91,11 +113,26 @@ export default function CompanyParamsTab({
     } catch (err: any) {
       setCancelMessage({
         type: "error",
-        text: err.message || "Une erreur est survenue lors de la résiliation de l'abonnement.",
+        text:
+          err.message ||
+          "Une erreur est survenue lors de la résiliation de l'abonnement.",
       });
       setIsCancelModalOpen(false);
     } finally {
       setIsCanceling(false);
+    }
+  };
+
+  const handleSubscribe = async () => {
+    setLoadingStripe(true);
+    try {
+      // Remplace par ta fonction d'appel API Stripe existante si nécessaire
+      // Ex: const res = await createCheckoutSession(company.idCompany);
+      // window.location.href = res.url;
+    } catch (err: any) {
+      console.error("Erreur redirection Stripe:", err);
+    } finally {
+      setLoadingStripe(false);
     }
   };
 
@@ -110,7 +147,7 @@ export default function CompanyParamsTab({
 
     try {
       await deleteCompany(company.idCompany);
-      
+
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       sessionStorage.clear();
@@ -121,9 +158,11 @@ export default function CompanyParamsTab({
       setTimeout(() => {
         window.location.href = "/login";
       }, 3000);
-
     } catch (err: any) {
-      setDeleteError(err.message || "Une erreur est survenue lors de la suppression de l'entreprise.");
+      setDeleteError(
+        err.message ||
+          "Une erreur est survenue lors de la suppression de l'entreprise.",
+      );
       setIsDeleting(false);
     }
   };
@@ -136,16 +175,26 @@ export default function CompanyParamsTab({
     ? "Fabrication / assemblage"
     : "Achat / revente";
 
+  // Détection élargie pour inclure le statut de résiliation en cours
   const subStatus = company.subscriptionStatus || (company as any).status;
   const isPaid = subStatus === "PAID" || subStatus === "ACTIVE";
+  const isCancelPending =
+    (company as any).cancelAtPeriodEnd === true ||
+    subStatus === "CANCELED_PENDING";
+
+  // On affiche le bloc si l'utilisateur est payant OU si son abonnement est en fin de vie planifiée
+  const showBillingBlock = isPaid || isCancelPending;
 
   return (
     <div className="mt-8 space-y-6">
       <div className="rounded-2xl border border-white/5 bg-slate-900/70 p-6">
         <div className="border-b border-white/5 pb-4">
-          <p className="text-sm font-semibold text-white">Coordonnées et Infos Légales</p>
+          <p className="text-sm font-semibold text-white">
+            Coordonnées et Infos Légales
+          </p>
           <p className="mt-0.5 text-xs text-slate-500">
-            Ces informations ainsi que votre logo apparaîtront sur vos bons de commande PDF.
+            Ces informations ainsi que votre logo apparaîtront sur vos bons de
+            commande PDF.
           </p>
         </div>
 
@@ -166,7 +215,11 @@ export default function CompanyParamsTab({
             <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-slate-950 p-4 sm:flex-row sm:items-center">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-900 text-slate-500 overflow-hidden">
                 {company.logoUrl ? (
-                  <img src={company.logoUrl} alt="Logo entreprise" className="h-full w-full object-cover" />
+                  <img
+                    src={company.logoUrl}
+                    alt="Logo entreprise"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <span className="text-xs">Logo</span>
                 )}
@@ -176,7 +229,9 @@ export default function CompanyParamsTab({
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Logo de l'entreprise
                   </label>
-                  <span className="text-[10px] text-slate-500">PNG, JPG, WEBP, SVG • Max : 2 Mo</span>
+                  <span className="text-[10px] text-slate-500">
+                    PNG, JPG, WEBP, SVG • Max : 2 Mo
+                  </span>
                 </div>
                 <input
                   type="file"
@@ -185,7 +240,11 @@ export default function CompanyParamsTab({
                   disabled={uploading}
                   className="w-full text-xs text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-400 file:text-slate-950 hover:file:bg-cyan-300 file:cursor-pointer cursor-pointer disabled:opacity-50"
                 />
-                {uploading && <p className="text-xs text-cyan-400">Téléversement en cours...</p>}
+                {uploading && (
+                  <p className="text-xs text-cyan-400">
+                    Téléversement en cours...
+                  </p>
+                )}
               </div>
             </div>
 
@@ -273,7 +332,9 @@ export default function CompanyParamsTab({
                 disabled={actionLoading || uploading}
                 className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-50"
               >
-                {actionLoading ? "Enregistrement..." : "Enregistrer les modifications"}
+                {actionLoading
+                  ? "Enregistrement..."
+                  : "Enregistrer les modifications"}
               </button>
             </div>
           </form>
@@ -284,7 +345,8 @@ export default function CompanyParamsTab({
                 Mode de fonctionnement BuyLogic
               </p>
               <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                Définit la manière dont BuyLogic analyse vos besoins d'achats et de stocks.
+                Définit la manière dont BuyLogic analyse vos besoins d'achats et
+                de stocks.
               </p>
 
               <div className="mt-4 rounded-lg border border-white/5 bg-slate-900 p-3.5">
@@ -297,29 +359,46 @@ export default function CompanyParamsTab({
               </div>
             </div>
 
-            {isPaid && (
+            {showBillingBlock && (
               <div className="rounded-xl border border-amber-500/20 bg-amber-950/10 p-5 space-y-4">
                 <div>
-                  <p className="text-sm font-semibold text-amber-400">Abonnement</p>
+                  <p className="text-sm font-semibold text-amber-400">
+                    Abonnement
+                  </p>
                   <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-                    Besoin d'interrompre votre abonnement ? Vous pouvez le résilier à tout moment.
+                    {isCancelPending
+                      ? "Votre abonnement est résilié mais reste actif jusqu'à la fin de la période payée."
+                      : "Besoin d'interrompre votre abonnement ? Vous pouvez le résilier à tout moment."}
                   </p>
                 </div>
 
                 {cancelMessage && (
-                  <div className={`rounded-lg p-3 text-xs ${cancelMessage.type === "success" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300" : "bg-rose-500/10 border border-rose-500/20 text-rose-300"}`}>
+                  <div
+                    className={`rounded-lg p-3 text-xs ${cancelMessage.type === "success" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300" : "bg-rose-500/10 border border-rose-500/20 text-rose-300"}`}
+                  >
                     {cancelMessage.text}
                   </div>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => setIsCancelModalOpen(true)}
-                  disabled={isCanceling}
-                  className="w-full cursor-pointer rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-500 hover:text-slate-950 disabled:opacity-50"
-                >
-                  {isCanceling ? "Résiliation..." : "Résilier mon abonnement"}
-                </button>
+                {isCancelPending ? (
+                  <button
+                    type="button"
+                    onClick={handleSubscribe}
+                    disabled={loadingStripe}
+                    className="w-full cursor-pointer rounded-xl bg-amber-400 px-4 py-2 text-xs font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
+                  >
+                    {loadingStripe ? "Redirection..." : "Se réabonner"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsCancelModalOpen(true)}
+                    disabled={isCanceling}
+                    className="w-full cursor-pointer rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-500 hover:text-slate-950 disabled:opacity-50"
+                  >
+                    {isCanceling ? "Résiliation..." : "Résilier mon abonnement"}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -332,8 +411,9 @@ export default function CompanyParamsTab({
           <div>
             <p className="text-sm font-bold text-rose-400">Zone de danger</p>
             <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-              La suppression de l'entreprise entraînera la résiliation immédiate de votre abonnement Stripe, 
-              l'effacement de vos fichiers Cloudinary et la purge définitive de toutes vos données métiers.
+              La suppression de l'entreprise entraînera la résiliation immédiate
+              de votre abonnement Stripe, l'effacement de vos fichiers
+              Cloudinary et la purge définitive de toutes vos données métiers.
             </p>
           </div>
           <button
@@ -355,9 +435,15 @@ export default function CompanyParamsTab({
       {isCancelModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-4">
           <div className="w-full max-w-md rounded-2xl border border-amber-500/30 bg-slate-900 p-6 shadow-2xl">
-            <p className="text-lg font-bold text-amber-400">Confirmer la résiliation ?</p>
+            <p className="text-lg font-bold text-amber-400">
+              Confirmer la résiliation ?
+            </p>
             <p className="mt-2 text-xs text-slate-300 leading-relaxed">
-              Voulez-vous vraiment résilier votre abonnement ? Il restera <strong className="text-white">actif jusqu'à la fin de la période déjà payée</strong> avant de passer en mode inactif.
+              Voulez-vous vraiment résilier votre abonnement ? Il restera{" "}
+              <strong className="text-white">
+                actif jusqu'à la fin de la période déjà payée
+              </strong>{" "}
+              avant de passer en mode inactif.
             </p>
 
             <div className="mt-6 flex items-center justify-end gap-3">
@@ -391,9 +477,12 @@ export default function CompanyParamsTab({
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xl">
                   ✓
                 </div>
-                <p className="text-lg font-bold text-white">Entreprise supprimée avec succès !</p>
+                <p className="text-lg font-bold text-white">
+                  Entreprise supprimée avec succès !
+                </p>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Toutes vos données ont bien été purgées. À bientôt sur BuyLogic !
+                  Toutes vos données ont bien été purgées. À bientôt sur
+                  BuyLogic !
                 </p>
                 <p className="text-[11px] text-cyan-400 animate-pulse pt-2">
                   Redirection vers la page de connexion...
@@ -401,15 +490,31 @@ export default function CompanyParamsTab({
               </div>
             ) : (
               <>
-                <p className="text-lg font-bold text-rose-400">Êtes-vous absolument sûr ?</p>
+                <p className="text-lg font-bold text-rose-400">
+                  Êtes-vous absolument sûr ?
+                </p>
                 <p className="mt-2 text-xs text-slate-300 leading-relaxed">
-                  Cette action est <strong className="text-white">irréversible</strong>. Elle supprimera définitivement l'entreprise <span className="text-white font-semibold">{company.name}</span>, résiliera vos paiements et effacera l'ensemble de vos données.
+                  Cette action est{" "}
+                  <strong className="text-white">irréversible</strong>. Elle
+                  supprimera définitivement l'entreprise{" "}
+                  <span className="text-white font-semibold">
+                    {company.name}
+                  </span>
+                  , résiliera vos paiements et effacera l'ensemble de vos
+                  données.
                 </p>
 
-                <form onSubmit={handleDeleteCompanySubmit} className="mt-6 space-y-4">
+                <form
+                  onSubmit={handleDeleteCompanySubmit}
+                  className="mt-6 space-y-4"
+                >
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Veuillez taper <span className="text-rose-300 select-all font-mono">{company.name}</span> pour confirmer :
+                      Veuillez taper{" "}
+                      <span className="text-rose-300 select-all font-mono">
+                        {company.name}
+                      </span>{" "}
+                      pour confirmer :
                     </label>
                     <input
                       type="text"
@@ -422,7 +527,9 @@ export default function CompanyParamsTab({
                   </div>
 
                   {deleteError && (
-                    <p className="text-xs text-rose-400 font-semibold">{deleteError}</p>
+                    <p className="text-xs text-rose-400 font-semibold">
+                      {deleteError}
+                    </p>
                   )}
 
                   <div className="mt-6 flex items-center justify-end gap-3">
@@ -436,10 +543,14 @@ export default function CompanyParamsTab({
                     </button>
                     <button
                       type="submit"
-                      disabled={confirmCompanyName !== company.name || isDeleting}
+                      disabled={
+                        confirmCompanyName !== company.name || isDeleting
+                      }
                       className="cursor-pointer rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      {isDeleting ? "Suppression en cours..." : "Supprimer définitivement"}
+                      {isDeleting
+                        ? "Suppression en cours..."
+                        : "Supprimer définitivement"}
                     </button>
                   </div>
                 </form>
