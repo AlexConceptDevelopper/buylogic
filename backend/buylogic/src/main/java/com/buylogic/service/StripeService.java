@@ -142,15 +142,16 @@ public class StripeService {
     public void cancelSubscription(String stripeSubscriptionId) {
         try {
             com.stripe.model.Subscription subscription = com.stripe.model.Subscription.retrieve(stripeSubscriptionId);
-            
+
             com.stripe.param.SubscriptionUpdateParams params = com.stripe.param.SubscriptionUpdateParams.builder()
                     .setCancelAtPeriodEnd(true)
                     .build();
-            
+
             subscription.update(params);
 
         } catch (com.stripe.exception.StripeException e) {
-            throw new RuntimeException("Échec de la programmation de la résiliation de l'abonnement Stripe : " + e.getMessage(), e);
+            throw new RuntimeException(
+                    "Échec de la programmation de la résiliation de l'abonnement Stripe : " + e.getMessage(), e);
         }
     }
 
@@ -178,28 +179,25 @@ public class StripeService {
         if (stripeSub == null)
             return;
 
-        String subscriptionId = stripeSub.getId();
-        Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(subscriptionId).orElse(null);
+        String stripeSubscriptionId = stripeSub.getId(); 
+
+        // On cherche l'abonnement grâce à l'ID Stripe de la ligne 3
+        Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(stripeSubscriptionId)
+                .orElse(null);
 
         if (subscription != null) {
-            // Si Stripe confirme que c'est programmé pour s'arrêter à la fin de la période
-            if (stripeSub.getCancelAtPeriodEnd() != null && stripeSub.getCancelAtPeriodEnd()) {
-                subscription.setStatus("CANCELED_PENDING"); // Ou ton statut équivalent en base
-                subscription.setStripeStatus(stripeSub.getStatus());
-                subscriptionRepository.save(subscription);
+            // On met à jour le statut Stripe brut et on gère la fin de période
+            subscription.setStripeStatus(stripeSub.getStatus());
 
-                Company company = subscription.getCompany();
-                
-                // 📝 Log d'audit
-                AuditLog auditLog = new AuditLog();
-                auditLog.setAction("STRIPE_SUBSCRIPTION_PENDING_CANCELLATION");
-                auditLog.setActor("StripeWebhook");
-                auditLog.setIpAddress("Stripe");
-                auditLog.setStatus(AuditLog.AuditStatus.WARNING);
-                auditLog.setDetails(String.format("Résiliation programmée à la fin de la période pour l'entreprise ID %d.",
-                        company != null ? company.getIdCompany() : 0));
-                auditLogRepository.save(auditLog);
+            if (stripeSub.getCancelAtPeriodEnd() != null && stripeSub.getCancelAtPeriodEnd()) {
+                subscription.setStatus("CANCELED_PENDING");
             }
+
+            subscriptionRepository.save(subscription);
+            System.out.println("✅ Abonnement mis à jour en CANCELED_PENDING pour : " + stripeSubscriptionId);
+        } else {
+            System.out.println(
+                    "⚠️ Aucun abonnement trouvé en base avec le stripeSubscriptionId : " + stripeSubscriptionId);
         }
     }
 
