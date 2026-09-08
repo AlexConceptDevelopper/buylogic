@@ -77,7 +77,7 @@ export default function CompanyParamsTab({
   };
 
   const handleCancelSubscriptionClick = async () => {
-    if (!window.confirm("Voulez-vous vraiment résilier votre abonnement ? Vous conserverez l'accès jusqu'à la fin de la période payée.")) {
+    if (!window.confirm("Voulez-vous vraiment résilier votre abonnement ? Il restera actif jusqu'à la fin de la période déjà payée.")) {
       return;
     }
 
@@ -136,6 +136,10 @@ export default function CompanyParamsTab({
   const managementLabel = isManufactured
     ? "Fabrication / assemblage"
     : "Achat / revente";
+
+  // Détection si l'utilisateur a un abonnement payant actif (similaire au Header)
+  const subStatus = company.subscriptionStatus || (company as any).status;
+  const isPaid = subStatus === "PAID" || subStatus === "ACTIVE";
 
   return (
     <div className="mt-8 space-y-6">
@@ -302,30 +306,32 @@ export default function CompanyParamsTab({
               </div>
             </div>
 
-            {/* Gestion de l'abonnement (Accessible) */}
-            <div className="rounded-xl border border-amber-500/20 bg-amber-950/10 p-5 space-y-4">
-              <div>
-                <p className="text-sm font-semibold text-amber-400">Abonnement</p>
-                <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-                  Besoin d'interrompre votre abonnement ? Vous pouvez le résilier à tout moment.
-                </p>
-              </div>
-
-              {cancelMessage && (
-                <div className={`rounded-lg p-3 text-xs ${cancelMessage.type === "success" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300" : "bg-rose-500/10 border border-rose-500/20 text-rose-300"}`}>
-                  {cancelMessage.text}
+            {/* Gestion de l'abonnement : Affiché UNIQUEMENT si l'utilisateur est payant/abonné */}
+            {isPaid && (
+              <div className="rounded-xl border border-amber-500/20 bg-amber-950/10 p-5 space-y-4">
+                <div>
+                  <p className="text-sm font-semibold text-amber-400">Abonnement</p>
+                  <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                    Besoin d'interrompre votre abonnement ? Vous pouvez le résilier à tout moment.
+                  </p>
                 </div>
-              )}
 
-              <button
-                type="button"
-                onClick={handleCancelSubscriptionClick}
-                disabled={isCanceling}
-                className="w-full cursor-pointer rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-500 hover:text-slate-950 disabled:opacity-50"
-              >
-                {isCanceling ? "Résiliation..." : "Résilier mon abonnement"}
-              </button>
-            </div>
+                {cancelMessage && (
+                  <div className={`rounded-lg p-3 text-xs ${cancelMessage.type === "success" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300" : "bg-rose-500/10 border border-rose-500/20 text-rose-300"}`}>
+                    {cancelMessage.text}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleCancelSubscriptionClick}
+                  disabled={isCanceling}
+                  className="w-full cursor-pointer rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-500 hover:text-slate-950 disabled:opacity-50"
+                >
+                  {isCanceling ? "Résiliation..." : "Résilier mon abonnement"}
+                </button>
+              </div>
+            )}
           </div>
 
         </div>
