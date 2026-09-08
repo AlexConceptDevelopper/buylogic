@@ -12,6 +12,7 @@ export interface Company {
   remainingTrialDays: number;
   trialExpired: boolean;
   subscriptionStatus?: string;
+  currentPeriodEnd?: string;
 }
 
 export interface CompanyCreate {

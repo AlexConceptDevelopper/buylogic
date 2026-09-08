@@ -43,7 +43,8 @@ public class CompanyMapper {
        Subscription subscription = subscriptionRepository.findByCompany_IdCompany(company.getIdCompany()).orElse(null);
 
         if (subscription != null) {
-            dto.setSubscriptionStatus(subscription.getStatus()); // <-- Transmet le status au DTO
+            dto.setSubscriptionStatus(subscription.getStatus());
+            dto.setCurrentPeriodEnd(subscription.getCurrentPeriodEnd());
 
             if (subscription.getTrialEnd() != null) {
                 long remaining = ChronoUnit.DAYS.between(LocalDateTime.now(), subscription.getTrialEnd());

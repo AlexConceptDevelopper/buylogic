@@ -3,7 +3,6 @@ package com.buylogic.service;
 import com.buylogic.exception.ResourceNotFoundException;
 import com.buylogic.model.AuditLog;
 import com.buylogic.model.Company;
-import com.buylogic.model.Subscription;
 import com.buylogic.repository.global.AuditLogRepository;
 import com.buylogic.repository.global.CompanyRepository;
 import com.buylogic.repository.global.SubscriptionRepository;
@@ -16,6 +15,10 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.lang.reflect.Method;
 
 @Service
 public class StripeService {
@@ -47,6 +50,30 @@ public class StripeService {
         Stripe.apiKey = stripeApiKey;
     }
 
+    /**
+     * Méthode utilitaire blindée : prend un Object pour éviter toute collision 
+     * de nom de classe et extrait la date par réflexion.
+     */
+    private LocalDateTime extractPeriodEnd(Object stripeSubObj) {
+        if (stripeSubObj == null) return null;
+        try {
+            Method method = stripeSubObj.getClass().getMethod("getCurrentPeriodEnd");
+            Object result = method.invoke(stripeSubObj);
+            if (result instanceof Long) {
+                return Instant.ofEpochSecond((Long) result)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime();
+            } else if (result instanceof Integer) {
+                return Instant.ofEpochSecond(((Integer) result).longValue())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime();
+            }
+        } catch (Exception e) {
+            // Ignore si la méthode n'existe pas dans cette version exacte
+        }
+        return null;
+    }
+
     @Transactional
     public String createCheckoutSession(Integer companyId) {
         Company company = companyRepository.findById(companyId)
@@ -68,7 +95,7 @@ public class StripeService {
 
             Session session = Session.create(params);
 
-            Subscription subscription = company.getSubscription();
+            com.buylogic.model.Subscription subscription = company.getSubscription();
             if (subscription != null && session.getCustomer() != null) {
                 subscription.setStripeCustomerId(session.getCustomer());
                 subscriptionRepository.save(subscription);
@@ -91,7 +118,7 @@ public class StripeService {
             return;
 
         String companyIdStr = session.getMetadata() != null ? session.getMetadata().get("companyId") : null;
-        Subscription subscription = null;
+        com.buylogic.model.Subscription subscription = null;
         Company company = null;
 
         if (companyIdStr != null) {
@@ -116,6 +143,19 @@ public class StripeService {
         subscription.setStripeStatus("active");
         subscription.setStatus("PAID");
 
+        if (session.getSubscription() != null) {
+            try {
+                com.stripe.model.Subscription stripeSub = com.stripe.model.Subscription
+                        .retrieve(session.getSubscription());
+                LocalDateTime periodEnd = extractPeriodEnd(stripeSub);
+                if (periodEnd != null) {
+                    subscription.setCurrentPeriodEnd(periodEnd);
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+        }
+        
         if (!company.getActive()) {
             company.setActive(true);
             companyRepository.save(company);
@@ -133,7 +173,6 @@ public class StripeService {
         auditLogRepository.save(auditLog);
     }
 
-    // Gestion du renouvellement automatique réussi (facture payée)
     @Transactional
     public void handleInvoicePaymentSucceeded(Event event) {
         com.stripe.model.Invoice invoice = (com.stripe.model.Invoice) event
@@ -142,7 +181,6 @@ public class StripeService {
         if (invoice == null)
             return;
 
-        // Ignorer la facture initiale de création (gérée par checkout.session.completed)
         if ("subscription_create".equals(invoice.getBillingReason())) {
             return;
         }
@@ -160,11 +198,22 @@ public class StripeService {
         if (subscriptionId == null)
             return;
 
-        Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(subscriptionId).orElse(null);
+        com.buylogic.model.Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(subscriptionId).orElse(null);
 
         if (subscription != null) {
             subscription.setStripeStatus("active");
             subscription.setStatus("PAID");
+
+            try {
+                com.stripe.model.Subscription stripeSub = com.stripe.model.Subscription.retrieve(subscriptionId);
+                LocalDateTime periodEnd = extractPeriodEnd(stripeSub);
+                if (periodEnd != null) {
+                    subscription.setCurrentPeriodEnd(periodEnd);
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+
             subscriptionRepository.save(subscription);
 
             Company company = subscription.getCompany();
@@ -186,11 +235,11 @@ public class StripeService {
 
     public void cancelSubscription(String stripeSubscriptionId) {
         try {
-            com.stripe.model.Subscription subscription = com.stripe.model.Subscription.retrieve(stripeSubscriptionId);
+            com.stripe.model.Subscription stripeSub = com.stripe.model.Subscription.retrieve(stripeSubscriptionId);
             com.stripe.param.SubscriptionUpdateParams params = com.stripe.param.SubscriptionUpdateParams.builder()
                     .setCancelAtPeriodEnd(true)
                     .build();
-            subscription.update(params);
+            stripeSub.update(params);
         } catch (com.stripe.exception.StripeException e) {
             throw new RuntimeException("Échec de la programmation de la résiliation de l'abonnement Stripe : " + e.getMessage(), e);
         }
@@ -201,7 +250,7 @@ public class StripeService {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with id: " + companyId));
 
-        Subscription localSub = company.getSubscription();
+        com.buylogic.model.Subscription localSub = company.getSubscription();
         if (localSub == null || localSub.getStripeSubscriptionId() == null) {
             throw new RuntimeException("Aucun abonnement Stripe actif trouvé pour cette entreprise.");
         }
@@ -209,9 +258,19 @@ public class StripeService {
         cancelSubscription(localSub.getStripeSubscriptionId());
 
         localSub.setStatus("CANCELED_PENDING");
+
+        try {
+            com.stripe.model.Subscription stripeSub = com.stripe.model.Subscription.retrieve(localSub.getStripeSubscriptionId());
+            LocalDateTime periodEnd = extractPeriodEnd(stripeSub);
+            if (periodEnd != null) {
+                localSub.setCurrentPeriodEnd(periodEnd);
+            }
+        } catch (Exception e) {
+            // Ignore
+        }
+
         subscriptionRepository.save(localSub);
 
-        // Audit Log Résiliation
         AuditLog auditLog = new AuditLog();
         auditLog.setAction("SUBSCRIPTION_CANCEL_REQUESTED");
         auditLog.setActor("CompanyOwner_" + companyId);
@@ -221,14 +280,13 @@ public class StripeService {
         auditLogRepository.save(auditLog);
     }
 
-    // Nouvelle méthode de réactivation (Annulation du cancelAtPeriodEnd)
     public void resumeStripeSubscription(String stripeSubscriptionId) {
         try {
-            com.stripe.model.Subscription subscription = com.stripe.model.Subscription.retrieve(stripeSubscriptionId);
+            com.stripe.model.Subscription stripeSub = com.stripe.model.Subscription.retrieve(stripeSubscriptionId);
             com.stripe.param.SubscriptionUpdateParams params = com.stripe.param.SubscriptionUpdateParams.builder()
                     .setCancelAtPeriodEnd(false)
                     .build();
-            subscription.update(params);
+            stripeSub.update(params);
         } catch (StripeException e) {
             throw new RuntimeException("Échec de la réactivation de l'abonnement Stripe : " + e.getMessage(), e);
         }
@@ -239,7 +297,7 @@ public class StripeService {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with id: " + companyId));
 
-        Subscription localSub = company.getSubscription();
+        com.buylogic.model.Subscription localSub = company.getSubscription();
         if (localSub == null || localSub.getStripeSubscriptionId() == null) {
             throw new RuntimeException("Aucun abonnement trouvé pour cette entreprise.");
         }
@@ -247,9 +305,19 @@ public class StripeService {
         resumeStripeSubscription(localSub.getStripeSubscriptionId());
 
         localSub.setStatus("PAID");
+
+        try {
+            com.stripe.model.Subscription stripeSub = com.stripe.model.Subscription.retrieve(localSub.getStripeSubscriptionId());
+            LocalDateTime periodEnd = extractPeriodEnd(stripeSub);
+            if (periodEnd != null) {
+                localSub.setCurrentPeriodEnd(periodEnd);
+            }
+        } catch (Exception e) {
+            // Ignore
+        }
+
         subscriptionRepository.save(localSub);
 
-        // Audit Log Réactivation
         AuditLog auditLog = new AuditLog();
         auditLog.setAction("SUBSCRIPTION_RESUMED");
         auditLog.setActor("CompanyOwner_" + companyId);
@@ -268,11 +336,16 @@ public class StripeService {
             return;
 
         String stripeSubscriptionId = stripeSub.getId();
-        Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(stripeSubscriptionId)
+        com.buylogic.model.Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(stripeSubscriptionId)
                 .orElse(null);
 
         if (subscription != null) {
             subscription.setStripeStatus(stripeSub.getStatus());
+
+            LocalDateTime periodEnd = extractPeriodEnd(stripeSub);
+            if (periodEnd != null) {
+                subscription.setCurrentPeriodEnd(periodEnd);
+            }
 
             if (stripeSub.getCancelAtPeriodEnd() != null && stripeSub.getCancelAtPeriodEnd()) {
                 subscription.setStatus("CANCELED_PENDING");
@@ -305,7 +378,7 @@ public class StripeService {
         if (subscriptionId == null)
             return;
 
-        Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(subscriptionId).orElse(null);
+        com.buylogic.model.Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(subscriptionId).orElse(null);
 
         if (subscription != null) {
             subscription.setStripeStatus("past_due");
@@ -339,11 +412,17 @@ public class StripeService {
             return;
 
         String subscriptionId = stripeSub.getId();
-        Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(subscriptionId).orElse(null);
+        com.buylogic.model.Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(subscriptionId).orElse(null);
 
         if (subscription != null) {
             subscription.setStripeStatus("canceled");
             subscription.setStatus("CANCELED");
+
+            LocalDateTime periodEnd = extractPeriodEnd(stripeSub);
+            if (periodEnd != null) {
+                subscription.setCurrentPeriodEnd(periodEnd);
+            }
+
             subscriptionRepository.save(subscription);
 
             Company company = subscription.getCompany();

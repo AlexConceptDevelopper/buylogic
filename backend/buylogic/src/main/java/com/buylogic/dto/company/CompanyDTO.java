@@ -1,5 +1,7 @@
 package com.buylogic.dto.company;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,4 +27,6 @@ public class CompanyDTO {
     private Long remainingTrialDays;
     private Boolean trialExpired;
     private String subscriptionStatus;
+
+    private LocalDateTime currentPeriodEnd;
 }

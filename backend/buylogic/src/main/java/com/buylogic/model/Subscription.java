@@ -42,6 +42,9 @@ public class Subscription {
 
     @Column(length = 50)
     private String stripeStatus;
+
+    @Column
+    private LocalDateTime currentPeriodEnd;
     // ---------------------
 
     @Column(nullable = false)
@@ -49,6 +52,14 @@ public class Subscription {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    public LocalDateTime getCurrentPeriodEnd() {
+        return currentPeriodEnd;
+    }
+
+    public void setCurrentPeriodEnd(LocalDateTime currentPeriodEnd) {
+        this.currentPeriodEnd = currentPeriodEnd;
+    }
 
     @PrePersist
     protected void onCreate() {
