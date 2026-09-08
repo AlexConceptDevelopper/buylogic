@@ -164,9 +164,14 @@ public class CompanyService {
         String companyName = company.getName();
         Integer companyId = company.getIdCompany();
 
-        // 1. Résiliation de l'abonnement actif sur Stripe s'il existe
+        // 1. Résiliation immédiate de l'abonnement actif sur Stripe lors d'un hard delete
         if (company.getSubscription() != null && company.getSubscription().getStripeSubscriptionId() != null) {
-            stripeService.cancelSubscription(company.getSubscription().getStripeSubscriptionId());
+            try {
+                com.stripe.model.Subscription stripeSub = com.stripe.model.Subscription.retrieve(company.getSubscription().getStripeSubscriptionId());
+                stripeSub.cancel();
+            } catch (Exception e) {
+                // Loguer l'erreur mais laisser passer le delete
+            }
         }
 
         // 2. Nettoyage du logo Cloudinary si présent

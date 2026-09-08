@@ -7,12 +7,16 @@ interface DashboardHeaderProps {
   remainingTrialDays?: number;
   trialExpired?: boolean;
   subscriptionStatus?: string;
+  subscriptionEndDate?: string | null; 
+  cancelAtPeriodEnd?: boolean;        
 }
 
 export default function DashboardHeader({
   remainingTrialDays: propRemainingDays,
   trialExpired: propTrialExpired,
   subscriptionStatus: propStatus,
+  subscriptionEndDate: propEndDate,
+  cancelAtPeriodEnd: propCancelAtPeriodEnd,
 }: DashboardHeaderProps) {
   const { user } = useAuth();
   const [loadingStripe, setLoadingStripe] = useState(false);
@@ -21,6 +25,8 @@ export default function DashboardHeader({
   const [remainingTrialDays, setRemainingTrialDays] = useState<number | undefined>(propRemainingDays);
   const [trialExpired, setTrialExpired] = useState<boolean | undefined>(propTrialExpired);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | undefined>(propStatus);
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null | undefined>(propEndDate);
+  const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState<boolean | undefined>(propCancelAtPeriodEnd);
 
   useEffect(() => {
     if (user?.idCompany) {
@@ -30,9 +36,12 @@ export default function DashboardHeader({
             setRemainingTrialDays(company.remainingTrialDays);
             setTrialExpired(company.trialExpired);
             setSubscriptionStatus(company.subscriptionStatus || company.status);
+            // Récupération des infos d'abonnement / résiliation depuis le backend
+            setSubscriptionEndDate(company.subscriptionEndDate || company.currentPeriodEnd);
+            setCancelAtPeriodEnd(company.cancelAtPeriodEnd || company.status === "CANCELED_PENDING");
           }
         })
-        .catch((err) => console.error("Erreur chargement infos trial", err))
+        .catch((err) => console.error("Erreur chargement infos abonnement", err))
         .finally(() => setIsLoaded(true));
     } else {
       setIsLoaded(true);
@@ -61,6 +70,13 @@ export default function DashboardHeader({
 
   const isPaid = subscriptionStatus === "PAID" || subscriptionStatus === "ACTIVE";
 
+  // Calcul du nombre de jours restants avant la fin effective de la période payée
+  let daysBeforeEnd = 0;
+  if (subscriptionEndDate) {
+    const diffTime = new Date(subscriptionEndDate).getTime() - new Date().getTime();
+    daysBeforeEnd = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+  }
+
   let badgeStyle = "border-cyan-400/20 bg-cyan-400/5 text-cyan-300";
   let dotStyle = "bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]";
   let label = `Il vous reste ${remainingTrialDays} jour${remainingTrialDays! > 1 ? "s" : ""} d'essai`;
@@ -77,7 +93,6 @@ export default function DashboardHeader({
     dotStyle = "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.7)]";
   }
 
-  // Le bouton s'affiche dès que l'utilisateur est Admin/Owner et que l'essai n'est pas déjà converti en payant
   const showSubscribeButton = isOwner && !isPaid;
 
   return (
@@ -92,15 +107,35 @@ export default function DashboardHeader({
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-          Gardez un œil sur vos stocks, vos commandes et les recommandations de
-          BuyLogic.
+          Gardez un œil sur vos stocks, vos commandes et les recommandations de BuyLogic.
         </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         {isLoaded && (
           <>
-            {isPaid ? (
+            {cancelAtPeriodEnd ? (
+              /* CAS 2 : Abonnement en cours de résiliation (actif jusqu'à la fin de la période) */
+              <div className="flex items-center gap-3 rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.7)] animate-pulse" />
+                  <span className="text-xs font-semibold text-amber-300">
+                    Résilié (encore {daysBeforeEnd} jour{daysBeforeEnd > 1 ? "s" : ""} d'accès)
+                  </span>
+                </div>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={handleSubscribe}
+                    disabled={loadingStripe}
+                    className="cursor-pointer rounded-lg bg-amber-400 px-3 py-1 text-xs font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
+                  >
+                    {loadingStripe ? "Redirection..." : "Se réabonner"}
+                  </button>
+                )}
+              </div>
+            ) : isPaid ? (
+              /* CAS STANDARD : Abonnement Pro Actif */
               <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
@@ -110,6 +145,7 @@ export default function DashboardHeader({
                 </div>
               </div>
             ) : (
+              /* CAS ESSAI GRATUIT */
               remainingTrialDays !== undefined && (
                 <div className={`rounded-xl border px-4 py-2.5 flex items-center gap-3 ${badgeStyle}`}>
                   <div className="flex items-center gap-2">

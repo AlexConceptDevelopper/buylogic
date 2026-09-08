@@ -138,15 +138,19 @@ public class StripeService {
     }
 
     // annuler l'abonnement Stripe en cas d'échec de paiement ou de suppression de
-    // l'abonnement
+    // l'abonnement (supprime en fin de periode)
     public void cancelSubscription(String stripeSubscriptionId) {
         try {
-            // Option 1 : Si tu utilises une version classique du SDK Java Stripe
             com.stripe.model.Subscription subscription = com.stripe.model.Subscription.retrieve(stripeSubscriptionId);
-            subscription.cancel();
+            
+            com.stripe.param.SubscriptionUpdateParams params = com.stripe.param.SubscriptionUpdateParams.builder()
+                    .setCancelAtPeriodEnd(true)
+                    .build();
+            
+            subscription.update(params);
 
         } catch (com.stripe.exception.StripeException e) {
-            throw new RuntimeException("Échec de la résiliation de l'abonnement Stripe : " + e.getMessage(), e);
+            throw new RuntimeException("Échec de la programmation de la résiliation de l'abonnement Stripe : " + e.getMessage(), e);
         }
     }
 
@@ -164,6 +168,39 @@ public class StripeService {
         cancelSubscription(localSub.getStripeSubscriptionId());
 
         // Optionnel : Tu peux aussi déclencher un log d'audit ici si tu le souhaites
+    }
+
+    @Transactional
+    public void handleSubscriptionUpdated(Event event) {
+        com.stripe.model.Subscription stripeSub = (com.stripe.model.Subscription) event
+                .getDataObjectDeserializer().getObject().orElse(null);
+
+        if (stripeSub == null)
+            return;
+
+        String subscriptionId = stripeSub.getId();
+        Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(subscriptionId).orElse(null);
+
+        if (subscription != null) {
+            // Si Stripe confirme que c'est programmé pour s'arrêter à la fin de la période
+            if (stripeSub.getCancelAtPeriodEnd() != null && stripeSub.getCancelAtPeriodEnd()) {
+                subscription.setStatus("CANCELED_PENDING"); // Ou ton statut équivalent en base
+                subscription.setStripeStatus(stripeSub.getStatus());
+                subscriptionRepository.save(subscription);
+
+                Company company = subscription.getCompany();
+                
+                // 📝 Log d'audit
+                AuditLog auditLog = new AuditLog();
+                auditLog.setAction("STRIPE_SUBSCRIPTION_PENDING_CANCELLATION");
+                auditLog.setActor("StripeWebhook");
+                auditLog.setIpAddress("Stripe");
+                auditLog.setStatus(AuditLog.AuditStatus.WARNING);
+                auditLog.setDetails(String.format("Résiliation programmée à la fin de la période pour l'entreprise ID %d.",
+                        company != null ? company.getIdCompany() : 0));
+                auditLogRepository.save(auditLog);
+            }
+        }
     }
 
     @Transactional
