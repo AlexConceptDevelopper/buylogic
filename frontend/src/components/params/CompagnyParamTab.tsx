@@ -105,6 +105,20 @@ export default function CompanyParamsTab({
 
     try {
       await cancelSubscription(company.idCompany);
+      
+      // Met à jour l'état local via la souscription pour basculer en CANCELED_PENDING immédiatement
+      setCompany((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          subscription: {
+            ...((prev as any).subscription || {}),
+            status: "CANCELED_PENDING",
+            cancelAtPeriodEnd: true,
+          }
+        };
+      });
+
       setCancelMessage({
         type: "success",
         text: "Votre abonnement a été résilié avec succès. Il restera actif jusqu'à la fin de la période en cours.",
@@ -126,9 +140,7 @@ export default function CompanyParamsTab({
   const handleSubscribe = async () => {
     setLoadingStripe(true);
     try {
-      // Remplace par ta fonction d'appel API Stripe existante si nécessaire
-      // Ex: const res = await createCheckoutSession(company.idCompany);
-      // window.location.href = res.url;
+      // Logique de redirection vers Stripe Checkout si nécessaire
     } catch (err: any) {
       console.error("Erreur redirection Stripe:", err);
     } finally {
@@ -175,14 +187,10 @@ export default function CompanyParamsTab({
     ? "Fabrication / assemblage"
     : "Achat / revente";
 
-  // Détection élargie pour inclure le statut de résiliation en cours
-  const subStatus = company.subscriptionStatus || (company as any).status;
-  const isPaid = subStatus === "PAID" || subStatus === "ACTIVE";
-  const isCancelPending =
-    (company as any).cancelAtPeriodEnd === true ||
-    subStatus === "CANCELED_PENDING";
-
-  // On affiche le bloc si l'utilisateur est payant OU si son abonnement est en fin de vie planifiée
+  // Gestion de l'état via l'objet subscription uniquement
+  const subStatus = (company as any).subscription?.status;
+  const isCancelPending = subStatus === "CANCELED_PENDING" || (company as any).subscription?.cancelAtPeriodEnd === true;
+  const isPaid = (subStatus === "PAID" || subStatus === "ACTIVE") && !isCancelPending;
   const showBillingBlock = isPaid || isCancelPending;
 
   return (
@@ -431,7 +439,7 @@ export default function CompanyParamsTab({
         </div>
       </div>
 
-      {/* --- MODALE DE CONFIRMATION DE RÉSILIATION D'ABONNEMENT --- */}
+      {/* --- MODALE DE CONFIRMATION DE RÉSILIATION --- */}
       {isCancelModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-4">
           <div className="w-full max-w-md rounded-2xl border border-amber-500/30 bg-slate-900 p-6 shadow-2xl">
@@ -468,7 +476,7 @@ export default function CompanyParamsTab({
         </div>
       )}
 
-      {/* --- MODALE DE CONFIRMATION DE SUPPRESSION D'ENTREPRISE --- */}
+      {/* --- MODALE DE SUPPRESSION --- */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-4">
           <div className="w-full max-w-md rounded-2xl border border-rose-500/30 bg-slate-900 p-6 shadow-2xl">

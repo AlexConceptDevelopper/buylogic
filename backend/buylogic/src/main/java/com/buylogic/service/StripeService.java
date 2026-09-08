@@ -181,7 +181,7 @@ public class StripeService {
 
         String stripeSubscriptionId = stripeSub.getId(); 
 
-        // On cherche l'abonnement grâce à l'ID Stripe de la ligne 3
+        // On cherche l'abonnement grâce à l'ID Stripe 
         Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(stripeSubscriptionId)
                 .orElse(null);
 

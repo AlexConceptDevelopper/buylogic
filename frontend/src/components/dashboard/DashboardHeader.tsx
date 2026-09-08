@@ -35,10 +35,14 @@ export default function DashboardHeader({
           if (company) {
             setRemainingTrialDays(company.remainingTrialDays);
             setTrialExpired(company.trialExpired);
-            setSubscriptionStatus(company.subscriptionStatus || company.status);
-            // Récupération des infos d'abonnement / résiliation depuis le backend
-            setSubscriptionEndDate(company.subscriptionEndDate || company.currentPeriodEnd);
-            setCancelAtPeriodEnd(company.cancelAtPeriodEnd || company.status === "CANCELED_PENDING");
+            
+            // On récupère le statut et les indicateurs depuis l'objet subscription embarqué
+            const sub = company.subscription;
+            const subStat = sub?.status || company.subscriptionStatus;
+            
+            setSubscriptionStatus(subStat);
+            setSubscriptionEndDate(sub?.currentPeriodEnd || company.subscriptionEndDate);
+            setCancelAtPeriodEnd(sub?.cancelAtPeriodEnd || subStat === "CANCELED_PENDING" || company.cancelAtPeriodEnd);
           }
         })
         .catch((err) => console.error("Erreur chargement infos abonnement", err))
@@ -68,7 +72,8 @@ export default function DashboardHeader({
     }
   };
 
-  const isPaid = subscriptionStatus === "PAID" || subscriptionStatus === "ACTIVE";
+  const isCancelPending = subscriptionStatus === "CANCELED_PENDING" || cancelAtPeriodEnd;
+  const isPaid = (subscriptionStatus === "PAID" || subscriptionStatus === "ACTIVE") && !isCancelPending;
 
   // Calcul du nombre de jours restants avant la fin effective de la période payée
   let daysBeforeEnd = 0;
@@ -114,13 +119,13 @@ export default function DashboardHeader({
       <div className="flex flex-wrap items-center gap-3">
         {isLoaded && (
           <>
-            {cancelAtPeriodEnd ? (
+            {isCancelPending ? (
               /* CAS 2 : Abonnement en cours de résiliation (actif jusqu'à la fin de la période) */
               <div className="flex items-center gap-3 rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.7)] animate-pulse" />
                   <span className="text-xs font-semibold text-amber-300">
-                    Résilié (encore {daysBeforeEnd} jour{daysBeforeEnd > 1 ? "s" : ""} d'accès)
+                    Résilié {daysBeforeEnd > 0 ? `(encore ${daysBeforeEnd} jour${daysBeforeEnd > 1 ? "s" : ""} d'accès)` : ""}
                   </span>
                 </div>
                 {isOwner && (
