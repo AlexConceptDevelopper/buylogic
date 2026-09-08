@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.lang.reflect.Method;
 
 @Service
 public class StripeService {
@@ -57,20 +56,25 @@ public class StripeService {
     private LocalDateTime extractPeriodEnd(Object stripeSubObj) {
         if (stripeSubObj == null) return null;
         try {
-            Method method = stripeSubObj.getClass().getMethod("getCurrentPeriodEnd");
-            Object result = method.invoke(stripeSubObj);
-            if (result instanceof Long) {
-                return Instant.ofEpochSecond((Long) result)
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-            } else if (result instanceof Integer) {
-                return Instant.ofEpochSecond(((Integer) result).longValue())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
+            Class<?> clazz = stripeSubObj.getClass();
+            for (java.lang.reflect.Method method : clazz.getMethods()) {
+                String name = method.getName();
+                if ((name.equalsIgnoreCase("getCurrentPeriodEnd") || name.equalsIgnoreCase("getPeriodEnd")) 
+                        && method.getParameterCount() == 0) {
+                    Object result = method.invoke(stripeSubObj);
+                    if (result instanceof Long val) {
+                        return Instant.ofEpochSecond(val)
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDateTime();
+                    } else if (result instanceof Integer val) {
+                        return Instant.ofEpochSecond(val.longValue())
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDateTime();
+                    }
+                }
             }
         } catch (Exception e) {
-            System.err.println("ERREUR REFLEXION STRIPE PERIOD END : " + e.getMessage());
-            e.printStackTrace(); // <-- Affiche la vraie raison dans les logs Spring Boot
+            // Ignore
         }
         return null;
     }
