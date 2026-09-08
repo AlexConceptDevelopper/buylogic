@@ -41,9 +41,15 @@ public class BillingWebhookController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Webhook error");
         }
 
-        // Traitement de l'événement de succès de paiement
-        if ("checkout.session.completed".equals(event.getType())) {
+        // Utilisation correcte de event.getType() à la place de l'inconnu eventType
+        String eventType = event.getType();
+
+        if ("checkout.session.completed".equals(eventType)) {
             stripeService.handleCheckoutSessionCompleted(event);
+        } else if ("invoice.payment_failed".equals(eventType)) {
+            stripeService.handleInvoicePaymentFailed(event);
+        } else if ("customer.subscription.deleted".equals(eventType)) {
+            stripeService.handleSubscriptionDeleted(event);
         }
 
         return ResponseEntity.ok("Success");

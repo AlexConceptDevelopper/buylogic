@@ -22,4 +22,10 @@ public class BillingController {
         String checkoutUrl = stripeService.createCheckoutSession(companyId);
         return ResponseEntity.ok(Collections.singletonMap("url", checkoutUrl));
     }
+
+    @PostMapping("/cancel-subscription")
+    public ResponseEntity<Map<String, String>> cancelSubscription(@RequestParam Integer companyId) {
+        stripeService.cancelSubscriptionForCompany(companyId);
+        return ResponseEntity.ok(Collections.singletonMap("message", "Abonnement résilié avec succès"));
+    }
 }

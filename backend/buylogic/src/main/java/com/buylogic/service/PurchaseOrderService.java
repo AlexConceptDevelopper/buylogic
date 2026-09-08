@@ -219,8 +219,8 @@ public class PurchaseOrderService {
                 purchaseRecommendationRepository.saveAll(recommendations);
 
                 return createdOrders.stream()
-                                .map(purchaseOrderMapper::toDTO)
-                                .toList();
+                .map(order -> purchaseOrderMapper.toDTO(order))
+                .toList();
         }
 
         private BigDecimal getSupplierUnitPrice(PurchaseRecommendation rec) {

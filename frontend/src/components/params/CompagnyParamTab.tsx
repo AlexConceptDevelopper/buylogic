@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Company } from "../../types/company";
 import type { CompanyConfiguration } from "../../types/companyConfiguration";
 import { uploadCompanyLogo, deleteCompany } from "../../api/company.api";
+import { cancelSubscription } from "../../api/billing.api";
 import useAsync from "../../hooks/useAsync";
 
 interface CompanyParamsTabProps {
@@ -30,7 +31,11 @@ export default function CompanyParamsTab({
   const [confirmCompanyName, setConfirmCompanyName] = useState("");
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deletionSuccess, setDeletionSuccess] = useState(false); // Nouvel état pour le message de succès
+  const [deletionSuccess, setDeletionSuccess] = useState(false);
+
+  // États pour la résiliation de l'abonnement
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [cancelMessage, setCancelMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   if (!company) {
     return <div className="mt-8 text-slate-400">Chargement des informations de l'entreprise...</div>;
@@ -71,6 +76,30 @@ export default function CompanyParamsTab({
     }
   };
 
+  const handleCancelSubscriptionClick = async () => {
+    if (!window.confirm("Voulez-vous vraiment résilier votre abonnement ? Vous conserverez l'accès jusqu'à la fin de la période payée.")) {
+      return;
+    }
+
+    setIsCanceling(true);
+    setCancelMessage(null);
+
+    try {
+      await cancelSubscription(company.idCompany);
+      setCancelMessage({
+        type: "success",
+        text: "Votre abonnement a été résilié avec succès. Il restera actif jusqu'à la fin de la période en cours.",
+      });
+    } catch (err: any) {
+      setCancelMessage({
+        type: "error",
+        text: err.message || "Une erreur est survenue lors de la résiliation de l'abonnement.",
+      });
+    } finally {
+      setIsCanceling(false);
+    }
+  };
+
   const handleDeleteCompanySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (confirmCompanyName !== company.name) {
@@ -83,16 +112,13 @@ export default function CompanyParamsTab({
     try {
       await deleteCompany(company.idCompany);
       
-      // 1. On nettoie le stockage local pour éviter les requêtes parasites (/users/me en 403)
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       sessionStorage.clear();
 
-      // 2. On affiche le message de succès dans la modale
       setIsDeleting(false);
       setDeletionSuccess(true);
 
-      // 3. On redirige proprement après 3 secondes pour laisser le temps de lire
       setTimeout(() => {
         window.location.href = "/login";
       }, 3000);
@@ -134,7 +160,7 @@ export default function CompanyParamsTab({
           </div>
         )}
 
-        {/* Grille globale englobant le formulaire à gauche et l'info BuyLogic à droite */}
+        {/* Grille globale englobant le formulaire à gauche et les blocs de droite */}
         <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
           
           {/* Formulaire à gauche (Prend 2 colonnes) */}
@@ -255,8 +281,9 @@ export default function CompanyParamsTab({
             </div>
           </form>
 
-          {/* Bloc BuyLogic à droite (Prend 1 colonne) */}
-          <div className="space-y-4">
+          {/* Blocs à droite (Prend 1 colonne) */}
+          <div className="space-y-6">
+            {/* Mode de fonctionnement */}
             <div className="rounded-xl border border-white/5 bg-slate-950 p-5">
               <p className="text-sm font-semibold text-white">
                 Mode de fonctionnement BuyLogic
@@ -273,6 +300,31 @@ export default function CompanyParamsTab({
                   {managementLabel}
                 </p>
               </div>
+            </div>
+
+            {/* Gestion de l'abonnement (Accessible) */}
+            <div className="rounded-xl border border-amber-500/20 bg-amber-950/10 p-5 space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-amber-400">Abonnement</p>
+                <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                  Besoin d'interrompre votre abonnement ? Vous pouvez le résilier à tout moment.
+                </p>
+              </div>
+
+              {cancelMessage && (
+                <div className={`rounded-lg p-3 text-xs ${cancelMessage.type === "success" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300" : "bg-rose-500/10 border border-rose-500/20 text-rose-300"}`}>
+                  {cancelMessage.text}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handleCancelSubscriptionClick}
+                disabled={isCanceling}
+                className="w-full cursor-pointer rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-500 hover:text-slate-950 disabled:opacity-50"
+              >
+                {isCanceling ? "Résiliation..." : "Résilier mon abonnement"}
+              </button>
             </div>
           </div>
 

@@ -14,4 +14,6 @@ public interface SubscriptionRepository extends GenericRepository<Subscription, 
     Optional<Subscription> findByStripeCustomerId(String stripeCustomerId);
 
     List<Subscription> findByStatusAndTrialEndBefore(String status, LocalDateTime date);
+
+    Optional<Subscription> findByStripeSubscriptionId(String stripeSubscriptionId);
 }

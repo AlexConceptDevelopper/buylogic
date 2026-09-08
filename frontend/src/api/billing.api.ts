@@ -9,3 +9,12 @@ export function createCheckoutSession(companyId: number) {
     }
   );
 }
+
+export function cancelSubscription(companyId: number) {
+  return apiFetch<{ message: string }>(
+    `/billing/cancel-subscription?companyId=${companyId}`,
+    {
+      method: "POST",
+    }
+  );
+}

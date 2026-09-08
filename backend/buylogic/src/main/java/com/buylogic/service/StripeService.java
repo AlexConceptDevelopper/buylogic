@@ -137,16 +137,117 @@ public class StripeService {
         auditLogRepository.save(auditLog);
     }
 
+    // annuler l'abonnement Stripe en cas d'échec de paiement ou de suppression de
+    // l'abonnement
     public void cancelSubscription(String stripeSubscriptionId) {
-        if (stripeSubscriptionId == null || stripeSubscriptionId.isBlank()) {
-            return;
-        }
         try {
+            // Option 1 : Si tu utilises une version classique du SDK Java Stripe
             com.stripe.model.Subscription subscription = com.stripe.model.Subscription.retrieve(stripeSubscriptionId);
             subscription.cancel();
-        } catch (StripeException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Échec de la résiliation de l'abonnement Stripe: " + e.getMessage(), e);
+
+        } catch (com.stripe.exception.StripeException e) {
+            throw new RuntimeException("Échec de la résiliation de l'abonnement Stripe : " + e.getMessage(), e);
+        }
+    }
+
+    @Transactional
+    public void cancelSubscriptionForCompany(Integer companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Company not found with id: " + companyId));
+
+        Subscription localSub = company.getSubscription();
+        if (localSub == null || localSub.getStripeSubscriptionId() == null) {
+            throw new RuntimeException("Aucun abonnement Stripe actif trouvé pour cette entreprise.");
+        }
+
+        // Appelle la méthode que tu as déjà écrite pour stopper chez Stripe
+        cancelSubscription(localSub.getStripeSubscriptionId());
+
+        // Optionnel : Tu peux aussi déclencher un log d'audit ici si tu le souhaites
+    }
+
+    @Transactional
+    public void handleInvoicePaymentFailed(Event event) {
+        com.stripe.model.Invoice invoice = (com.stripe.model.Invoice) event
+                .getDataObjectDeserializer().getObject().orElse(null);
+
+        if (invoice == null)
+            return;
+
+        // Récupération de l'abonnement via les lignes de facture (compatible toutes
+        // versions)
+        String subscriptionId = null;
+        if (invoice.getLines() != null && !invoice.getLines().getData().isEmpty()) {
+            try {
+                subscriptionId = invoice.getLines().getData().get(0).getParent().getSubscriptionItemDetails()
+                        .getSubscription();
+            } catch (Exception e) {
+                // Ignore si la structure diffère
+            }
+        }
+
+        if (subscriptionId == null)
+            return;
+
+        Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(subscriptionId).orElse(null);
+
+        if (subscription != null) {
+            subscription.setStripeStatus("past_due");
+            subscription.setStatus("PAST_DUE");
+            subscriptionRepository.save(subscription);
+
+            // Désactivation automatique de l'entreprise en cas d'échec de paiement
+            Company company = subscription.getCompany();
+            if (company != null && company.getActive()) {
+                company.setActive(false);
+                companyRepository.save(company);
+            }
+
+            // 📝 Log d'audit
+            AuditLog auditLog = new AuditLog();
+            auditLog.setAction("STRIPE_PAYMENT_FAILED");
+            auditLog.setActor("StripeWebhook");
+            auditLog.setIpAddress("Stripe");
+            auditLog.setStatus(AuditLog.AuditStatus.CRITICAL);
+            auditLog.setDetails(
+                    String.format("Échec de paiement pour l'abonnement Stripe %s. Entreprise ID %d désactivée.",
+                            subscriptionId, company != null ? company.getIdCompany() : 0));
+            auditLogRepository.save(auditLog);
+        }
+    }
+
+    @Transactional
+    public void handleSubscriptionDeleted(Event event) {
+        com.stripe.model.Subscription stripeSub = (com.stripe.model.Subscription) event
+                .getDataObjectDeserializer().getObject().orElse(null);
+
+        if (stripeSub == null)
+            return;
+
+        String subscriptionId = stripeSub.getId();
+
+        Subscription subscription = subscriptionRepository.findByStripeSubscriptionId(subscriptionId).orElse(null);
+
+        if (subscription != null) {
+            subscription.setStripeStatus("canceled");
+            subscription.setStatus("CANCELED");
+            subscriptionRepository.save(subscription);
+
+            Company company = subscription.getCompany();
+            if (company != null && company.getActive()) {
+                company.setActive(false);
+                companyRepository.save(company);
+            }
+
+            // 📝 Log d'audit
+            AuditLog auditLog = new AuditLog();
+            auditLog.setAction("STRIPE_SUBSCRIPTION_DELETED");
+            auditLog.setActor("StripeWebhook");
+            auditLog.setIpAddress("Stripe");
+            auditLog.setStatus(AuditLog.AuditStatus.WARNING);
+            auditLog.setDetails(String.format("Abonnement résilié sur Stripe pour l'entreprise ID %d.",
+                    company != null ? company.getIdCompany() : 0));
+            auditLogRepository.save(auditLog);
         }
     }
 }
