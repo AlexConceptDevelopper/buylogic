@@ -28,6 +28,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import LegalMentions from "./pages/LegalMentions";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import DocsPage from "./pages/DocsPage"; // <--- 1. Import de la page de documentation
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/mentions-legales" element={<LegalMentions />} />
           <Route path="/cgu" element={<TermsOfService />} />
           <Route path="/confidentialite" element={<PrivacyPolicy />} />
+          <Route path="/docs" element={<DocsPage />} /> {/* <--- 2. Route publique ajoutée ici */}
 
           {/* Private (Utilisateurs classiques) */}
           <Route element={<ProtectedRoute />}>

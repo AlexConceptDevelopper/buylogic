@@ -50,6 +50,13 @@ export default function Navbar() {
               </a>
 
               <Link
+                to="/docs"
+                className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
+              >
+                Documentation
+              </Link>
+
+              <Link
                 to="/login"
                 className="cursor-pointer rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-white/20 hover:bg-white/5"
               >
@@ -170,6 +177,13 @@ export default function Navbar() {
                 >
                   Comment ça marche
                 </a>
+                <Link
+                  to="/docs"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm text-slate-300 transition hover:text-white"
+                >
+                  Documentation
+                </Link>
                 <Link
                   to="/login"
                   onClick={() => setMobileMenuOpen(false)}
