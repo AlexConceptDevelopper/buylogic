@@ -33,7 +33,8 @@ export default function CompanyParamsTab({
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletionSuccess, setDeletionSuccess] = useState(false);
 
-  // États pour la résiliation de l'abonnement
+  // États pour la modale et la résiliation de l'abonnement
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
   const [cancelMessage, setCancelMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -76,11 +77,7 @@ export default function CompanyParamsTab({
     }
   };
 
-  const handleCancelSubscriptionClick = async () => {
-    if (!window.confirm("Voulez-vous vraiment résilier votre abonnement ? Il restera actif jusqu'à la fin de la période déjà payée.")) {
-      return;
-    }
-
+  const handleConfirmCancelSubscription = async () => {
     setIsCanceling(true);
     setCancelMessage(null);
 
@@ -90,11 +87,13 @@ export default function CompanyParamsTab({
         type: "success",
         text: "Votre abonnement a été résilié avec succès. Il restera actif jusqu'à la fin de la période en cours.",
       });
+      setIsCancelModalOpen(false);
     } catch (err: any) {
       setCancelMessage({
         type: "error",
         text: err.message || "Une erreur est survenue lors de la résiliation de l'abonnement.",
       });
+      setIsCancelModalOpen(false);
     } finally {
       setIsCanceling(false);
     }
@@ -137,13 +136,11 @@ export default function CompanyParamsTab({
     ? "Fabrication / assemblage"
     : "Achat / revente";
 
-  // Détection si l'utilisateur a un abonnement payant actif (similaire au Header)
   const subStatus = company.subscriptionStatus || (company as any).status;
   const isPaid = subStatus === "PAID" || subStatus === "ACTIVE";
 
   return (
     <div className="mt-8 space-y-6">
-      {/* Conteneur principal des paramètres */}
       <div className="rounded-2xl border border-white/5 bg-slate-900/70 p-6">
         <div className="border-b border-white/5 pb-4">
           <p className="text-sm font-semibold text-white">Coordonnées et Infos Légales</p>
@@ -164,12 +161,8 @@ export default function CompanyParamsTab({
           </div>
         )}
 
-        {/* Grille globale englobant le formulaire à gauche et les blocs de droite */}
         <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
-          
-          {/* Formulaire à gauche (Prend 2 colonnes) */}
           <form onSubmit={onSaveCompany} className="space-y-6 lg:col-span-2">
-            {/* Section Logo Cloudinary */}
             <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-slate-950 p-4 sm:flex-row sm:items-center">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-900 text-slate-500 overflow-hidden">
                 {company.logoUrl ? (
@@ -285,9 +278,7 @@ export default function CompanyParamsTab({
             </div>
           </form>
 
-          {/* Blocs à droite (Prend 1 colonne) */}
           <div className="space-y-6">
-            {/* Mode de fonctionnement */}
             <div className="rounded-xl border border-white/5 bg-slate-950 p-5">
               <p className="text-sm font-semibold text-white">
                 Mode de fonctionnement BuyLogic
@@ -306,7 +297,6 @@ export default function CompanyParamsTab({
               </div>
             </div>
 
-            {/* Gestion de l'abonnement : Affiché UNIQUEMENT si l'utilisateur est payant/abonné */}
             {isPaid && (
               <div className="rounded-xl border border-amber-500/20 bg-amber-950/10 p-5 space-y-4">
                 <div>
@@ -324,7 +314,7 @@ export default function CompanyParamsTab({
 
                 <button
                   type="button"
-                  onClick={handleCancelSubscriptionClick}
+                  onClick={() => setIsCancelModalOpen(true)}
                   disabled={isCanceling}
                   className="w-full cursor-pointer rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-500 hover:text-slate-950 disabled:opacity-50"
                 >
@@ -333,7 +323,6 @@ export default function CompanyParamsTab({
               </div>
             )}
           </div>
-
         </div>
       </div>
 
@@ -362,11 +351,41 @@ export default function CompanyParamsTab({
         </div>
       </div>
 
-      {/* Modale de confirmation de suppression */}
+      {/* --- MODALE DE CONFIRMATION DE RÉSILIATION D'ABONNEMENT --- */}
+      {isCancelModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-2xl border border-amber-500/30 bg-slate-900 p-6 shadow-2xl">
+            <p className="text-lg font-bold text-amber-400">Confirmer la résiliation ?</p>
+            <p className="mt-2 text-xs text-slate-300 leading-relaxed">
+              Voulez-vous vraiment résilier votre abonnement ? Il restera <strong className="text-white">actif jusqu'à la fin de la période déjà payée</strong> avant de passer en mode inactif.
+            </p>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsCancelModalOpen(false)}
+                disabled={isCanceling}
+                className="cursor-pointer rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-400 hover:bg-white/5 hover:text-white disabled:opacity-50"
+              >
+                Conserver mon abonnement
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmCancelSubscription}
+                disabled={isCanceling}
+                className="cursor-pointer rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-amber-400 disabled:opacity-50"
+              >
+                {isCanceling ? "Résiliation..." : "Oui, résilier"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODALE DE CONFIRMATION DE SUPPRESSION D'ENTREPRISE --- */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-4">
           <div className="w-full max-w-md rounded-2xl border border-rose-500/30 bg-slate-900 p-6 shadow-2xl">
-            
             {deletionSuccess ? (
               <div className="py-6 text-center space-y-4">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xl">
@@ -426,7 +445,6 @@ export default function CompanyParamsTab({
                 </form>
               </>
             )}
-
           </div>
         </div>
       )}
