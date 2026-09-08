@@ -187,8 +187,8 @@ export default function CompanyParamsTab({
 
   const managementLabel = isManufactured ? "Fabrication / assemblage" : "Achat / revente";
 
-  const subStatus = (company as any).subscription?.status;
-  const isCancelPending = subStatus === "CANCELED_PENDING" || (company as any).subscription?.cancelAtPeriodEnd === true;
+  const subStatus = company.subscriptionStatus;
+  const isCancelPending = subStatus === "CANCELED_PENDING";
   const isPaid = (subStatus === "PAID" || subStatus === "ACTIVE") && !isCancelPending;
   const showBillingBlock = isPaid || isCancelPending;
 
