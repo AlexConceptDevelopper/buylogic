@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Company } from "../../types/company";
 import type { CompanyConfiguration } from "../../types/companyConfiguration";
 import { uploadCompanyLogo, deleteCompany } from "../../api/company.api";
-import { cancelSubscription } from "../../api/billing.api";
+import { cancelSubscription, resumeSubscription } from "../../api/billing.api"; // 👈 Ajout de resumeSubscription
 import useAsync from "../../hooks/useAsync";
 
 interface CompanyParamsTabProps {
@@ -26,14 +26,12 @@ export default function CompanyParamsTab({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // États pour la modale de suppression de l'entreprise
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [confirmCompanyName, setConfirmCompanyName] = useState("");
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletionSuccess, setDeletionSuccess] = useState(false);
 
-  // États pour la modale, la résiliation et le réabonnement
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
   const [loadingStripe, setLoadingStripe] = useState(false);
@@ -60,22 +58,13 @@ export default function CompanyParamsTab({
 
     const MAX_SIZE = 2 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
-      setUploadError(
-        "Le logo est trop volumineux. La taille maximale autorisée est de 2 Mo.",
-      );
+      setUploadError("Le logo est trop volumineux. La taille maximale autorisée est de 2 Mo.");
       return;
     }
 
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/svg+xml",
-    ];
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
     if (!allowedTypes.includes(file.type)) {
-      setUploadError(
-        "Format non supporté. Veuillez utiliser un fichier PNG, JPG, WEBP ou SVG.",
-      );
+      setUploadError("Format non supporté. Veuillez utiliser un fichier PNG, JPG, WEBP ou SVG.");
       return;
     }
 
@@ -90,10 +79,7 @@ export default function CompanyParamsTab({
         setCompany(updatedCompany);
       }
     } catch (err: any) {
-      setUploadError(
-        err.message ||
-          "Une erreur est survenue lors du téléversement de l'image.",
-      );
+      setUploadError(err.message || "Une erreur est survenue lors du téléversement de l'image.");
     } finally {
       setUploading(false);
     }
@@ -104,9 +90,8 @@ export default function CompanyParamsTab({
     setCancelMessage(null);
 
     try {
-      await cancelSubscription(company.idCompany);
+      await cancelSubscription();
       
-      // Met à jour l'état local via la souscription pour basculer en CANCELED_PENDING immédiatement
       setCompany((prev) => {
         if (!prev) return null;
         return {
@@ -127,9 +112,7 @@ export default function CompanyParamsTab({
     } catch (err: any) {
       setCancelMessage({
         type: "error",
-        text:
-          err.message ||
-          "Une erreur est survenue lors de la résiliation de l'abonnement.",
+        text: err.message || "Une erreur est survenue lors de la résiliation de l'abonnement.",
       });
       setIsCancelModalOpen(false);
     } finally {
@@ -137,12 +120,34 @@ export default function CompanyParamsTab({
     }
   };
 
+  // Implémentation complète de la réactivation de l'abonnement
   const handleSubscribe = async () => {
     setLoadingStripe(true);
+    setCancelMessage(null);
     try {
-      // Logique de redirection vers Stripe Checkout si nécessaire
+      await resumeSubscription();
+
+      setCompany((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          subscription: {
+            ...((prev as any).subscription || {}),
+            status: "PAID",
+            cancelAtPeriodEnd: false,
+          }
+        };
+      });
+
+      setCancelMessage({
+        type: "success",
+        text: "Votre abonnement a été réactivé avec succès !",
+      });
     } catch (err: any) {
-      console.error("Erreur redirection Stripe:", err);
+      setCancelMessage({
+        type: "error",
+        text: err.message || "Erreur lors de la réactivation de l'abonnement.",
+      });
     } finally {
       setLoadingStripe(false);
     }
@@ -171,10 +176,7 @@ export default function CompanyParamsTab({
         window.location.href = "/login";
       }, 3000);
     } catch (err: any) {
-      setDeleteError(
-        err.message ||
-          "Une erreur est survenue lors de la suppression de l'entreprise.",
-      );
+      setDeleteError(err.message || "Une erreur est survenue lors de la suppression de l'entreprise.");
       setIsDeleting(false);
     }
   };
@@ -183,11 +185,8 @@ export default function CompanyParamsTab({
     (configuration?.productManagementMode as string) === "MANUFACTURED" ||
     (configuration?.productManagementMode as string) === "PRODUCTION";
 
-  const managementLabel = isManufactured
-    ? "Fabrication / assemblage"
-    : "Achat / revente";
+  const managementLabel = isManufactured ? "Fabrication / assemblage" : "Achat / revente";
 
-  // Gestion de l'état via l'objet subscription uniquement
   const subStatus = (company as any).subscription?.status;
   const isCancelPending = subStatus === "CANCELED_PENDING" || (company as any).subscription?.cancelAtPeriodEnd === true;
   const isPaid = (subStatus === "PAID" || subStatus === "ACTIVE") && !isCancelPending;
@@ -201,8 +200,7 @@ export default function CompanyParamsTab({
             Coordonnées et Infos Légales
           </p>
           <p className="mt-0.5 text-xs text-slate-500">
-            Ces informations ainsi que votre logo apparaîtront sur vos bons de
-            commande PDF.
+            Ces informations ainsi que votre logo apparaîtront sur vos bons de commande PDF.
           </p>
         </div>
 
@@ -340,9 +338,7 @@ export default function CompanyParamsTab({
                 disabled={actionLoading || uploading}
                 className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-50"
               >
-                {actionLoading
-                  ? "Enregistrement..."
-                  : "Enregistrer les modifications"}
+                {actionLoading ? "Enregistrement..." : "Enregistrer les modifications"}
               </button>
             </div>
           </form>
@@ -353,8 +349,7 @@ export default function CompanyParamsTab({
                 Mode de fonctionnement BuyLogic
               </p>
               <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                Définit la manière dont BuyLogic analyse vos besoins d'achats et
-                de stocks.
+                Définit la manière dont BuyLogic analyse vos besoins d'achats et de stocks.
               </p>
 
               <div className="mt-4 rounded-lg border border-white/5 bg-slate-900 p-3.5">
@@ -395,7 +390,7 @@ export default function CompanyParamsTab({
                     disabled={loadingStripe}
                     className="w-full cursor-pointer rounded-xl bg-amber-400 px-4 py-2 text-xs font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
                   >
-                    {loadingStripe ? "Redirection..." : "Se réabonner"}
+                    {loadingStripe ? "Traitement..." : "Se réabonner"}
                   </button>
                 ) : (
                   <button
@@ -419,9 +414,7 @@ export default function CompanyParamsTab({
           <div>
             <p className="text-sm font-bold text-rose-400">Zone de danger</p>
             <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-              La suppression de l'entreprise entraînera la résiliation immédiate
-              de votre abonnement Stripe, l'effacement de vos fichiers
-              Cloudinary et la purge définitive de toutes vos données métiers.
+              La suppression de l'entreprise entraînera la résiliation immédiate de votre abonnement Stripe, l'effacement de vos fichiers Cloudinary et la purge définitive de toutes vos données métiers.
             </p>
           </div>
           <button
@@ -489,8 +482,7 @@ export default function CompanyParamsTab({
                   Entreprise supprimée avec succès !
                 </p>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Toutes vos données ont bien été purgées. À bientôt sur
-                  BuyLogic !
+                  Toutes vos données ont bien été purgées. À bientôt sur BuyLogic !
                 </p>
                 <p className="text-[11px] text-cyan-400 animate-pulse pt-2">
                   Redirection vers la page de connexion...
@@ -508,14 +500,10 @@ export default function CompanyParamsTab({
                   <span className="text-white font-semibold">
                     {company.name}
                   </span>
-                  , résiliera vos paiements et effacera l'ensemble de vos
-                  données.
+                  , résiliera vos paiements et effacera l'ensemble de vos données.
                 </p>
 
-                <form
-                  onSubmit={handleDeleteCompanySubmit}
-                  className="mt-6 space-y-4"
-                >
+                <form onSubmit={handleDeleteCompanySubmit} className="mt-6 space-y-4">
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
                       Veuillez taper{" "}
@@ -551,14 +539,10 @@ export default function CompanyParamsTab({
                     </button>
                     <button
                       type="submit"
-                      disabled={
-                        confirmCompanyName !== company.name || isDeleting
-                      }
+                      disabled={confirmCompanyName !== company.name || isDeleting}
                       className="cursor-pointer rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      {isDeleting
-                        ? "Suppression en cours..."
-                        : "Supprimer définitivement"}
+                      {isDeleting ? "Suppression en cours..." : "Supprimer définitivement"}
                     </button>
                   </div>
                 </form>

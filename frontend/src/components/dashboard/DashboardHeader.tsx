@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createCheckoutSession } from "../../api/billing.api";
+import { createCheckoutSession, resumeSubscription } from "../../api/billing.api"; // 👈 Ajout de resumeSubscription
 import { getCompanyById } from "../../api/company.api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -36,7 +36,6 @@ export default function DashboardHeader({
             setRemainingTrialDays(company.remainingTrialDays);
             setTrialExpired(company.trialExpired);
             
-            // On récupère le statut et les indicateurs depuis l'objet subscription embarqué
             const sub = company.subscription;
             const subStat = sub?.status || company.subscriptionStatus;
             
@@ -56,24 +55,32 @@ export default function DashboardHeader({
   const isOwner = role === "OWNER" || role === "SUPER_ADMIN";
   const companyId = user?.idCompany;
 
-  const handleSubscribe = async () => {
+  const isCancelPending = subscriptionStatus === "CANCELED_PENDING" || cancelAtPeriodEnd;
+  const isPaid = (subscriptionStatus === "PAID" || subscriptionStatus === "ACTIVE") && !isCancelPending;
+
+  // Gestion de l'action du bouton : s'il est en attente de résiliation, on réactive directement. Sinon, on ouvre le checkout Stripe.
+  const handleActionSubscription = async () => {
     if (!companyId || !isOwner) return;
 
     try {
       setLoadingStripe(true);
-      const data = await createCheckoutSession(companyId);
-      if (data?.url) {
-        window.location.href = data.url;
+      if (isCancelPending) {
+        await resumeSubscription();
+        // Mise à jour de l'état local pour repasser en actif instantanément
+        setSubscriptionStatus("PAID");
+        setCancelAtPeriodEnd(false);
+      } else {
+        const data = await createCheckoutSession(); 
+        if (data?.url) {
+          window.location.href = data.url;
+        }
       }
     } catch (error) {
-      console.error("Erreur lors de la redirection vers Stripe", error);
+      console.error("Erreur lors de la gestion de l'abonnement", error);
     } finally {
       setLoadingStripe(false);
     }
   };
-
-  const isCancelPending = subscriptionStatus === "CANCELED_PENDING" || cancelAtPeriodEnd;
-  const isPaid = (subscriptionStatus === "PAID" || subscriptionStatus === "ACTIVE") && !isCancelPending;
 
   // Calcul du nombre de jours restants avant la fin effective de la période payée
   let daysBeforeEnd = 0;
@@ -106,11 +113,9 @@ export default function DashboardHeader({
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
           Dashboard
         </p>
-
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
           Vue d'ensemble
         </h1>
-
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
           Gardez un œil sur vos stocks, vos commandes et les recommandations de BuyLogic.
         </p>
@@ -120,7 +125,6 @@ export default function DashboardHeader({
         {isLoaded && (
           <>
             {isCancelPending ? (
-              /* CAS 2 : Abonnement en cours de résiliation (actif jusqu'à la fin de la période) */
               <div className="flex items-center gap-3 rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.7)] animate-pulse" />
@@ -131,16 +135,15 @@ export default function DashboardHeader({
                 {isOwner && (
                   <button
                     type="button"
-                    onClick={handleSubscribe}
+                    onClick={handleActionSubscription}
                     disabled={loadingStripe}
                     className="cursor-pointer rounded-lg bg-amber-400 px-3 py-1 text-xs font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
                   >
-                    {loadingStripe ? "Redirection..." : "Se réabonner"}
+                    {loadingStripe ? "Traitement..." : "Se réabonner"}
                   </button>
                 )}
               </div>
             ) : isPaid ? (
-              /* CAS STANDARD : Abonnement Pro Actif */
               <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
@@ -150,7 +153,6 @@ export default function DashboardHeader({
                 </div>
               </div>
             ) : (
-              /* CAS ESSAI GRATUIT */
               remainingTrialDays !== undefined && (
                 <div className={`rounded-xl border px-4 py-2.5 flex items-center gap-3 ${badgeStyle}`}>
                   <div className="flex items-center gap-2">
@@ -161,7 +163,7 @@ export default function DashboardHeader({
                   {showSubscribeButton && (
                     <button
                       type="button"
-                      onClick={handleSubscribe}
+                      onClick={handleActionSubscription}
                       disabled={loadingStripe}
                       className="cursor-pointer rounded-lg bg-cyan-400 px-3 py-1 text-xs font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-50"
                     >

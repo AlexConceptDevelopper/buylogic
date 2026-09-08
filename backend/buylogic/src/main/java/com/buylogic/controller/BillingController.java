@@ -40,6 +40,15 @@ public class BillingController {
                 .ok(Collections.singletonMap("message", "Abonnement résilié avec succès à la fin de la période"));
     }
 
+    // Nouvel endpoint de réactivation
+    @PostMapping("/resume-subscription")
+    public ResponseEntity<Map<String, String>> resumeSubscription() {
+        Company company = getCurrentCompany();
+        stripeService.resumeSubscriptionForCompany(company.getIdCompany());
+        return ResponseEntity
+                .ok(Collections.singletonMap("message", "Abonnement réactivé avec succès"));
+    }
+
     private Company getCurrentCompany() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

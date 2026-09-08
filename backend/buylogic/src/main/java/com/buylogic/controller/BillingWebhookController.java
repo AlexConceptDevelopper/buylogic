@@ -45,6 +45,8 @@ public class BillingWebhookController {
 
         if ("checkout.session.completed".equals(eventType)) {
             stripeService.handleCheckoutSessionCompleted(event);
+        } else if ("invoice.payment_succeeded".equals(eventType)) {
+            stripeService.handleInvoicePaymentSucceeded(event);
         } else if ("invoice.payment_failed".equals(eventType)) {
             stripeService.handleInvoicePaymentFailed(event);
         } else if ("customer.subscription.updated".equals(eventType)) {
