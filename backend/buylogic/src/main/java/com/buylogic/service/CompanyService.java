@@ -32,7 +32,6 @@ public class CompanyService {
     private final CompanyRepository companyRepository;
     private final CompanyMapper companyMapper;
     private final Cloudinary cloudinary;
-    private final StripeService stripeService;
     private final AuditLogRepository auditLogRepository;
 
     public CompanyService(
@@ -50,7 +49,6 @@ public class CompanyService {
                 "api_key", apiKey,
                 "api_secret", apiSecret,
                 "secure", true));
-        this.stripeService = stripeService;
         this.auditLogRepository = auditLogRepository;
     }
 
