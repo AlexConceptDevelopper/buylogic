@@ -69,7 +69,8 @@ public class StripeService {
                         .toLocalDateTime();
             }
         } catch (Exception e) {
-            // Ignore si la méthode n'existe pas dans cette version exacte
+            System.err.println("ERREUR REFLEXION STRIPE PERIOD END : " + e.getMessage());
+            e.printStackTrace(); // <-- Affiche la vraie raison dans les logs Spring Boot
         }
         return null;
     }
