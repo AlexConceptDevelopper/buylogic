@@ -4,7 +4,7 @@ export default function FeaturesSection() {
   return (
     <section
       id="features"
-      className="border-y border-white/5 bg-slate-900/30 py-12"
+      className="border-y border-white/5 bg-slate-900/30 py-20"
     >
       <div className="mx-auto max-w-7xl px-6">
         <div className="max-w-2xl">
@@ -16,13 +16,13 @@ export default function FeaturesSection() {
             Transformer vos données en décisions.
           </h2>
 
-          <p className="mt-4 text-slate-400">
+          <p className="mt-4 text-slate-400 leading-relaxed">
             Pas juste afficher des chiffres. Comprendre ce qu'ils
             signifient et savoir quelle action entreprendre.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
           <FeatureCard
             number="01"
             title="Anticiper les ruptures"
