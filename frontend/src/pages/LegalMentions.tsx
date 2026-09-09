@@ -17,8 +17,10 @@ export default function LegalMentions() {
           <h2 className="text-xl font-semibold text-white">1. Édition du site</h2>
           <p>Le présent site, accessible à l'URL buylogic.fr, est édité par :</p>
           <div className="rounded-xl border border-white/5 bg-slate-900/50 p-4 text-sm text-slate-400 space-y-1">
-            <p><strong className="text-white">Statut :</strong> Micro-entreprise (en cours d'immatriculation)</p>
+            <p><strong className="text-white">Statut :</strong> Micro-entreprise</p>
             <p><strong className="text-white">SIRET :</strong> En cours d'attribution</p>
+            <p><strong className="text-white">TVA :</strong> TVA non applicable, art. 293 B du CGI</p>
+            <p><strong className="text-white">Directeur de la publication :</strong> Alexandre Cubizolle</p>
             <p>
               <strong className="text-white">Contact :</strong>{" "}
               <a
@@ -49,6 +51,13 @@ export default function LegalMentions() {
               </a>
             </p>
           </div>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold text-white">3. Propriété intellectuelle</h2>
+          <p>
+            L'ensemble de ce site relève de la législation française et internationale sur le droit d'auteur et la propriété intellectuelle. Tous les droits de reproduction sont réservés, y compris pour les documents téléchargeables et les représentations iconographiques et photographiques. La reproduction de tout ou partie de ce site sur un support électronique quel qu'il soit est formellement interdite sauf autorisation expresse du directeur de la publication.
+          </p>
         </section>
       </div>
     </div>

@@ -34,7 +34,7 @@ export default function PrivacyPolicy() {
             Nous accordons une importance capitale à la protection de vos informations. Vos mots de passe ne sont jamais stockés en clair : ils font l'objet d'un hachage cryptographique robuste (via BCrypt) avant d'être enregistrés dans notre base de données.
           </p>
           <p>
-            Les communications entre votre navigateur et notre plateforme sont entièrement chiffrées (HTTPS/TLS). De plus, l'architecture multi-tenant de notre application garantit un cloisonnement strict des données entre chaque entreprise, sécurisé par un système d'authentification par jeton JWT.
+            Les communications entre votre navigateur et notre plateforme sont entièrement chiffrées (HTTPS/TLS). De plus, l'architecture de notre application garantit un cloisonnement strict des données entre chaque entreprise, sécurisé par un système d'authentification par jeton JWT.
           </p>
         </section>
 
@@ -51,7 +51,7 @@ export default function PrivacyPolicy() {
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-white">5. Vos droits (RGPD)</h2>
-          <p>Conformément à la réglementation, vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles en écrivant à : contact@buylogic.fr.</p>
+          <p>Conformément à la réglementation en vigueur, vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles. Pour exercer ces droits, vous pouvez nous contacter à l'adresse email : contact@buylogic.fr.</p>
         </section>
       </div>
     </div>

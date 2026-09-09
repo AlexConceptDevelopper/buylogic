@@ -18,7 +18,7 @@ export default function TermsOfService() {
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-white">1. Objet</h2>
-          <p>Les présentes CGU définissent les règles d'utilisation de la plateforme SaaS, dédiée à la gestion des équipements et des données par importation.</p>
+          <p>Les présentes CGU définissent les règles d'utilisation de la plateforme SaaS, dédiée à la gestion des équipements et des stocks par importation de données.</p>
         </section>
 
         <section className="space-y-3">
@@ -29,10 +29,17 @@ export default function TermsOfService() {
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-white">3. Responsabilité des données et des contenus</h2>
           <p>
-            La plateforme agit en qualité de prestataire technique (hébergeur). Les services fournis consistent à mettre à devise des outils numériques permettant au créateur ou à la créatrice du compte (directeur, dirigeant(e) ou personne ayant l'autorité légale ou déléguée pour le compte de l'entreprise, ci-après désigné(e) « l'Administrateur(trice) ») de stocker, gérer et publier des données, des informations ou des documents sous sa seule responsabilité.
+            La plateforme agit en qualité de prestataire technique. Les services fournis consistent à mettre à disposition des outils numériques permettant au créateur ou à la créatrice du compte (directeur, dirigeant(e) ou personne ayant l'autorité légale ou déléguée pour le compte de l'entreprise, ci-après désigné(e) « l'Administrateur(trice) ») de stocker, gérer et traiter des données sous sa seule responsabilité.
           </p>
           <p>
-            L'éditeur n'exerce aucun contrôle a priori ou modération systématique des contenus saisis. En conséquence, l'éditeur ne saurait être tenu pour responsable de la nature, de l'exactitude, de la légalité ou de la mise à jour des contenus générés, importés ou intégrés par l'Administrateur(trice) ou les utilisateurs rattachés à son compte. Chaque entreprise cliente demeure seule maître et responsable des informations qu'elle manipule via la plateforme.
+            L'éditeur n'exerce aucun contrôle a priori ou modération systématique des contenus saisis. En conséquence, l'éditeur ne saurait être tenu pour responsable de la nature, de l'exactitude ou de la légalité des données importées ou intégrées par l'Administrateur(trice).
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold text-white">4. Loi applicable et juridiction compétente</h2>
+          <p>
+            Les présentes CGU sont régies par le droit français. En cas de litige né de l'interprétation ou de l'exécution des présentes, et à défaut de résolution amiable, expressément attribué compétence exclusive aux tribunaux compétents du ressort du siège de l'éditeur.
           </p>
         </section>
       </div>
