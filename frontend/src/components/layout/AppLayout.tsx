@@ -12,11 +12,10 @@ export default function AppLayout() {
   const { user, logout } = useAuth();
 
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  //system notifications mise en suspension temporaire, car elles ne sont pas utilisées dans l'interface actuelle
+  const [_notifications, setNotifications] = useState<Notification[]>([]);
 
-  const { loading: notificationsLoading, execute: executeNotifications } =
-    useAsync<Notification[]>();
+  const { execute: executeNotifications } = useAsync<Notification[]>();
 
   const navigation = [
     {
@@ -24,7 +23,7 @@ export default function AppLayout() {
       path: "/dashboard",
       icon: "⌂",
     },
-        {
+    {
       label: "Fournisseurs",
       path: "/suppliers",
       icon: "◉",
@@ -54,11 +53,7 @@ export default function AppLayout() {
       path: "/recommendations",
       icon: "✦",
     },
-    {
-      label: "Notifications",
-      path: "/notifications",
-      icon: "◌",
-    },
+    // La ligne "Notifications" a été retirée de la sidebar
     ...(user?.role === "OWNER" || user?.role === "SUPER_ADMIN"
       ? [
           {
@@ -87,12 +82,6 @@ export default function AppLayout() {
     loadNotifications();
   }, [user, executeNotifications]);
 
-  const unreadNotifications = notifications.filter(
-    (notification) => !notification.readAt,
-  );
-
-  const displayedNotifications = notifications.slice(0, 5);
-
   const initials =
     user?.firstName && user?.lastName
       ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
@@ -104,13 +93,11 @@ export default function AppLayout() {
 
   function handleLogout() {
     setProfileOpen(false);
-    setNotificationsOpen(false);
     logout();
   }
 
   function closeMenus() {
     setProfileOpen(false);
-    setNotificationsOpen(false);
   }
 
   return (
@@ -215,116 +202,7 @@ export default function AppLayout() {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Notifications */}
-              <div className="relative">
-                <button
-                  type="button"
-                  aria-label="Notifications"
-                  aria-expanded={notificationsOpen}
-                  aria-haspopup="menu"
-                  onClick={() => {
-                    setNotificationsOpen((value) => !value);
-                    setProfileOpen(false);
-                  }}
-                  className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
-                >
-                  <span className="text-lg">◌</span>
-
-                  {unreadNotifications.length > 0 && (
-                    <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-400 px-1 text-[9px] font-black text-slate-950 shadow-lg shadow-rose-400/20">
-                      {unreadNotifications.length > 9
-                        ? "9+"
-                        : unreadNotifications.length}
-                    </span>
-                  )}
-                </button>
-
-                {notificationsOpen && (
-                  <div
-                    role="menu"
-                    className="absolute right-0 top-full z-50 mt-3 w-80 overflow-hidden rounded-2xl border border-white/10 bg-slate-900/95 shadow-2xl shadow-black/30 backdrop-blur-xl"
-                  >
-                    <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
-                      <div>
-                        <p className="text-sm font-semibold text-white">
-                          Notifications
-                        </p>
-
-                        <p className="mt-0.5 text-[11px] text-slate-500">
-                          {unreadNotifications.length > 0
-                            ? `${unreadNotifications.length} non lue${
-                                unreadNotifications.length > 1 ? "s" : ""
-                              }`
-                            : "Tout est à jour"}
-                        </p>
-                      </div>
-
-                      <Link
-                        to="/notifications"
-                        onClick={() => setNotificationsOpen(false)}
-                        className="cursor-pointer text-[11px] font-semibold text-cyan-300 transition hover:text-cyan-200"
-                      >
-                        Voir tout
-                      </Link>
-                    </div>
-
-                    <div className="max-h-96 overflow-y-auto">
-                      {notificationsLoading ? (
-                        <div className="space-y-3 p-4">
-                          <div className="h-14 animate-pulse rounded-xl bg-white/5" />
-                          <div className="h-14 animate-pulse rounded-xl bg-white/5" />
-                          <div className="h-14 animate-pulse rounded-xl bg-white/5" />
-                        </div>
-                      ) : displayedNotifications.length === 0 ? (
-                        <div className="px-4 py-8 text-center">
-                          <p className="text-sm font-semibold text-slate-300">
-                            Aucune notification
-                          </p>
-
-                          <p className="mt-1 text-xs text-slate-500">
-                            Vous êtes à jour.
-                          </p>
-                        </div>
-                      ) : (
-                        displayedNotifications.map((notification) => (
-                          <div
-                            key={notification.idNotification}
-                            className={[
-                              "border-b border-white/5 px-4 py-3 last:border-b-0",
-                              !notification.readAt ? "bg-cyan-400/3" : "",
-                            ].join(" ")}
-                          >
-                            <div className="flex items-start gap-3">
-                              {!notification.readAt && (
-                                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
-                              )}
-
-                              <div>
-                                <p className="text-sm font-semibold text-slate-200">
-                                  {notification.title}
-                                </p>
-
-                                <p className="mt-1 text-xs leading-5 text-slate-500">
-                                  {notification.message}
-                                </p>
-
-                                <p className="mt-2 text-[10px] text-slate-600">
-                                  {new Date(
-                                    notification.createdAt,
-                                  ).toLocaleDateString("fr-FR", {
-                                    day: "2-digit",
-                                    month: "short",
-                                  })}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Le bloc cloche/notifications a été entièrement retiré d'ici */}
 
               {/* Profile */}
               <div className="relative">
@@ -335,7 +213,6 @@ export default function AppLayout() {
                   aria-haspopup="menu"
                   onClick={() => {
                     setProfileOpen((value) => !value);
-                    setNotificationsOpen(false);
                   }}
                   className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 px-3 py-2 transition hover:border-white/20 hover:bg-white/5"
                 >
