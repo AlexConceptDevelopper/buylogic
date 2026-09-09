@@ -33,7 +33,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-full bg-slate-950 relative">
+    <div className="min-h-screen bg-slate-950 relative overflow-visible">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <DashboardHeader 
           remainingTrialDays={company?.remainingTrialDays} 
