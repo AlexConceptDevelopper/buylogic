@@ -27,10 +27,22 @@ const docSections: Section[] = [
     id: "getting-started",
     title: "Premiers pas",
     articles: [
-      { 
-        id: "introduction", 
+      {
+        id: "introduction",
         title: "Qu'est-ce que BuyLogic ?",
-        keywords: ["buylogic", "saas", "gestion", "stocks", "approvisionnements", "achats", "moteur prédictif", "paramètres", "entreprise", "catalogue", "fournisseurs"] 
+        keywords: [
+          "buylogic",
+          "saas",
+          "gestion",
+          "stocks",
+          "approvisionnements",
+          "achats",
+          "moteur prédictif",
+          "paramètres",
+          "entreprise",
+          "catalogue",
+          "fournisseurs",
+        ],
       },
     ],
   },
@@ -38,25 +50,57 @@ const docSections: Section[] = [
     id: "inventory-purchasing",
     title: "Achats & Stocks",
     articles: [
-      { 
-        id: "suppliers", 
+      {
+        id: "suppliers",
         title: "1. Gérer les fournisseurs",
-        keywords: ["fournisseur", "fournisseurs", "prestataires", "coordonnées", "approvisionnement", "achat"] 
+        keywords: [
+          "fournisseur",
+          "fournisseurs",
+          "prestataires",
+          "coordonnées",
+          "approvisionnement",
+          "achat",
+        ],
       },
-      { 
-        id: "products", 
+      {
+        id: "products",
         title: "2. Créer et gérer un produit",
-        keywords: ["produit", "produits", "catalogue", "sku", "seuil", "critique", "prix d'achat", "article"] 
+        keywords: [
+          "produit",
+          "produits",
+          "catalogue",
+          "sku",
+          "seuil",
+          "critique",
+          "prix d'achat",
+          "article",
+        ],
       },
-      { 
-        id: "stock", 
+      {
+        id: "stock",
         title: "3. Suivi et ajustement des stocks",
-        keywords: ["suivi", "stocks", "ajustement", "inventaire", "rupture", "réserves", "quantités"] 
+        keywords: [
+          "suivi",
+          "stocks",
+          "ajustement",
+          "inventaire",
+          "rupture",
+          "réserves",
+          "quantités",
+        ],
       },
-      { 
-        id: "commandes", 
+      {
+        id: "commandes",
         title: "4. Gestion des commandes",
-        keywords: ["commandes", "achats", "bon de commande", "pdf", "réception", "statuts", "fournisseurs"] 
+        keywords: [
+          "commandes",
+          "achats",
+          "bon de commande",
+          "pdf",
+          "réception",
+          "statuts",
+          "fournisseurs",
+        ],
       },
     ],
   },
@@ -64,15 +108,34 @@ const docSections: Section[] = [
     id: "advanced",
     title: "Fonctionnalités avancées",
     articles: [
-      { 
-        id: "import", 
+      {
+        id: "import",
         title: "Importer un fichier CSV",
-        keywords: ["csv", "import", "masse", "ventes", "historique", "aaaa-mm-jj", "sku", "quantité", "mapping"] 
+        keywords: [
+          "csv",
+          "import",
+          "masse",
+          "ventes",
+          "historique",
+          "aaaa-mm-jj",
+          "sku",
+          "quantité",
+          "mapping",
+        ],
       },
-      { 
-        id: "predictive", 
+      {
+        id: "predictive",
         title: "Comment fonctionne le moteur prédictif ?",
-        keywords: ["prédictif", "moteur", "tendances", "consommation", "ventes", "rupture", "volumes", "optimisation"] 
+        keywords: [
+          "prédictif",
+          "moteur",
+          "tendances",
+          "consommation",
+          "ventes",
+          "rupture",
+          "volumes",
+          "optimisation",
+        ],
       },
     ],
   },
@@ -94,7 +157,7 @@ function levenshteinDistance(a: string, b: string): number {
       } else {
         matrix[i][j] = Math.min(
           matrix[i - 1][j - 1] + 1,
-          Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+          Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1),
         );
       }
     }
@@ -141,7 +204,8 @@ export default function DocsPage() {
         articles: section.articles.filter(
           (art) =>
             approximateMatch(searchQuery, art.title) ||
-            (art.keywords && art.keywords.some((kw) => approximateMatch(searchQuery, kw)))
+            (art.keywords &&
+              art.keywords.some((kw) => approximateMatch(searchQuery, kw))),
         ),
       }))
       .filter((section) => section.articles.length > 0);
@@ -166,7 +230,8 @@ export default function DocsPage() {
               Tout savoir sur <span className="text-cyan-400">BuyLogic</span>.
             </h1>
             <p className="mt-4 text-slate-400 text-lg">
-              Guides d'installation, gestion des produits, fournisseurs, commandes et moteur de prédiction.
+              Guides d'installation, gestion des produits, fournisseurs,
+              commandes et moteur de prédiction.
             </p>
           </div>
 
@@ -184,7 +249,9 @@ export default function DocsPage() {
         <div className="grid gap-10 lg:grid-cols-[280px_1fr]">
           <aside className="space-y-8 lg:sticky lg:top-28 lg:self-start">
             {filteredSections.length === 0 ? (
-              <p className="text-xs text-slate-500 italic">Aucun résultat trouvé.</p>
+              <p className="text-xs text-slate-500 italic">
+                Aucun résultat trouvé.
+              </p>
             ) : (
               filteredSections.map((section) => (
                 <div key={section.id}>
@@ -215,14 +282,18 @@ export default function DocsPage() {
             )}
 
             <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-4 backdrop-blur-xl">
-              <p className="text-xs font-semibold text-white">Besoin d'aide en plus ?</p>
-              <p className="mt-1 text-xs text-slate-400">Notre équipe technique répond directement depuis votre espace.</p>
-              <Link
-                to="/login"
+              <p className="text-xs font-semibold text-white">
+                Besoin d'aide en plus ?
+              </p>
+              <p className="mt-1 text-xs text-slate-400">
+                Une question technique ou un besoin spécifique ? Écrivez-nous.
+              </p>
+              <a
+                href="mailto:contact@buylogic.fr"
                 className="mt-3 block w-full text-center rounded-xl bg-white/5 border border-white/10 py-2 text-xs font-bold text-slate-200 hover:bg-white/10 transition"
               >
-                Accéder au support
-              </Link>
+                Contacter le support
+              </a>
             </div>
           </aside>
 
