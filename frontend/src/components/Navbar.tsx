@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-
 import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
@@ -8,6 +7,18 @@ export default function Navbar() {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fermer le menu profil desktop si on clique en dehors
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="relative z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl">
@@ -66,19 +77,17 @@ export default function Navbar() {
           )}
 
           {!loading && isAuthenticated && user && (
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <button
                 type="button"
                 aria-expanded={profileOpen}
                 aria-haspopup="menu"
-                onClick={() =>
-                  setProfileOpen((value) => !value)
-                }
+                onClick={() => setProfileOpen((value) => !value)}
                 className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/3 px-3 py-2 transition hover:border-white/20 hover:bg-white/5"
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-400 text-sm font-black text-slate-950">
-                  {user.firstName.charAt(0)}
-                  {user.lastName.charAt(0)}
+                  {user.firstName?.charAt(0) || ""}
+                  {user.lastName?.charAt(0) || ""}
                 </div>
 
                 <div className="hidden text-left sm:block">
@@ -133,7 +142,10 @@ export default function Navbar() {
 
                   <button
                     type="button"
-                    onClick={logout}
+                    onClick={() => {
+                      setProfileOpen(false);
+                      logout();
+                    }}
                     className="mt-1 w-full cursor-pointer rounded-xl px-3 py-2.5 text-left text-sm text-red-300 transition hover:bg-red-400/5 hover:text-red-200"
                   >
                     Déconnexion
@@ -149,79 +161,93 @@ export default function Navbar() {
           type="button"
           aria-label="Ouvrir le menu"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="cursor-pointer rounded-lg border border-white/10 p-2 text-slate-300 transition hover:border-white/20 hover:bg-white/5 md:hidden"
+          className="relative flex h-10 w-10 cursor-pointer flex-col items-center justify-center rounded-lg border border-white/10 text-slate-300 transition hover:border-white/20 hover:bg-white/5 md:hidden"
         >
-          <span className="block h-0.5 w-5 bg-current" />
-          <span className="mt-1.5 block h-0.5 w-5 bg-current" />
-          <span className="mt-1.5 block h-0.5 w-5 bg-current" />
+          <span
+            className={`block h-0.5 w-5 bg-current transition-transform duration-300 ${
+              mobileMenuOpen ? "translate-y-2 rotate-45" : ""
+            }`}
+          />
+          <span
+            className={`my-1.5 block h-0.5 w-5 bg-current transition-opacity duration-300 ${
+              mobileMenuOpen ? "opacity-0" : ""
+            }`}
+          />
+          <span
+            className={`block h-0.5 w-5 bg-current transition-transform duration-300 ${
+              mobileMenuOpen ? "-translate-y-2 -rotate-45" : ""
+            }`}
+          />
         </button>
       </div>
 
-      {/* Menu Mobile Déroulant */}
-      {mobileMenuOpen && (
-        <div className="border-b border-white/5 bg-slate-950/95 px-6 py-5 backdrop-blur-2xl md:hidden">
-          <div className="flex flex-col space-y-4">
-            {!isAuthenticated ? (
-              <>
-                <a
-                  href="#features"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm text-slate-300 transition hover:text-white"
-                >
-                  Fonctionnalités
-                </a>
-                <a
-                  href="#how-it-works"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm text-slate-300 transition hover:text-white"
-                >
-                  Comment ça marche
-                </a>
-                <Link
-                  to="/docs"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm text-slate-300 transition hover:text-white"
-                >
-                  Documentation
-                </Link>
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="mt-2 flex items-center justify-center rounded-xl bg-cyan-400 px-4 py-3 text-center text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
-                >
-                  Connexion
-                </Link>
-              </>
-            ) : (
-              <>
-                <div className="border-b border-white/5 pb-3">
-                  <p className="text-sm font-semibold text-white">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <p className="text-xs text-slate-500">{user?.email}</p>
-                </div>
-                <Link
-                  to="/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm text-slate-300 transition hover:text-white"
-                >
-                  Tableau de bord
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    logout();
-                  }}
-                  className="text-left text-sm text-red-400 transition hover:text-red-300"
-                >
-                  Déconnexion
-                </button>
-              </>
-            )}
-          </div>
+      {/* Menu Mobile Déroulant avec animation fluide */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden border-b border-white/5 bg-slate-950/95 backdrop-blur-2xl ${
+          mobileMenuOpen ? "max-h-96 opacity-100 px-6 py-5" : "max-h-0 opacity-0 px-6 py-0 border-none"
+        }`}
+      >
+        <div className="flex flex-col space-y-4">
+          {!isAuthenticated ? (
+            <>
+              <a
+                href="#features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm text-slate-300 transition hover:text-white"
+              >
+                Fonctionnalités
+              </a>
+              <a
+                href="#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm text-slate-300 transition hover:text-white"
+              >
+                Comment ça marche
+              </a>
+              <Link
+                to="/docs"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm text-slate-300 transition hover:text-white"
+              >
+                Documentation
+              </Link>
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mt-2 flex items-center justify-center rounded-xl bg-cyan-400 px-4 py-3 text-center text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+              >
+                Connexion
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="border-b border-white/5 pb-3">
+                <p className="text-sm font-semibold text-white">
+                  {user?.firstName} {user?.lastName}
+                </p>
+                <p className="text-xs text-slate-500">{user?.email}</p>
+              </div>
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm text-slate-300 transition hover:text-white"
+              >
+                Tableau de bord
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  logout();
+                }}
+                className="text-left text-sm text-red-400 transition hover:text-red-300"
+              >
+                Déconnexion
+              </button>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </header>
   );
 }
