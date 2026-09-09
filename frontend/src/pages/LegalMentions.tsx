@@ -19,7 +19,15 @@ export default function LegalMentions() {
           <div className="rounded-xl border border-white/5 bg-slate-900/50 p-4 text-sm text-slate-400 space-y-1">
             <p><strong className="text-white">Statut :</strong> Micro-entreprise (en cours d'immatriculation)</p>
             <p><strong className="text-white">SIRET :</strong> En cours d'attribution</p>
-            <p><strong className="text-white">Contact :</strong> contact@buylogic.fr</p>
+            <p>
+              <strong className="text-white">Contact :</strong>{" "}
+              <a
+                href="mailto:contact@buylogic.fr"
+                className="text-cyan-400 underline decoration-cyan-400/30 underline-offset-4 transition hover:text-cyan-300"
+              >
+                contact@buylogic.fr
+              </a>
+            </p>
           </div>
         </section>
 
@@ -29,7 +37,17 @@ export default function LegalMentions() {
           <div className="rounded-xl border border-white/5 bg-slate-900/50 p-4 text-sm text-slate-400 space-y-1">
             <p><strong className="text-white">Hébergeur :</strong> Railway Corp.</p>
             <p><strong className="text-white">Siège social :</strong> San Francisco, CA, USA</p>
-            <p><strong className="text-white">Site web :</strong> https://railway.app</p>
+            <p>
+              <strong className="text-white">Site web :</strong>{" "}
+              <a
+                href="https://railway.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cyan-400 underline decoration-cyan-400/30 underline-offset-4 transition hover:text-cyan-300"
+              >
+                https://railway.app
+              </a>
+            </p>
           </div>
         </section>
       </div>
