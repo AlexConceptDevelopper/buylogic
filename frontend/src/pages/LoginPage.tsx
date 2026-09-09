@@ -70,7 +70,7 @@ export default function LoginPage() {
                     BuyLogic
                   </p>
                   <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
-                    Smart purchasing
+                    Acheter au bon moment
                   </p>
                 </div>
               </Link>
