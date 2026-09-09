@@ -119,7 +119,7 @@ export default function Navbar() {
               {profileOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-full mt-3 w-64 z-999 overflow-hidden rounded-2xl border border-white/10 bg-slate-900/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl"
+                  className="absolute right-0 top-full mt-3 w-64 z-9999 overflow-hidden rounded-2xl border border-white/10 bg-slate-900/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl"
                 >
                   <div className="border-b border-white/5 px-3 py-3">
                     <p className="text-sm font-semibold text-white">
