@@ -15,10 +15,12 @@ export default function LegalMentions() {
         
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-white">1. Édition du site</h2>
-          <p>Le présent site, accessible à l'URL buylogic.fr, est édité par :</p>
+          <p>Le présent site, accessible à l'URL buylogic.fr, est édité par la structure commerciale <strong className="text-white">CubTaik</strong>, représentée par :</p>
           <div className="rounded-xl border border-white/5 bg-slate-900/50 p-4 text-sm text-slate-400 space-y-1">
-            <p><strong className="text-white">Statut :</strong> Micro-entreprise</p>
-            <p><strong className="text-white">SIRET :</strong> En cours d'attribution</p>
+            <p><strong className="text-white">Entrepreneur individuel :</strong> Alexandre Cubizolle</p>
+            <p><strong className="text-white">Nom commercial :</strong> CubTaik</p>
+            <p><strong className="text-white">SIREN :</strong> 109 752 832</p>
+            <p><strong className="text-white">Siège social :</strong> 3 Chem des Brandes, 17600 Sablonceaux, France</p>
             <p><strong className="text-white">TVA :</strong> TVA non applicable, art. 293 B du CGI</p>
             <p><strong className="text-white">Directeur de la publication :</strong> Alexandre Cubizolle</p>
             <p>
@@ -56,7 +58,7 @@ export default function LegalMentions() {
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-white">3. Propriété intellectuelle</h2>
           <p>
-            L'ensemble de ce site relève de la législation française et internationale sur le droit d'auteur et la propriété intellectuelle. Tous les droits de reproduction sont réservés, y compris pour les documents téléchargeables et les représentations iconographiques et photographiques. La reproduction de tout ou partie de ce site sur un support électronique quel qu'il soit est formellement interdite sauf autorisation expresse du directeur de la publication.
+            L'ensemble de ce site et de ses contenus relève de la législation française et internationale sur le droit d'auteur et la propriété intellectuelle. Tous les droits de reproduction sont réservés, y compris pour les documents téléchargeables et les représentations iconographiques et photographiques. La reproduction de tout ou partie de ce site sur un support électronique quel qu'il soit est formellement interdite sauf autorisation expresse du directeur de la publication.
           </p>
         </section>
       </div>
