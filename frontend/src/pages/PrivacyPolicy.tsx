@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
           <ul className="list-disc pl-5 space-y-1 text-slate-400">
             <li><strong className="text-slate-200">Stripe :</strong> Gestion sécurisée des transactions de paiement et des abonnements.</li>
             <li><strong className="text-slate-200">Cloudinary :</strong> Hébergement, stockage et gestion des médias et images importés sur la plateforme.</li>
-            <li><strong className="text-slate-200">Brevo :</strong> Gestion et envoi des emails transactionnels (notifications, vérification de compte).</li>
+            <li><strong className="text-slate-200">Brevo :</strong> Gestion et envoi des emails transactionnels (envois de commandes).</li>
             <li><strong className="text-slate-200">Railway :</strong> Hébergement des données de l'application.</li>
           </ul>
         </section>
