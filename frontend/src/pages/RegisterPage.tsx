@@ -1,13 +1,15 @@
 import { useState } from "react";
+import { Turnstile } from '@marsidev/react-turnstile';
 import { Link } from "react-router-dom";
 
 import { register } from "../api/auth.api";
 import type { ProductManagementMode } from "../types/companyConfiguration";
 
-type OnboardingStep = 1 | 2 | 3; // Ajout de l'étape 3 pour le succès
+type OnboardingStep = 1 | 2 | 3;
 
 export default function RegisterPage() {
 
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [step, setStep] = useState<OnboardingStep>(1);
 
   const [firstName, setFirstName] = useState("");
@@ -81,6 +83,11 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!turnstileToken) {
+      setError("Veuillez valider le captcha Turnstile.");
+      return;
+    }
+
     setError("");
     setIsEmailAlreadyExists(false);
     setLoading(true);
@@ -93,9 +100,9 @@ export default function RegisterPage() {
         email,
         password,
         productManagementMode,
+        turnstileToken, // Envoyé au backend si ton API l'attend
       });
 
-      // Au lieu de rediriger directement vers /login, on passe à l'étape 3 (succès)
       setStep(3);
     } catch (err: any) {
       const message = err instanceof Error ? err.message : "Impossible de créer votre compte.";
@@ -411,10 +418,18 @@ export default function RegisterPage() {
                         </p>
                       </button>
                     </div>
+
+                    {/* Widget Turnstile intégré ici à l'étape 2 */}
+                    <div className="mt-6 flex justify-center">
+                      <Turnstile
+                        siteKey="0x4AAAAAAExyCFKM77Rfk5G0"
+                        onSuccess={(token) => setTurnstileToken(token)}
+                        onExpire={() => setTurnstileToken(null)}
+                      />
+                    </div>
                   </div>
                 )}
 
-                {/* Étape 3 : Écran de succès (Email envoyé) */}
                 {step === 3 && (
                   <div className="py-6 text-center space-y-6">
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 shadow-xl shadow-emerald-400/10">

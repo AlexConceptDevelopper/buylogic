@@ -18,6 +18,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   productManagementMode: string;
+  turnstileToken?: string;
 }
 export interface RegisterResponse {
   userId: number;
