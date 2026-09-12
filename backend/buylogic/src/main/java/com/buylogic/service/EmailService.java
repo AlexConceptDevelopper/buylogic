@@ -113,4 +113,56 @@ public class EmailService {
             throw new RuntimeException("Échec de l'envoi de l'e-mail de réinitialisation", e);
         }
     }
+
+    /**
+     * Envoie l'e-mail de vérification de compte via l'API HTTP de Brevo.
+     */
+    public void sendVerificationEmail(String to, String token) {
+        String subject = "Activez votre compte BuyLogic";
+        String verifyUrl = frontendUrl + "/verify-email?token=" + token;
+
+        String htmlBody = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Activation de votre compte</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+                    <h2>Bienvenue sur BuyLogic !</h2>
+                    <p>Bonjour,</p>
+                    <p>Merci de vous être inscrit. Pour activer votre compte et commencer à utiliser BuyLogic, veuillez cliquer sur le bouton ci-dessous :</p>
+                    <p style="margin: 30px 0;">
+                        <a href="%s" style="background-color: #06b6d4; color: #09090b; padding: 12px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                            Activer mon compte
+                        </a>
+                    </p>
+                    <p>Ou copiez ce lien dans votre navigateur :</p>
+                    <p><a href="%s">%s</a></p>
+                    <p style="color: #64748b; font-size: 12px; margin-top: 30px;">Ce lien expire dans 24 heures. Si vous n'avez pas créé de compte, vous pouvez ignorer cet e-mail.</p>
+                </body>
+                </html>
+                """
+                .formatted(verifyUrl, verifyUrl, verifyUrl);
+
+        try {
+            String url = "https://api.brevo.com/v3/smtp/email";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", brevoApiKey);
+
+            Map<String, Object> emailPayload = Map.of(
+                    "sender", Map.of("email", fromEmail, "name", "BuyLogic"),
+                    "to", List.of(Map.of("email", to)),
+                    "subject", subject,
+                    "htmlContent", htmlBody);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(emailPayload, headers);
+            restTemplate.postForEntity(url, entity, String.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Échec de l'envoi de l'e-mail de vérification", e);
+        }
+    }
 }

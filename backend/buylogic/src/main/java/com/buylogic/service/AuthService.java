@@ -50,7 +50,6 @@ public class AuthService {
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
-        // ... (reste du code inchangé)
         String email = request.email().trim().toLowerCase();
 
         if (appUserRepository.existsByEmail(email)) {
@@ -60,7 +59,7 @@ public class AuthService {
         Company company = new Company();
         company.setName(request.companyName().trim());
         company.setEmail(email);
-        company.setActive(true);
+        company.setActive(false); // La company est inactive tant que l'e-mail n'est pas vérifié
 
         CompanyConfiguration configuration = new CompanyConfiguration();
         configuration.setCompany(company);
@@ -74,6 +73,9 @@ public class AuthService {
         subscription.setStatus("TRIAL");
         subscriptionRepository.save(subscription);
 
+        // Génération du token de vérification d'e-mail (valable 24h)
+        String verificationToken = UUID.randomUUID().toString();
+
         AppUser user = new AppUser();
         user.setCompany(savedCompany);
         user.setEmail(email);
@@ -81,16 +83,49 @@ public class AuthService {
         user.setFirstName(request.firstName().trim());
         user.setLastName(request.lastName().trim());
         user.setRole(Role.OWNER);
-        user.setActive(true);
+        user.setActive(false); // Le compte est inactif tant que l'e-mail n'est pas vérifié
+        user.setResetToken(verificationToken); // On réutilise le champ token
+        user.setResetTokenExpiresAt(LocalDateTime.now().plusHours(24)); // Expiration 24h
 
         AppUser savedUser = appUserRepository.save(user);
+
+        // Envoi de l'e-mail d'activation
+        emailService.sendVerificationEmail(savedUser.getEmail(), verificationToken);
 
         return new RegisterResponse(
                 savedUser.getIdUser(),
                 savedCompany.getIdCompany(),
                 savedUser.getEmail(),
                 savedUser.getRole().name(),
-                "Account created successfully.");
+                "Account created successfully. Please check your email to activate your account.");
+    }
+
+    @Transactional
+    public boolean verifyAccount(String token) {
+        if (token == null) {
+            return false;
+        }
+
+        AppUser user = appUserRepository.findByResetToken(token).orElse(null);
+        if (user == null || user.getResetTokenExpiresAt() == null
+                || user.getResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            return false;
+        }
+
+        // 1. Activer le compte utilisateur
+        user.setActive(true);
+        user.setResetToken(null);
+        user.setResetTokenExpiresAt(null);
+        appUserRepository.save(user);
+
+        // 2. Activer la company associée
+        Company company = user.getCompany();
+        if (company != null) {
+            company.setActive(true);
+            companyRepository.save(company);
+        }
+
+        return true;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -147,7 +182,8 @@ public class AuthService {
 
         AppUser user = appUserRepository.findByResetToken(token).orElse(null);
 
-        if (user == null || user.getResetTokenExpiresAt() == null || user.getResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
+        if (user == null || user.getResetTokenExpiresAt() == null
+                || user.getResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
             return false;
         }
 

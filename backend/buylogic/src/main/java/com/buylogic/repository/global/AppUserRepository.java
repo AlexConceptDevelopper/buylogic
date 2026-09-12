@@ -21,4 +21,5 @@ public interface AppUserRepository extends GenericRepository<AppUser, Integer> {
 
     // Reset password token
     Optional<AppUser> findByResetToken(String resetToken);
+
 }

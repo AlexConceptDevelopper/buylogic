@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { register } from "../api/auth.api";
 import type { ProductManagementMode } from "../types/companyConfiguration";
 
-type OnboardingStep = 1 | 2;
+type OnboardingStep = 1 | 2 | 3; // Ajout de l'étape 3 pour le succès
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
 
   const [step, setStep] = useState<OnboardingStep>(1);
 
@@ -16,6 +15,9 @@ export default function RegisterPage() {
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [productManagementMode, setProductManagementMode] =
     useState<ProductManagementMode | null>(null);
@@ -44,7 +46,8 @@ export default function RegisterPage() {
       !lastName.trim() ||
       !companyName.trim() ||
       !email.trim() ||
-      !password
+      !password ||
+      !confirmPassword
     ) {
       setError("Veuillez compléter tous les champs obligatoires.");
       return;
@@ -52,6 +55,11 @@ export default function RegisterPage() {
 
     if (password.length < 8) {
       setError("Le mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Les mots de passe ne correspondent pas.");
       return;
     }
 
@@ -87,15 +95,14 @@ export default function RegisterPage() {
         productManagementMode,
       });
 
-      navigate("/login");
+      // Au lieu de rediriger directement vers /login, on passe à l'étape 3 (succès)
+      setStep(3);
     } catch (err: any) {
       const message = err instanceof Error ? err.message : "Impossible de créer votre compte.";
       
-      // Si l'API renvoie l'erreur de doublon sur l'email
       if (message.toLowerCase().includes("already exists")) {
         setError("Un compte existe déjà avec cette adresse e-mail.");
         setIsEmailAlreadyExists(true);
-        // Optionnel : on peut le ramener à l'étape 1 pour qu'il puisse changer d'email ou se connecter
         setStep(1);
       } else {
         setError(message);
@@ -133,49 +140,53 @@ export default function RegisterPage() {
                 </div>
               </Link>
 
-              <div className="mt-10">
-                <p className="text-sm font-semibold text-cyan-300">
-                  Commencez simplement.
-                </p>
-                <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
-                  Créez votre espace BuyLogic
-                </h1>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400">
-                  Votre compte crée automatiquement votre entreprise, votre
-                  espace de travail et votre configuration BuyLogic.
-                </p>
-              </div>
+              {step !== 3 && (
+                <div className="mt-10">
+                  <p className="text-sm font-semibold text-cyan-300">
+                    Commencez simplement.
+                  </p>
+                  <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
+                    Créez votre espace BuyLogic
+                  </h1>
+                  <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400">
+                    Votre compte crée automatiquement votre entreprise, votre
+                    espace de travail et votre configuration BuyLogic.
+                  </p>
+                </div>
+              )}
 
-              <div className="mt-8 grid grid-cols-2 gap-2">
-                {stepLabels.map((label, index) => {
-                  const currentStep = (index + 1) as OnboardingStep;
-                  const active = currentStep === step;
-                  const completed = currentStep < step;
+              {step !== 3 && (
+                <div className="mt-8 grid grid-cols-2 gap-2">
+                  {stepLabels.map((label, index) => {
+                    const currentStep = (index + 1) as OnboardingStep;
+                    const active = currentStep === step;
+                    const completed = currentStep < step;
 
-                  return (
-                    <div key={label}>
-                      <div
-                        className={[
-                          "h-1.5 rounded-full transition",
-                          active || completed ? "bg-cyan-400" : "bg-white/10",
-                        ].join(" ")}
-                      />
-                      <p
-                        className={[
-                          "mt-2 text-[10px] font-semibold uppercase tracking-[0.14em]",
-                          active
-                            ? "text-cyan-300"
-                            : completed
-                              ? "text-slate-300"
-                              : "text-slate-600",
-                        ].join(" ")}
-                      >
-                        {label}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
+                    return (
+                      <div key={label}>
+                        <div
+                          className={[
+                            "h-1.5 rounded-full transition",
+                            active || completed ? "bg-cyan-400" : "bg-white/10",
+                          ].join(" ")}
+                        />
+                        <p
+                          className={[
+                            "mt-2 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                            active
+                              ? "text-cyan-300"
+                              : completed
+                                ? "text-slate-300"
+                                : "text-slate-600",
+                          ].join(" ")}
+                        >
+                          {label}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               <form onSubmit={step === 2 ? handleFinalSubmit : (e) => e.preventDefault()} className="mt-8 space-y-5">
                 {step === 1 && (
@@ -254,22 +265,80 @@ export default function RegisterPage() {
                       />
                     </div>
 
-                    <div>
-                      <label
-                        htmlFor="password"
-                        className="mb-2 block text-sm font-medium text-slate-300"
-                      >
-                        Mot de passe
-                      </label>
-                      <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        autoComplete="new-password"
-                        className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
-                        placeholder="8 caractères minimum"
-                      />
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="password"
+                          className="mb-2 block text-sm font-medium text-slate-300"
+                        >
+                          Mot de passe
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                            autoComplete="new-password"
+                            className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
+                            placeholder="8 caractères min."
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-600 transition hover:text-slate-950"
+                            aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                          >
+                            {showPassword ? (
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L9.88 9.88" />
+                              </svg>
+                            ) : (
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="confirmPassword"
+                          className="mb-2 block text-sm font-medium text-slate-300"
+                        >
+                          Confirmer le mot de passe
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="confirmPassword"
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={confirmPassword}
+                            onChange={(event) => setConfirmPassword(event.target.value)}
+                            autoComplete="new-password"
+                            className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 pr-12 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
+                            placeholder="À l'identique"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-600 transition hover:text-slate-950"
+                            aria-label={showConfirmPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                          >
+                            {showConfirmPassword ? (
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L9.88 9.88" />
+                              </svg>
+                            ) : (
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -345,6 +414,41 @@ export default function RegisterPage() {
                   </div>
                 )}
 
+                {/* Étape 3 : Écran de succès (Email envoyé) */}
+                {step === 3 && (
+                  <div className="py-6 text-center space-y-6">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 shadow-xl shadow-emerald-400/10">
+                      <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M12 12.5l4.5-3" />
+                      </svg>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
+                        Inscription réussie
+                      </div>
+                      <h2 className="text-2xl font-black tracking-tight text-white">
+                        Vous allez recevoir un e-mail
+                      </h2>
+                      <p className="mx-auto max-w-md text-sm leading-6 text-slate-400">
+                        Un e-mail de confirmation a été envoyé à <strong className="text-slate-200">{email}</strong> pour valider votre inscription et activer votre espace entreprise.
+                      </p>
+                    </div>
+
+                    <div className="pt-4 flex justify-center">
+                      <Link
+                        to="/"
+                        className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-slate-900 px-5 py-3.5 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/5 hover:text-white"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Retourner sur la page d'accueil
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
                 {error && (
                   <div
                     role="alert"
@@ -362,52 +466,56 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-                  {step > 1 ? (
-                    <button
-                      type="button"
-                      onClick={handlePrevStep}
-                      disabled={loading}
-                      className="cursor-pointer rounded-xl border border-white/10 px-5 py-3.5 text-sm font-semibold text-slate-300 transition hover:border-white/20 hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Retour
-                    </button>
-                  ) : (
-                    <div />
-                  )}
+                {step < 3 && (
+                  <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                    {step > 1 ? (
+                      <button
+                        type="button"
+                        onClick={handlePrevStep}
+                        disabled={loading}
+                        className="cursor-pointer rounded-xl border border-white/10 px-5 py-3.5 text-sm font-semibold text-slate-300 transition hover:border-white/20 hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Retour
+                      </button>
+                    ) : (
+                      <div />
+                    )}
 
-                  {step < 2 ? (
-                    <button
-                      type="button"
-                      onClick={handleNextStep}
-                      disabled={loading}
-                      className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Continuer
-                    </button>
-                  ) : (
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {loading
-                        ? "Création du compte..."
-                        : "Créer mon compte gratuitement"}
-                    </button>
-                  )}
-                </div>
+                    {step < 2 ? (
+                      <button
+                        type="button"
+                        onClick={handleNextStep}
+                        disabled={loading}
+                        className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Continuer
+                      </button>
+                    ) : (
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="cursor-pointer rounded-xl bg-cyan-400 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {loading
+                          ? "Création du compte..."
+                          : "Créer mon compte gratuitement"}
+                      </button>
+                    )}
+                  </div>
+                )}
               </form>
 
-              <p className="mt-6 text-center text-sm text-slate-500">
-                Déjà un compte ?{" "}
-                <Link
-                  to="/login"
-                  className="cursor-pointer font-semibold text-cyan-300 transition hover:text-cyan-200"
-                >
-                  Se connecter
-                </Link>
-              </p>
+              {step < 3 && (
+                <p className="mt-6 text-center text-sm text-slate-500">
+                  Déjà un compte ?{" "}
+                  <Link
+                    to="/login"
+                    className="cursor-pointer font-semibold text-cyan-300 transition hover:text-cyan-200"
+                  >
+                    Se connecter
+                  </Link>
+                </p>
+              )}
             </div>
 
             <div className="relative hidden overflow-hidden border-l border-white/5 bg-linear-to-br from-cyan-400/10 via-slate-900 to-blue-500/10 p-10 lg:flex lg:flex-col lg:justify-between">

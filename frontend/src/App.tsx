@@ -29,6 +29,7 @@ import LegalMentions from "./pages/LegalMentions";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DocsPage from "./pages/DocsPage"; // <--- 1. Import de la page de documentation
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 
 export default function App() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/mentions-legales" element={<LegalMentions />} />
           <Route path="/cgu" element={<TermsOfService />} />
           <Route path="/confidentialite" element={<PrivacyPolicy />} />

@@ -47,7 +47,7 @@ public class AppUser {
     private Role role = Role.USER;
 
     @Column(nullable = false)
-    private Boolean active = true;
+    private Boolean active = false;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

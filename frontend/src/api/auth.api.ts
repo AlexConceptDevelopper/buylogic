@@ -56,3 +56,18 @@ export async function resetPassword(token: string, newPassword: string): Promise
     body: JSON.stringify({ token, newPassword }),
   });
 }
+
+export async function verifyEmail(token: string): Promise<{ message: string }> {
+  const response = await apiFetch<{ message: string }>(
+    `/auth/verify-email?token=${encodeURIComponent(token)}`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (!response) {
+    throw new Error("Réponse de vérification invalide.");
+  }
+
+  return response;
+}
