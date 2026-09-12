@@ -237,7 +237,7 @@ export default function DocsPage() {
           <div className="w-full md:w-80">
             <input
               type="text"
-              placeholder="Rechercher (ex: fournaiseur, stoc...)"
+              placeholder="Rechercher (ex: fournisseur, stock...)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-cyan-400/50 focus:outline-none backdrop-blur-xl shadow-lg"
