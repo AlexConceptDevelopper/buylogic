@@ -21,7 +21,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 overflow-visible border-b border-white/5 bg-slate-950/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/90 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
         <Link
           to="/"
@@ -119,7 +119,7 @@ export default function Navbar() {
               {profileOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-full mt-3 w-64 z-9999 overflow-hidden rounded-2xl border border-white/10 bg-slate-900/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl"
+                  className="absolute right-0 top-full mt-3 w-64 rounded-2xl border border-white/10 bg-slate-900/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl"
                 >
                   <div className="border-b border-white/5 px-3 py-3">
                     <p className="text-sm font-semibold text-white">
@@ -129,7 +129,7 @@ export default function Navbar() {
                     <p className="mt-1 truncate text-xs text-slate-500">
                       {user.email}
                     </p>
-                  </div>ca 
+                  </div>
 
                   <Link
                     to="/dashboard"
@@ -181,10 +181,10 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Menu Mobile Déroulant positionné en absolu pour passer par-dessus le contenu du dashboard */}
+      {/* Menu Mobile Déroulant positionné proprement sous le header avec un z-index élevé */}
       <div
-        className={`absolute top-full left-0 w-full overflow-hidden transition-all duration-300 ease-in-out md:hidden border-b border-white/10 bg-slate-950/95 shadow-2xl backdrop-blur-2xl ${
-          mobileMenuOpen ? "max-h-96 opacity-100 px-6 py-5" : "max-h-0 opacity-0 px-6 py-0 border-none"
+        className={`absolute top-full left-0 w-full z-50 border-b border-white/10 bg-slate-950/95 shadow-2xl backdrop-blur-2xl transition-all duration-300 ease-in-out md:hidden ${
+          mobileMenuOpen ? "max-h-96 opacity-100 px-6 py-5 pointer-events-auto" : "max-h-0 opacity-0 px-6 py-0 border-none pointer-events-none overflow-hidden"
         }`}
       >
         <div className="flex flex-col space-y-4">
@@ -240,7 +240,7 @@ export default function Navbar() {
                   setMobileMenuOpen(false);
                   logout();
                 }}
-                className="text-left text-sm text-red-400 transition hover:text-red-300"
+                className="text-left text-sm text-red-400 transition hover:text-red-300 cursor-pointer"
               >
                 Déconnexion
               </button>
