@@ -40,8 +40,9 @@ export default function PrivacyPolicy() {
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-white">4. Prestataires tiers et sous-traitants</h2>
-          <p>Pour assurer le bon fonctionnement du service, nous faisons appel à des prestataires techniques tiers de confiance :</p>
+          <p>Pour assurer le bon fonctionnement et la sécurité du service, nous faisons appel à des prestataires techniques tiers de confiance :</p>
           <ul className="list-disc pl-5 space-y-1 text-slate-400">
+            <li><strong className="text-slate-200">Cloudflare :</strong> Protection contre les robots, sécurité du site et validation anti-spam (Cloudflare Turnstile).</li>
             <li><strong className="text-slate-200">Stripe :</strong> Gestion sécurisée des transactions de paiement et des abonnements.</li>
             <li><strong className="text-slate-200">Cloudinary :</strong> Hébergement, stockage et gestion des médias et images importés sur la plateforme.</li>
             <li><strong className="text-slate-200">Brevo :</strong> Gestion et envoi des emails transactionnels (envois de commandes).</li>
