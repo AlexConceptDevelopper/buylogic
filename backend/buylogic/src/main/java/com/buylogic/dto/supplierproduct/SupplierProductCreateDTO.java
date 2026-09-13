@@ -38,7 +38,7 @@ public class SupplierProductCreateDTO {
     @Positive
     private BigDecimal packagingQuantity;
 
-    @Pattern(regexp = "UNIT|KG|L|BOX|SET|G|ML", message = "Packaging unit must be UNIT, KG, L, BOX, SET, G or ML.")
+    @Pattern(regexp = "UNIT|KG|L|BOX|SET|G|ML|MTR", message = "Packaging unit must be UNIT, KG, L, BOX, SET, G, ML or MTR.")
     private String packagingUnit;
 
     @NotNull
