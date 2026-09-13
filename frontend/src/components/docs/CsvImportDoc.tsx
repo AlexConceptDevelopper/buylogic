@@ -20,12 +20,13 @@ export default function CsvImportDoc() {
           Préparer son fichier CSV
         </h3>
         <p className="text-slate-300 text-sm leading-relaxed">
-          Votre fichier doit contenir au minimum trois informations clés pour chaque ligne de transaction :
+          Votre fichier doit contenir au minimum quatre informations clés pour chaque ligne de transaction :
         </p>
         <ul className="list-disc pl-5 space-y-2 text-sm text-slate-300">
           <li><strong className="text-white">La date de vente :</strong> Au format strict <code className="text-cyan-300">AAAA-MM-JJ</code> (ex: 2026-06-15).</li>
           <li><strong className="text-white">La référence produit :</strong> Le code SKU ou la référence exacte enregistrée dans votre catalogue BuyLogic.</li>
           <li><strong className="text-white">La quantité :</strong> Un nombre entier ou décimal strictement supérieur à 0.</li>
+          <li><strong className="text-white">Le nom du client :</strong> L'intitulé ou le nom du client associé à la transaction.</li>
         </ul>
         <p className="text-slate-300 text-sm leading-relaxed">
           Le séparateur de colonnes (virgule <code className="text-cyan-300">,</code> ou point-virgule <code className="text-cyan-300">;</code>) est détecté automatiquement lors du chargement.
@@ -42,7 +43,7 @@ export default function CsvImportDoc() {
           Si les en-têtes de votre fichier ne correspondent pas exactement aux dénominations standard de l'application, un écran de correspondance interactif s'affiche automatiquement.
         </p>
         <p className="text-slate-300 text-sm leading-relaxed">
-          Il vous suffit d'utiliser les listes déroulantes pour relier manuellement vos propres colonnes aux trois champs obligatoires (<span className="text-cyan-300">Date de vente</span>, <span className="text-cyan-300">Référence produit</span> et <span className="text-cyan-300">Quantité</span>) avant de valider l'analyse.
+          Il vous suffit d'utiliser les listes déroulantes pour relier manuellement vos propres colonnes aux champs requis (<span className="text-cyan-300">Date de vente</span>, <span className="text-cyan-300">Référence produit</span>, <span className="text-cyan-300">Quantité</span> et <span className="text-cyan-300">Nom du client</span>) avant de valider l'analyse.
         </p>
       </div>
 
