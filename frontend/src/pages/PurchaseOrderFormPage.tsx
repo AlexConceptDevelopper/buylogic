@@ -46,6 +46,9 @@ export default function PurchaseOrderFormPage() {
   );
   const [items, setItems] = useState<OrderLineForm[]>([]);
   
+  // État pour conserver le numéro de commande original en mode édition
+  const [existingOrderNumber, setExistingOrderNumber] = useState<string>("");
+  
   // État pour filtrer les produits du fournisseur par recherche textuelle
   const [searchProductTerm, setSearchProductTerm] = useState<string>("");
 
@@ -109,7 +112,7 @@ export default function PurchaseOrderFormPage() {
       Number.isInteger(orderId) &&
       products.length > 0 &&
       supplierProducts.length > 0 &&
-      !isInitialized // <-- Empêche de relancer en boucle
+      !isInitialized
     ) {
       const loadExistingOrder = async () => {
         const orderData = await executeOrder(() =>
@@ -118,6 +121,7 @@ export default function PurchaseOrderFormPage() {
 
         let activeSupplierId = idSupplier;
         if (orderData) {
+          setExistingOrderNumber(orderData.orderNumber ?? ""); // Stocke le numéro de commande d'origine
           activeSupplierId = orderData.idSupplier;
           setIdSupplier(activeSupplierId);
           if (orderData.expectedDeliveryDate) {
@@ -164,7 +168,7 @@ export default function PurchaseOrderFormPage() {
           setItems(mappedItems);
         }
         
-        setIsInitialized(true); // <-- On verrouille pour ne plus recharger par la suite
+        setIsInitialized(true);
       };
 
       void loadExistingOrder();
@@ -254,7 +258,7 @@ export default function PurchaseOrderFormPage() {
     const payload = {
       idCompany: 1,
       idSupplier,
-      orderNumber: `CMD-${Date.now().toString().slice(-6)}`,
+      orderNumber: isEditing ? (existingOrderNumber || "CMD-EDIT") : `CMD-${Date.now().toString().slice(-6)}`,
       status: OrderStatus.DRAFT,
       expectedDeliveryDate,
       totalAmount,
@@ -265,11 +269,12 @@ export default function PurchaseOrderFormPage() {
       })),
     };
 
-    const result = await executeSave(() =>
-      isEditing && orderId
-        ? updatePurchaseOrder(orderId, payload)
-        : createPurchaseOrder(payload),
-    );
+    let result;
+    if (isEditing && orderId) {
+      result = await executeSave(() => updatePurchaseOrder(orderId, payload));
+    } else {
+      result = await executeSave(() => createPurchaseOrder(payload));
+    }
 
     if (result) {
       navigate("/purchase-orders");
