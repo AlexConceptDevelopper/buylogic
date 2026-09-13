@@ -45,7 +45,22 @@ public class PdfService {
             // Cellule Entreprise (Gauche)
             PdfPCell companyCell = new PdfPCell();
             companyCell.setBorder(Rectangle.NO_BORDER);
-            companyCell.addElement(new Paragraph(company != null ? company.getName() : "BuyLogic", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
+
+            // Ajout du Logo s'il existe
+            if (company != null && company.getLogoUrl() != null && !company.getLogoUrl().isBlank()) {
+                try {
+                    Image logo = Image.getInstance(company.getLogoUrl());
+                    logo.scaleToFit(120, 50); // Redimensionnement propre du logo (max 120x50px)
+                    logo.setAlignment(Element.ALIGN_LEFT);
+                    companyCell.addElement(logo);
+                    companyCell.addElement(new Paragraph("\n")); // Petit espace après le logo
+                } catch (Exception e) {
+                    // Si le logo ne charge pas (URL invalide, timeout...), on l'ignore et on continue sans bloquer le PDF
+                    System.err.println("Impossible de charger le logo pour le PDF : " + e.getMessage());
+                }
+            }
+
+            companyCell.addElement(new Paragraph(company != null && company.getName() != null ? company.getName() : "BuyLogic", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
             companyCell.addElement(new Paragraph(company != null && company.getAddress() != null ? company.getAddress() : "", FontFactory.getFont(FontFactory.HELVETICA, 9)));
             if (company != null && company.getSiret() != null) {
                 companyCell.addElement(new Paragraph("SIRET : " + company.getSiret(), FontFactory.getFont(FontFactory.HELVETICA, 9)));
