@@ -5,6 +5,9 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.buylogic.model.Company;
+import com.buylogic.repository.global.CompanyRepository;
+
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -21,19 +24,59 @@ public class EmailService {
     @Value("${brevo.api.key:}")
     private String brevoApiKey;
 
+    private final CompanyRepository companyRepository;
+
     private final RestTemplate restTemplate = new RestTemplate();
+
+    public EmailService(CompanyRepository companyRepository) {
+        this.companyRepository = companyRepository;
+    }
 
     /**
      * Envoie un e-mail avec un PDF en pièce jointe via l'API HTTP de Brevo (Port
-     * 443).
+     * 443), en incluant dynamiquement le nom et le logo de l'entreprise.
      */
     public void sendEmailWithAttachment(
             String toEmail,
             String subject,
             String body,
             byte[] pdfBytes,
-            String attachmentName) {
+            String attachmentName,
+            Integer companyId) {
         try {
+            // Récupération de l'entreprise par son ID pour le nom et le logo
+            String companyName = "BuyLogic";
+            String logoUrl = null;
+
+            if (companyId != null) {
+                Company company = companyRepository.findById(companyId).orElse(null);
+                if (company != null) {
+                    if (company.getName() != null && !company.getName().isBlank()) {
+                        companyName = company.getName();
+                    }
+                    logoUrl = company.getLogoUrl();
+                }
+            }
+
+            // Construction du contenu HTML pour afficher le logo et le corps formaté
+            StringBuilder htmlBuilder = new StringBuilder();
+            htmlBuilder.append("<!DOCTYPE html><html><body style=\"font-family: Arial, sans-serif; color: #333; padding: 20px;\">");
+
+            if (logoUrl != null && !logoUrl.isBlank()) {
+                htmlBuilder.append("<div style=\"margin-bottom: 20px;\">")
+                           .append("<img src=\"").append(logoUrl).append("\" alt=\"").append(companyName).append("\" style=\"max-height: 60px; width: auto;\" />")
+                           .append("</div>");
+            }
+
+            if (body != null) {
+                String formattedBody = body.replace("\n", "<br>");
+                htmlBuilder.append("<p>").append(formattedBody).append("</p>");
+            }
+
+            htmlBuilder.append("<p style=\"color: #64748b; font-size: 12px; margin-top: 30px;\">E-mail envoyé par ").append(companyName).append("</p>");
+            htmlBuilder.append("</body></html>");
+
+            String htmlContent = htmlBuilder.toString();
             String url = "https://api.brevo.com/v3/smtp/email";
 
             HttpHeaders headers = new HttpHeaders();
@@ -44,10 +87,10 @@ public class EmailService {
             String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
 
             Map<String, Object> emailPayload = Map.of(
-                    "sender", Map.of("email", fromEmail, "name", "BuyLogic"),
+                    "sender", Map.of("email", fromEmail, "name", companyName),
                     "to", List.of(Map.of("email", toEmail)),
                     "subject", subject,
-                    "textContent", body,
+                    "htmlContent", htmlContent,
                     "attachment", List.of(Map.of(
                             "content", base64Pdf,
                             "name", attachmentName)));

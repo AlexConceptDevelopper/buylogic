@@ -658,7 +658,8 @@ public class PurchaseOrderService {
                                 subject,
                                 body,
                                 pdfBytes,
-                                attachmentName);
+                                attachmentName,
+                                companyId);
 
                 order.setStatus(OrderStatus.SENT);
                 purchaseOrderRepository.save(order);
