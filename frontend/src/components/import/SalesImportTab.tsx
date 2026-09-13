@@ -193,7 +193,7 @@ export default function SalesImportTab() {
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-white">Fichier de ventes (Consommations)</p>
-            <p className="mt-1 text-xs text-slate-500">CSV contenant la date, la référence produit et la quantité vendue.</p>
+            <p className="mt-1 text-xs text-slate-500">CSV contenant la date, la référence produit, la quantité vendue et le client.</p>
           </div>
           <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white">
             Choisir un fichier
