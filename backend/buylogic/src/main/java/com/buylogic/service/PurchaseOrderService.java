@@ -219,8 +219,8 @@ public class PurchaseOrderService {
                 purchaseRecommendationRepository.saveAll(recommendations);
 
                 return createdOrders.stream()
-                .map(order -> purchaseOrderMapper.toDTO(order))
-                .toList();
+                                .map(order -> purchaseOrderMapper.toDTO(order))
+                                .toList();
         }
 
         private BigDecimal getSupplierUnitPrice(PurchaseRecommendation rec) {
@@ -237,7 +237,7 @@ public class PurchaseOrderService {
                 return BigDecimal.ZERO;
         }
 
-       @Transactional
+        @Transactional
         public PurchaseOrderDTO update(Integer id, PurchaseOrderCreate data) {
                 Integer companyId = getCurrentCompanyId();
 
@@ -265,7 +265,7 @@ public class PurchaseOrderService {
                                 .findAllByPurchaseOrder_IdPurchaseOrderAndPurchaseOrder_Company_IdCompany(id,
                                                 companyId);
 
-                // Map pour retrouver rapidement les anciens items par ID produit (et préserver les quantités reçues)
+                // Map pour retrouver rapidement les anciens items par ID produit
                 java.util.Map<Integer, PurchaseOrderItem> existingItemMap = new java.util.HashMap<>();
                 for (PurchaseOrderItem oldItem : existingItems) {
                         if (oldItem.getProduct() != null) {
@@ -280,7 +280,7 @@ public class PurchaseOrderService {
                         for (PurchaseOrderItemCreate itemDto : data.getItems()) {
                                 // Empêche d'ajouter deux fois le même produit dans la même requête
                                 if (!processedProductIds.add(itemDto.getIdProduct())) {
-                                        continue; 
+                                        continue;
                                 }
 
                                 Product product = productRepository
@@ -310,16 +310,27 @@ public class PurchaseOrderService {
 
                 // 2. Identifier les items qui ont été supprimés par l'utilisateur sur le front
                 List<PurchaseOrderItem> itemsToDelete = existingItems.stream()
-                                .filter(oldItem -> oldItem.getProduct() != null && 
-                                        !processedProductIds.contains(oldItem.getProduct().getIdProduct()))
+                                .filter(oldItem -> oldItem.getProduct() != null &&
+                                                !processedProductIds.contains(oldItem.getProduct().getIdProduct()))
                                 .toList();
 
-                if (!itemsToDelete.isEmpty()) {
-                        purchaseOrderItemRepository.deleteAll(itemsToDelete);
-                }
+                try {
+                        // 3. Suppression d'abord pour libérer la contrainte d'unicité (si un produit
+                        // change de ligne ou est supprimé/recréé)
+                        if (!itemsToDelete.isEmpty()) {
+                                purchaseOrderItemRepository.deleteAll(itemsToDelete);
+                                // Force flush pour exécuter les DELETE immédiatement et éviter un conflit
+                                // d'index unique en base
+                                purchaseOrderItemRepository.flush();
+                        }
 
-                if (!itemsToSave.isEmpty()) {
-                        purchaseOrderItemRepository.saveAll(itemsToSave);
+                        if (!itemsToSave.isEmpty()) {
+                                purchaseOrderItemRepository.saveAll(itemsToSave);
+                        }
+                } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                        throw new RuntimeException(
+                                        "Erreur de contrainte d'unicité lors de la mise à jour des items de la commande.",
+                                        e);
                 }
 
                 return toDTOWithCalculatedTotal(order, companyId);

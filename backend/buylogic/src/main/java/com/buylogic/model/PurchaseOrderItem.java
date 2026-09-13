@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "purchase_order_item")
+@Table(name = "purchase_order_item", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"id_purchase_order", "id_product"})
+})
 @Getter
 @Setter
 @NoArgsConstructor
