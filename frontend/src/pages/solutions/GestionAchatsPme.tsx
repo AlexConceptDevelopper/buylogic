@@ -142,7 +142,7 @@ export default function GestionAchatsPme() {
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {CATALOGUE_FICTIF.map((prod) => (
-                        <tr key={prod.id} className="hover:bg-white/[0.02] transition">
+                        <tr key={prod.id} className="hover:bg-white/2 transition">
                           <td className="py-3 px-3">
                             <span className="font-semibold text-white block">{prod.name}</span>
                             <span className="text-[10px] text-cyan-400">RÉF : {prod.ref}</span>
@@ -259,7 +259,7 @@ export default function GestionAchatsPme() {
                       <tbody className="divide-y divide-slate-100">
                         {orderItems.map((item) => (
                           <tr key={item.id}>
-                            <td className="py-2.5 font-medium text-slate-800 max-w-[120px] truncate">{item.name}</td>
+                            <td className="py-2.5 font-medium text-slate-800 max-w-30 truncate">{item.name}</td>
                             <td className="py-2.5 text-center">{item.qty} {item.unit}</td>
                             <td className="py-2.5 text-right">{item.price} €</td>
                             <td className="py-2.5 text-right font-bold text-slate-900">{(item.qty * item.price).toFixed(2)} €</td>
