@@ -2,7 +2,7 @@
 import { useState } from "react";
 import type { SubmitEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { superAdminLogin } from "../api/super-admin-auth.api";
+import { superAdminLogin } from "../../api/super-admin-auth.api";
 
 export default function SuperAdminLoginPage() {
   const navigate = useNavigate();

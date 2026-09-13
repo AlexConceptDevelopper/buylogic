@@ -10,6 +10,7 @@ export default function Footer() {
         </div>
         
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs">
+          <Link to="/solutions/gestion-achats-pme" className="transition hover:text-slate-300">Gestion Achats PME</Link>
           <Link to="/mentions-legales" className="transition hover:text-slate-300">Mentions légales</Link>
           <Link to="/cgu" className="transition hover:text-slate-300">CGU</Link>
           <Link to="/confidentialite" className="transition hover:text-slate-300">Politique de confidentialité</Link>

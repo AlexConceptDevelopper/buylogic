@@ -29,6 +29,11 @@ export default function HeroSection() {
           </span>
         </p>
 
+        {/* Lien SEO discret pour les PME */}
+        <p className="mt-4 text-sm text-slate-400">
+          Vous cherchez une solution dédiée à votre structure ? Découvrez notre <Link to="/solutions/gestion-achats-pme" className="text-cyan-400 underline decoration-cyan-400/30 underline-offset-2 hover:text-cyan-300">logiciel de gestion des achats pour PME</Link>.
+        </p>
+
         {/* Boutons d'action rehaussés */}
         <div className="mt-10 flex flex-col gap-4 sm:flex-row">
           <Link

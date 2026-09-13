@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Turnstile } from '@marsidev/react-turnstile';
 import { Link } from "react-router-dom";
 
-import { register } from "../api/auth.api";
-import type { ProductManagementMode } from "../types/companyConfiguration";
+import { register } from "../../api/auth.api";
+import type { ProductManagementMode } from "../../types/companyConfiguration";
 
 type OnboardingStep = 1 | 2 | 3;
 

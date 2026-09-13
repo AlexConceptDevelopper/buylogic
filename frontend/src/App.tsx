@@ -5,8 +5,8 @@ import RoleRoute from "./components/RoleRoute";
 import AppLayout from "./components/layout/AppLayout";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
+import LoginPage from "./pages/login/LoginPage";
+import RegisterPage from "./pages/login/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import { AuthProvider } from "./context/AuthContext";
 import NotificationsPage from "./pages/NotificationsPage";
@@ -20,16 +20,17 @@ import PurchaseOrderDetailPage from "./pages/PurchaseOrderDetailPage";
 import PurchaseOrderFormPage from "./pages/PurchaseOrderFormPage";
 import ConsumptionImportPage from "./pages/ImportHubPage";
 import RecommendationsPage from "./pages/RecommendationsPage";
-import SuperAdminDashboard from "./pages/SuperAdminDashboard"; 
+import SuperAdminDashboard from "./pages/superAdmin/SuperAdminDashboard"; 
 import { ReceivePurchaseOrderPage } from "./pages/ReceivePurchaseOrderPage";
-import SuperAdminLoginPage from "./pages/SuperAdminLoginPage";
+import SuperAdminLoginPage from "./pages/superAdmin/SuperAdminLoginPage";
 import SuperAdminRoute from "./components/SuperAdminRoute";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import LegalMentions from "./pages/LegalMentions";
-import TermsOfService from "./pages/TermsOfService";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ResetPasswordPage from "./pages/login/ResetPasswordPage";
+import LegalMentions from "./pages/legal/LegalMentions";
+import TermsOfService from "./pages/legal/TermsOfService";
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import DocsPage from "./pages/DocsPage"; // <--- 1. Import de la page de documentation
-import VerifyEmailPage from "./pages/VerifyEmailPage";
+import VerifyEmailPage from "./pages/login/VerifyEmailPage";
+import GestionAchatsPme from "./pages/solutions/GestionAchatsPme";
 
 export default function App() {
   return (
@@ -46,7 +47,10 @@ export default function App() {
           <Route path="/mentions-legales" element={<LegalMentions />} />
           <Route path="/cgu" element={<TermsOfService />} />
           <Route path="/confidentialite" element={<PrivacyPolicy />} />
-          <Route path="/docs" element={<DocsPage />} /> {/* <--- 2. Route publique ajoutée ici */}
+          <Route path="/docs" element={<DocsPage />} /> 
+
+          {/* Routes blogs */}
+          <Route path="/solutions/gestion-achats-pme" element={<GestionAchatsPme />} />
 
           {/* Private (Utilisateurs classiques) */}
           <Route element={<ProtectedRoute />}>

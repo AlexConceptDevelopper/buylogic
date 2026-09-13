@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminTabs from "../components/admin/AdminTabs";
-import CompaniesManager from "../components/admin/CompaniesManager";
-import UsersManager from "../components/admin/UsersManager";
-import SecurityLogsManager from "../components/admin/SecurityLogsManager";
-import { apiFetch } from "../api/client";
+import AdminTabs from "../../components/admin/AdminTabs";
+import CompaniesManager from "../../components/admin/CompaniesManager";
+import UsersManager from "../../components/admin/UsersManager";
+import SecurityLogsManager from "../../components/admin/SecurityLogsManager";
+import { apiFetch } from "../../api/client";
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
