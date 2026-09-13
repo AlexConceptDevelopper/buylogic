@@ -100,13 +100,16 @@ export default function PurchaseOrderFormPage() {
     );
 
   // 3. Charger la commande existante en mode édition
+  const [isInitialized, setIsInitialized] = useState(false);
+
   useEffect(() => {
     if (
       isEditing &&
       orderId &&
       Number.isInteger(orderId) &&
       products.length > 0 &&
-      supplierProducts.length > 0
+      supplierProducts.length > 0 &&
+      !isInitialized // <-- Empêche de relancer en boucle
     ) {
       const loadExistingOrder = async () => {
         const orderData = await executeOrder(() =>
@@ -160,6 +163,8 @@ export default function PurchaseOrderFormPage() {
           );
           setItems(mappedItems);
         }
+        
+        setIsInitialized(true); // <-- On verrouille pour ne plus recharger par la suite
       };
 
       void loadExistingOrder();
@@ -171,6 +176,8 @@ export default function PurchaseOrderFormPage() {
     supplierProducts,
     executeOrder,
     executeItems,
+    isInitialized,
+    idSupplier,
   ]);
 
   const handleSupplierChange = (newSupplierId: number) => {
