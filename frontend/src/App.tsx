@@ -31,6 +31,8 @@ import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import DocsPage from "./pages/DocsPage"; // <--- 1. Import de la page de documentation
 import VerifyEmailPage from "./pages/login/VerifyEmailPage";
 import GestionAchatsPme from "./pages/solutions/GestionAchatsPme";
+import GestionStockPme from "./pages/solutions/GestionStockPme";
+import AlternativeExcelStock from "./pages/solutions/AlternativeExcelStock";
 
 export default function App() {
   return (
@@ -49,8 +51,10 @@ export default function App() {
           <Route path="/confidentialite" element={<PrivacyPolicy />} />
           <Route path="/docs" element={<DocsPage />} /> 
 
-          {/* Routes blogs */}
+          {/* Routes solutions / SEO */}
           <Route path="/solutions/gestion-achats-pme" element={<GestionAchatsPme />} />
+          <Route path="/solutions/gestion-stock-pme" element={<GestionStockPme />} />
+          <Route path="/solutions/alternative-excel-gestion-stock" element={<AlternativeExcelStock />} />
 
           {/* Private (Utilisateurs classiques) */}
           <Route element={<ProtectedRoute />}>
