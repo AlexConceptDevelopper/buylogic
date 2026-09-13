@@ -17,4 +17,5 @@ public class ConsumptionImportRowDTO {
     private String reference;
     private BigDecimal quantity;
     private LocalDate consumptionDate;
+    private String clientName;
 }

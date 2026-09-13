@@ -184,7 +184,12 @@ public class ConsumptionService {
             consumptionDTO.setConsumptionDate(
                     row.getConsumptionDate());
 
-            consumptionDTO.setSource("IMPORT");
+            // On récupère le client s'il est renseigné, sinon valeur par défaut
+            String sourceValue = (row.getClientName() != null && !row.getClientName().isBlank())
+                    ? row.getClientName()
+                    : "IMPORT";
+
+            consumptionDTO.setSource(sourceValue);
 
             Consumption consumption = consumptionMapper.toEntity(
                     consumptionDTO,
@@ -195,7 +200,7 @@ public class ConsumptionService {
             stockMovementService.createSale(
                     product.getIdProduct(),
                     row.getQuantity(),
-                    dto.getFileName());
+                    sourceValue); // Transmet le client/source au mouvement de stock
 
             // Génère ou met à jour la recommandation d'achat
             purchaseRecommendationService.generateOrUpdateForProduct(

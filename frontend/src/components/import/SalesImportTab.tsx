@@ -29,6 +29,7 @@ type SalesImportRow = {
   date: string;
   reference: string;
   quantity: number;
+  clientName?: string;
   product: Product | null;
   error?: string;
 };
@@ -37,10 +38,11 @@ export default function SalesImportTab() {
   const [headers, setHeaders] = useState<string[]>([]);
   const [rawRows, setRawRows] = useState<Record<string, string>[]>([]);
   
-  const [mapping, setMapping] = useState<{ date: string; reference: string; quantity: string }>({
+  const [mapping, setMapping] = useState<{ date: string; reference: string; quantity: string; clientName: string }>({
     date: "",
     reference: "",
     quantity: "",
+    clientName: ""
   });
   const [needsMapping, setNeedsMapping] = useState(false);
 
@@ -89,6 +91,7 @@ export default function SalesImportTab() {
         date: findMatch(["date", "jour", "transaction"]),
         reference: findMatch(["reference", "ref", "code", "sku", "article"]),
         quantity: findMatch(["qte", "quantite", "qty", "quantity", "vente"]),
+        clientName: findMatch(["client", "societe", "customer", "source", "nom"]),
       };
 
       // On pré-remplit les selects et on force l'affichage du bloc de correspondance
@@ -99,7 +102,7 @@ export default function SalesImportTab() {
     }
   };
 
-  const processRows = async (dataToProcess: Record<string, string>[], currentMapping: { date: string; reference: string; quantity: string }) => {
+  const processRows = async (dataToProcess: Record<string, string>[], currentMapping: { date: string; reference: string; quantity: string; clientName: string }) => {
     setImportError(null);
     try {
       const products = await executeProducts(() => getProducts());
@@ -112,14 +115,15 @@ export default function SalesImportTab() {
         const date = raw[currentMapping.date] ?? "";
         const reference = raw[currentMapping.reference] ?? "";
         const quantity = parseFloat(raw[currentMapping.quantity] ?? "0");
+        const clientName = currentMapping.clientName ? (raw[currentMapping.clientName] ?? "") : "";
 
         const product = products.find((p) => p.reference.toLowerCase().trim() === reference.toLowerCase().trim()) ?? null;
         
-        if (!product) return { date, reference, quantity, product: null, error: "Référence inconnue" };
-        if (!Number.isFinite(quantity) || quantity <= 0) return { date, reference, quantity, product, error: "Quantité invalide (> 0 requis)" };
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { date, reference, quantity, product, error: "Date invalide (AAAA-MM-JJ)" };
+        if (!product) return { date, reference, quantity, clientName, product: null, error: "Référence inconnue" };
+        if (!Number.isFinite(quantity) || quantity <= 0) return { date, reference, quantity, clientName, product, error: "Quantité invalide (> 0 requis)" };
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { date, reference, quantity, clientName, product, error: "Date invalide (AAAA-MM-JJ)" };
         
-        return { date, reference, quantity, product };
+        return { date, reference, quantity, clientName, product };
       });
 
       setRows(enriched);
@@ -153,7 +157,12 @@ export default function SalesImportTab() {
       const count = await importConsumptions({
         fileName: selectedFile.name,
         fileHash,
-        rows: recognizedRows.map((r) => ({ reference: r.reference, quantity: r.quantity, consumptionDate: r.date })),
+        rows: recognizedRows.map((r) => ({ 
+          reference: r.reference, 
+          quantity: r.quantity, 
+          consumptionDate: r.date, 
+          clientName: r.clientName || undefined 
+        })),
       });
 
       setImportedCount(typeof count === "number" ? count : recognizedRows.length);
@@ -200,15 +209,16 @@ export default function SalesImportTab() {
         <section className="mt-6 rounded-2xl border border-cyan-500/20 bg-slate-900/90 p-6 shadow-xl">
           <h3 className="text-base font-bold text-white">Correspondance des colonnes</h3>
           <p className="mt-1 text-xs text-slate-400">
-            Certaines colonnes n'ont pas pu être reliées automatiquement. Pour que l'import fonctionne, veuillez associer vos en-têtes aux 3 champs obligatoires :
+            Certaines colonnes n'ont pas pu être reliées automatiquement. Pour que l'import fonctionne, veuillez associer vos en-têtes aux champs requis :
           </p>
           <div className="mt-2 flex flex-wrap gap-2 text-xs">
             <span className="rounded-md bg-cyan-400/10 px-2 py-1 text-cyan-300 font-medium">📅 Une colonne de Date (ex: date, date_transaction)</span>
             <span className="rounded-md bg-cyan-400/10 px-2 py-1 text-cyan-300 font-medium">🏷️ Une Référence produit (ex: reference, ref_sku)</span>
             <span className="rounded-md bg-cyan-400/10 px-2 py-1 text-cyan-300 font-medium">🔢 Une Quantité (ex: quantite, qte)</span>
+            <span className="rounded-md bg-cyan-400/10 px-2 py-1 text-cyan-300 font-medium">👤 Client / Source (Optionnel)</span>
           </div>
 
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1">Date de vente *</label>
               <select
@@ -244,6 +254,18 @@ export default function SalesImportTab() {
                 {headers.map((h) => <option key={h} value={h}>{h}</option>)}
               </select>
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Client / Source (Optionnel)</label>
+              <select
+                value={mapping.clientName}
+                onChange={(e) => setMapping({ ...mapping, clientName: e.target.value })}
+                className="w-full rounded-xl border border-white/10 bg-slate-950 p-2 text-sm text-white"
+              >
+                <option value="">-- Aucun / Défaut --</option>
+                {headers.map((h) => <option key={h} value={h}>{h}</option>)}
+              </select>
+            </div>
           </div>
 
           <div className="mt-6 flex justify-end">
@@ -273,6 +295,7 @@ export default function SalesImportTab() {
                   <th className="p-3">Date</th>
                   <th className="p-3">Référence</th>
                   <th className="p-3">Produit</th>
+                  <th className="p-3">Client</th>
                   <th className="p-3 text-right">Quantité</th>
                   <th className="p-3 text-right">Statut</th>
                   <th className="p-3"></th>
@@ -284,6 +307,7 @@ export default function SalesImportTab() {
                     <td className="p-3">{row.date}</td>
                     <td className="p-3 font-semibold">{row.reference}</td>
                     <td className="p-3">{row.product?.name ?? "Inconnu"}</td>
+                    <td className="p-3">{row.clientName || "-"}</td>
                     <td className="p-3 text-right">{row.quantity}</td>
                     <td className="p-3 text-right">
                       {row.error ? <span className="text-rose-400 text-xs">{row.error}</span> : <span className="text-emerald-400 text-xs">OK</span>}

@@ -18,6 +18,7 @@ export interface ConsumptionImportRow {
   reference: string;
   quantity: number;
   consumptionDate: string;
+  clientName?: string;
 }
 
 export interface ConsumptionImport {
