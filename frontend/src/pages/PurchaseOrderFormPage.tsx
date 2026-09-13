@@ -46,10 +46,7 @@ export default function PurchaseOrderFormPage() {
   );
   const [items, setItems] = useState<OrderLineForm[]>([]);
   
-  // État pour conserver le numéro de commande original en mode édition
   const [existingOrderNumber, setExistingOrderNumber] = useState<string>("");
-  
-  // État pour filtrer les produits du fournisseur par recherche textuelle
   const [searchProductTerm, setSearchProductTerm] = useState<string>("");
 
   const { loading: saving, execute: executeSave } = useAsync<any>();
@@ -59,7 +56,6 @@ export default function PurchaseOrderFormPage() {
   const { execute: executeSupplierProducts } = useAsync<SupplierProduct[]>();
   const { execute: executeProducts } = useAsync<Product[]>();
 
-  // 1. Charger les fournisseurs, les associations et le catalogue produits au montage
   useEffect(() => {
     const loadInitialData = async () => {
       const [suppliersData, supplierProductsData, productsData] =
@@ -82,7 +78,6 @@ export default function PurchaseOrderFormPage() {
     void loadInitialData();
   }, [executeSuppliers, executeSupplierProducts, executeProducts, isEditing]);
 
-  // 2. Filtrer et combiner pour obtenir les produits du fournisseur sélectionné avec leurs infos de prix/quantité
   const currentSupplierProducts = supplierProducts
     .filter((sp) => sp.idSupplier === idSupplier && sp.active)
     .map((sp) => {
@@ -102,7 +97,6 @@ export default function PurchaseOrderFormPage() {
       (prod.reference && prod.reference.toLowerCase().includes(searchProductTerm.toLowerCase()))
     );
 
-  // 3. Charger la commande existante en mode édition
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -121,7 +115,7 @@ export default function PurchaseOrderFormPage() {
 
         let activeSupplierId = idSupplier;
         if (orderData) {
-          setExistingOrderNumber(orderData.orderNumber ?? ""); // Stocke le numéro de commande d'origine
+          setExistingOrderNumber(orderData.orderNumber ?? "");
           activeSupplierId = orderData.idSupplier;
           setIdSupplier(activeSupplierId);
           if (orderData.expectedDeliveryDate) {
@@ -136,19 +130,24 @@ export default function PurchaseOrderFormPage() {
         );
 
         if (itemsData && itemsData.length > 0) {
-          const mappedItems: OrderLineForm[] = itemsData.map(
-            (item: PurchaseOrderItem) => {
-              const foundProduct = products.find(
-                (p) => p.idProduct === item.idProduct,
-              );
+          // Fusionne les doublons par idProduct pour éviter d'avoir plusieurs lignes du même produit
+          const mergedMap = new Map<number, OrderLineForm>();
 
-              const foundSp = supplierProducts.find(
-                (sp) =>
-                  sp.idSupplier === activeSupplierId &&
-                  sp.idProduct === item.idProduct,
-              );
+          for (const item of itemsData) {
+            const foundProduct = products.find(
+              (p) => p.idProduct === item.idProduct,
+            );
+            const foundSp = supplierProducts.find(
+              (sp) =>
+                sp.idSupplier === activeSupplierId &&
+                sp.idProduct === item.idProduct,
+            );
 
-              return {
+            if (mergedMap.has(item.idProduct)) {
+              const existing = mergedMap.get(item.idProduct)!;
+              existing.quantityOrdered += item.quantityOrdered ?? 1;
+            } else {
+              mergedMap.set(item.idProduct, {
                 idProduct: item.idProduct,
                 productName:
                   item.productName ??
@@ -162,10 +161,11 @@ export default function PurchaseOrderFormPage() {
                   item.quantityOrdered ?? foundSp?.minimumOrderQuantity ?? 1,
                 unitPrice: item.unitPrice ?? foundSp?.unitPrice ?? 0,
                 minOrderQuantity: foundSp?.minimumOrderQuantity ?? 1,
-              };
-            },
-          );
-          setItems(mappedItems);
+              });
+            }
+          }
+
+          setItems(Array.from(mergedMap.values()));
         }
         
         setIsInitialized(true);
@@ -346,7 +346,6 @@ export default function PurchaseOrderFormPage() {
                 Clique sur "Ajouter" pour inclure un produit dans la commande.
               </p>
             </div>
-            {/* Barre de recherche */}
             <input
               type="text"
               placeholder="Filtrer par nom ou référence..."
@@ -356,7 +355,6 @@ export default function PurchaseOrderFormPage() {
             />
           </div>
 
-          {/* Tableau style Excel pour les produits du fournisseur */}
           <div className="max-h-72 overflow-y-auto rounded-xl border border-white/5">
             <table className="w-full min-w-120 border-collapse text-left">
               <thead className="sticky top-0 bg-slate-950/90 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 border-b border-white/5">
