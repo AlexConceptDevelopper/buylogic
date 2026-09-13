@@ -237,7 +237,7 @@ public class PurchaseOrderService {
                 return BigDecimal.ZERO;
         }
 
-        @Transactional
+       @Transactional
         public PurchaseOrderDTO update(Integer id, PurchaseOrderCreate data) {
                 Integer companyId = getCurrentCompanyId();
 
@@ -260,42 +260,66 @@ public class PurchaseOrderService {
 
                 purchaseOrderRepository.save(order);
 
-                // Récupérer les anciens items pour préserver les quantités déjà reçues si le produit existe encore
+                // 1. Récupérer les items existants en base
                 List<PurchaseOrderItem> existingItems = purchaseOrderItemRepository
                                 .findAllByPurchaseOrder_IdPurchaseOrderAndPurchaseOrder_Company_IdCompany(id,
                                                 companyId);
 
-                // On mappe par idProduct pour garder la quantité déjà reçue en mémoire
-                java.util.Map<Integer, BigDecimal> receivedQtyMap = new java.util.HashMap<>();
+                // Map pour retrouver rapidement les anciens items par ID produit (et préserver les quantités reçues)
+                java.util.Map<Integer, PurchaseOrderItem> existingItemMap = new java.util.HashMap<>();
                 for (PurchaseOrderItem oldItem : existingItems) {
-                        if (oldItem.getProduct() != null && oldItem.getQuantityReceived() != null) {
-                                receivedQtyMap.put(oldItem.getProduct().getIdProduct(), oldItem.getQuantityReceived());
+                        if (oldItem.getProduct() != null) {
+                                existingItemMap.put(oldItem.getProduct().getIdProduct(), oldItem);
                         }
                 }
 
-                purchaseOrderItemRepository.deleteAll(existingItems);
+                List<PurchaseOrderItem> itemsToSave = new ArrayList<>();
+                java.util.Set<Integer> processedProductIds = new java.util.HashSet<>();
 
-                if (data.getItems() != null && !data.getItems().isEmpty()) {
+                if (data.getItems() != null) {
                         for (PurchaseOrderItemCreate itemDto : data.getItems()) {
+                                // Empêche d'ajouter deux fois le même produit dans la même requête
+                                if (!processedProductIds.add(itemDto.getIdProduct())) {
+                                        continue; 
+                                }
+
                                 Product product = productRepository
                                                 .findByIdProductAndCompany_IdCompany(itemDto.getIdProduct(), companyId)
                                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                                 "Product not found with id: "
                                                                                 + itemDto.getIdProduct()));
 
-                                PurchaseOrderItem item = new PurchaseOrderItem();
-                                item.setPurchaseOrder(order);
-                                item.setProduct(product);
+                                PurchaseOrderItem item;
+                                if (existingItemMap.containsKey(itemDto.getIdProduct())) {
+                                        // On réutilise l'item existant pour éviter les doublons et préserver son ID
+                                        item = existingItemMap.get(itemDto.getIdProduct());
+                                } else {
+                                        // Sinon on en crée un nouveau
+                                        item = new PurchaseOrderItem();
+                                        item.setPurchaseOrder(order);
+                                        item.setProduct(product);
+                                        item.setQuantityReceived(BigDecimal.ZERO);
+                                }
+
                                 item.setQuantityOrdered(itemDto.getQuantityOrdered());
-                                
-                                // Restaure la quantité déjà reçue s'il y en avait, sinon BigDecimal.ZERO
-                                BigDecimal previousReceived = receivedQtyMap.getOrDefault(itemDto.getIdProduct(), BigDecimal.ZERO);
-                                item.setQuantityReceived(previousReceived);
-                                
                                 item.setUnitPrice(itemDto.getUnitPrice());
 
-                                purchaseOrderItemRepository.save(item);
+                                itemsToSave.add(item);
                         }
+                }
+
+                // 2. Identifier les items qui ont été supprimés par l'utilisateur sur le front
+                List<PurchaseOrderItem> itemsToDelete = existingItems.stream()
+                                .filter(oldItem -> oldItem.getProduct() != null && 
+                                        !processedProductIds.contains(oldItem.getProduct().getIdProduct()))
+                                .toList();
+
+                if (!itemsToDelete.isEmpty()) {
+                        purchaseOrderItemRepository.deleteAll(itemsToDelete);
+                }
+
+                if (!itemsToSave.isEmpty()) {
+                        purchaseOrderItemRepository.saveAll(itemsToSave);
                 }
 
                 return toDTOWithCalculatedTotal(order, companyId);
