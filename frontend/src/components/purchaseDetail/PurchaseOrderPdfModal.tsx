@@ -58,8 +58,15 @@ export function PurchaseOrderPdfModal({
         <div className="bg-white rounded-lg p-2">
           <div className="grid grid-cols-2 gap-6 border-b border-slate-100 pb-6 items-start">
             <div>
+              {company?.logoUrl && (
+                <img
+                  src={company.logoUrl}
+                  alt={company?.name ?? "Logo"}
+                  className="h-12 w-auto object-contain mb-3"
+                />
+              )}
               <h4 className="font-extrabold text-slate-900 text-lg">
-                {company?.name ?? "MatiGuard"}
+                {company?.name ?? "BuyLogic"}
               </h4>
               <p className="text-xs text-slate-600 mt-1">
                 {company?.address ?? "Adresse non renseignée"}
