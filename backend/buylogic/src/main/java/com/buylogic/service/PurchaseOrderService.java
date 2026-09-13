@@ -260,9 +260,18 @@ public class PurchaseOrderService {
 
                 purchaseOrderRepository.save(order);
 
+                // Récupérer les anciens items pour préserver les quantités déjà reçues si le produit existe encore
                 List<PurchaseOrderItem> existingItems = purchaseOrderItemRepository
                                 .findAllByPurchaseOrder_IdPurchaseOrderAndPurchaseOrder_Company_IdCompany(id,
                                                 companyId);
+
+                // On mappe par idProduct pour garder la quantité déjà reçue en mémoire
+                java.util.Map<Integer, BigDecimal> receivedQtyMap = new java.util.HashMap<>();
+                for (PurchaseOrderItem oldItem : existingItems) {
+                        if (oldItem.getProduct() != null && oldItem.getQuantityReceived() != null) {
+                                receivedQtyMap.put(oldItem.getProduct().getIdProduct(), oldItem.getQuantityReceived());
+                        }
+                }
 
                 purchaseOrderItemRepository.deleteAll(existingItems);
 
@@ -278,7 +287,11 @@ public class PurchaseOrderService {
                                 item.setPurchaseOrder(order);
                                 item.setProduct(product);
                                 item.setQuantityOrdered(itemDto.getQuantityOrdered());
-                                item.setQuantityReceived(BigDecimal.ZERO);
+                                
+                                // Restaure la quantité déjà reçue s'il y en avait, sinon BigDecimal.ZERO
+                                BigDecimal previousReceived = receivedQtyMap.getOrDefault(itemDto.getIdProduct(), BigDecimal.ZERO);
+                                item.setQuantityReceived(previousReceived);
+                                
                                 item.setUnitPrice(itemDto.getUnitPrice());
 
                                 purchaseOrderItemRepository.save(item);
