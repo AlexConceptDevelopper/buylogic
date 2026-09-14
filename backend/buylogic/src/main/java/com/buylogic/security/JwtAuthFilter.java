@@ -34,6 +34,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         HttpServletResponse response,
                         FilterChain filterChain) throws ServletException, IOException {
 
+                // Ignorer le filtre JWT pour les webhooks Stripe
+                if (request.getRequestURI().startsWith("/billing/webhook")) {
+                        filterChain.doFilter(request, response);
+                        return;
+                }
+
                 String authorizationHeader = request.getHeader("Authorization");
 
                 if (authorizationHeader == null
