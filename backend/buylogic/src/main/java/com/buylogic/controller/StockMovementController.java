@@ -67,4 +67,10 @@ public class StockMovementController {
     public ResponseEntity<Boolean> hasInitialStock(@PathVariable Integer idProduct) {
         return ResponseEntity.ok(stockMovementService.hasInitialStock(idProduct));
     }
+
+    //endpoint pour récupérer l'historique des mouvements d'un produit
+    @GetMapping("/product/{idProduct}")
+    public ResponseEntity<List<StockMovementDTO>> getByProduct(@PathVariable Integer idProduct) {
+        return ResponseEntity.ok(stockMovementService.getByProduct(idProduct));
+    }
 }

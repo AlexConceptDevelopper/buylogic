@@ -51,3 +51,8 @@ export function deleteStockMovement(id: number) {
 export function checkHasInitialStock(idProduct: number) {
   return apiFetch<boolean>(`/stock-movements/product/${idProduct}/has-initial`);
 }
+
+// Récupérer l'historique des mouvements d'un produit
+export function getStockMovementsByProduct(idProduct: number) {
+  return apiFetch<StockMovement[]>(`/stock-movements/product/${idProduct}`);
+}

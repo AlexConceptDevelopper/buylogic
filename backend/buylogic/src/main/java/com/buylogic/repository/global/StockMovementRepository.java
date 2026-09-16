@@ -25,4 +25,10 @@ public interface StockMovementRepository
         Integer companyId,
         String reference
     );
+
+    // Ajout de cette méthode pour récupérer l'historique des mouvements d'un produit
+    List<StockMovement> findByProduct_IdProductAndProduct_Company_IdCompany(
+        Integer idProduct,
+        Integer companyId
+    );
 }

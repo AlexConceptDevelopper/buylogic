@@ -310,4 +310,16 @@ public class StockMovementService {
                 return stockMovementRepository.existsByProduct_IdProductAndProduct_Company_IdCompanyAndReference(
                                 idProduct, companyId, "STOCK_INITIAL");
         }
+
+        public List<StockMovementDTO> getByProduct(Integer idProduct) {
+                Integer companyId = getCurrentCompanyId();
+
+                return stockMovementRepository
+                                .findByProduct_IdProductAndProduct_Company_IdCompany(
+                                                idProduct,
+                                                companyId)
+                                .stream()
+                                .map(stockMovementMapper::toDTO)
+                                .toList();
+        }
 }

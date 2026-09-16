@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getProducts, adjustProductStock } from "../api/product.api";
-import { checkHasInitialStock } from "../api/stockMovement.api";
+import { checkHasInitialStock, getStockMovementsByProduct } from "../api/stockMovement.api";
 import useAsync from "../hooks/useAsync";
 import type { Product } from "../types/product";
+import type { StockMovement } from "../types/stockMovement"; // Import de ton type de mouvement
 
 type StockFilter = "ALL" | "OUT_OF_STOCK" | "LOW_STOCK" | "AVAILABLE";
 
@@ -11,13 +12,14 @@ export default function StockPage() {
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
-  
+
   // Initialisation du filtre selon l'URL (ex: /stock?filter=OUT_OF_STOCK)
   const urlFilter = searchParams.get("filter") as StockFilter;
   const [filter, setFilter] = useState<StockFilter>(
-    urlFilter && ["ALL", "OUT_OF_STOCK", "LOW_STOCK", "AVAILABLE"].includes(urlFilter)
+    urlFilter &&
+      ["ALL", "OUT_OF_STOCK", "LOW_STOCK", "AVAILABLE"].includes(urlFilter)
       ? urlFilter
-      : "ALL"
+      : "ALL",
   );
 
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
@@ -25,6 +27,12 @@ export default function StockPage() {
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [singleProductTarget, setSingleProductTarget] =
     useState<Product | null>(null);
+
+  // États pour la modale d'historique
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyProductTarget, setHistoryProductTarget] =
+    useState<Product | null>(null);
+  const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
 
   const [bulkActionType, setBulkActionType] = useState<
     "SET" | "ADD" | "REMOVE"
@@ -38,6 +46,8 @@ export default function StockPage() {
   const { loading, error, execute } = useAsync<Product[]>();
   const { loading: updatingStock, execute: executeUpdateStock } =
     useAsync<void>();
+  const { loading: loadingHistory, execute: executeFetchHistory } =
+    useAsync<StockMovement[]>();
 
   const loadProducts = async () => {
     const data = await execute(() => getProducts());
@@ -51,7 +61,10 @@ export default function StockPage() {
   // Met à jour le filtre si l'URL change dynamiquement
   useEffect(() => {
     const param = searchParams.get("filter") as StockFilter;
-    if (param && ["ALL", "OUT_OF_STOCK", "LOW_STOCK", "AVAILABLE"].includes(param)) {
+    if (
+      param &&
+      ["ALL", "OUT_OF_STOCK", "LOW_STOCK", "AVAILABLE"].includes(param)
+    ) {
       setFilter(param);
     }
   }, [searchParams]);
@@ -119,6 +132,21 @@ export default function StockPage() {
     }
   };
 
+  const handleOpenHistoryModal = async (product: Product) => {
+    setHistoryProductTarget(product);
+    setHistoryModalOpen(true);
+    setStockMovements([]);
+
+    try {
+      const data = await executeFetchHistory(() => 
+        getStockMovementsByProduct(product.idProduct)
+      );
+      if (data) setStockMovements(data);
+    } catch (err) {
+      console.error("Erreur chargement historique", err);
+    }
+  };
+
   const handleOpenBulkModal = async () => {
     setSingleProductTarget(null);
     setBulkQuantity(0);
@@ -128,13 +156,11 @@ export default function StockPage() {
 
     try {
       const checks = await Promise.all(
-        selectedProductIds.map((id) => checkHasInitialStock(id))
+        selectedProductIds.map((id) => checkHasInitialStock(id)),
       );
-      
-      // Si TOUS les produits sélectionnés n'ont pas encore de stock initial
+
       const allUninitialized = checks.every((exists) => !exists);
-      
-      // hasInitialStock devient true si au moins un produit a déjà été initialisé
+
       setHasInitialStock(!allUninitialized);
       setBulkActionType(allUninitialized ? "SET" : "ADD");
       if (allUninitialized) {
@@ -380,13 +406,23 @@ export default function StockPage() {
                   className="px-5 py-4 text-right"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <button
-                    type="button"
-                    onClick={() => void handleOpenSingleModal(p)}
-                    className="cursor-pointer rounded-xl border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-cyan-400/30 hover:bg-cyan-400/5 hover:text-cyan-300"
-                  >
-                    Ajuster
-                  </button>
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void handleOpenHistoryModal(p)}
+                      className="cursor-pointer rounded-xl border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-cyan-400/30 hover:bg-cyan-400/5 hover:text-cyan-300 flex items-center gap-1.5"
+                    >
+                      <span>🕒</span>
+                      <span>Historique</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleOpenSingleModal(p)}
+                      className="cursor-pointer rounded-xl border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-cyan-400/30 hover:bg-cyan-400/5 hover:text-cyan-300"
+                    >
+                      Ajuster
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -394,6 +430,7 @@ export default function StockPage() {
         </table>
       </section>
 
+      {/* Modale d'ajustement unique ou groupé */}
       {bulkModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
@@ -498,6 +535,83 @@ export default function StockPage() {
                 className="rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-50 cursor-pointer"
               >
                 {updatingStock ? "Mise à jour..." : "Appliquer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modale d'historique des mouvements */}
+      {historyModalOpen && historyProductTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <div>
+                <p className="text-xs font-semibold uppercase text-cyan-400">
+                  Journal d'audit
+                </p>
+                <h2 className="text-lg font-bold text-white mt-0.5">
+                  Historique - {historyProductTarget.name}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHistoryModalOpen(false)}
+                className="text-slate-400 hover:text-white text-sm font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-4 flex-1 overflow-y-auto space-y-3 pr-1">
+              {loadingHistory ? (
+                <div className="py-12 text-center text-sm text-slate-500 animate-pulse">
+                  Chargement de l'historique...
+                </div>
+              ) : stockMovements.length === 0 ? (
+                <div className="py-12 text-center text-sm text-slate-500">
+                  Aucun mouvement enregistré pour ce produit.
+                </div>
+              ) : (
+                stockMovements.map((m) => (
+                  <div
+                    key={m.idStockMovement}
+                    className="rounded-xl border border-white/5 bg-slate-950/60 p-4 text-sm flex items-center justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-block rounded-md bg-cyan-400/10 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
+                          {m.movementType}
+                        </span>
+                        {m.reference && (
+                          <span className="text-xs text-slate-400 font-mono">
+                            Ref: {m.reference}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-400">
+                        Date : {new Date(m.movementDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p
+                        className={`text-sm font-bold ${m.quantity >= 0 ? "text-emerald-400" : "text-rose-400"}`}
+                      >
+                        {m.quantity >= 0 ? `+${m.quantity}` : m.quantity}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="mt-6 border-t border-white/5 pt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setHistoryModalOpen(false)}
+                className="rounded-xl bg-slate-800 px-4 py-2.5 text-xs font-semibold text-white hover:bg-slate-700 cursor-pointer"
+              >
+                Fermer
               </button>
             </div>
           </div>

@@ -29,6 +29,9 @@ public class ConsumptionMapper {
         dto.setConsumptionDate(consumption.getConsumptionDate());
         dto.setSource(consumption.getSource());
         dto.setCreatedAt(consumption.getCreatedAt());
+        
+        // (Optionnel) Si ton ConsumptionDTO a aussi un champ customerName, tu peux l'ajouter ici :
+        // dto.setCustomerName(consumption.getCustomerName());
 
         return dto;
     }
@@ -53,6 +56,9 @@ public class ConsumptionMapper {
                 ? dto.getSource().toUpperCase()
                 : "MANUAL"
         );
+
+        // AJOUT DE CETTE LIGNE : On mappe le nom du client vers l'entité
+        consumption.setCustomerName(dto.getCustomerName());
 
         return consumption;
     }

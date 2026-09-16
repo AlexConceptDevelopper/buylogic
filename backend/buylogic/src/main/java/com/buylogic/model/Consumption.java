@@ -35,6 +35,10 @@ public class Consumption {
     @Column(nullable = false, length = 30)
     private String source = "IMPORT";
 
+    // Ajout du champ pour mapper la colonne customer_name en base de données
+    @Column(name = "customer_name", length = 255)
+    private String customerName;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

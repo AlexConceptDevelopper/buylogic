@@ -28,4 +28,5 @@ public class ConsumptionCreateDTO {
     private LocalDate consumptionDate;
 
     private String source;
+    private String customerName;
 }
