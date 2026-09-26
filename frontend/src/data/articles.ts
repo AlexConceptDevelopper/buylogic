@@ -72,7 +72,7 @@ export const articles: Article[] = [
       </p>
 
       <p class="mt-2">
-        Vous devez donc <strong>toujours</strong> garder un matelas de 40 pièces en stock. Dès que votre niveau descend à ce seuil critique, l'alerte de réapprovisionnement doit se déclencher immédiatement.
+        Vous devez donc <strong>toujours</strong> garder un matelas de 40 pièces en stock. Dès que votre niveau descend à ce seuil critique, l'alerte de réapprovisionnement doit se déclencher immédiatement. Pour aller plus loin dans la structuration de vos entrepôts, vous pouvez consulter notre <a href="/solutions/gestion-stock-pme" style="color: #38bdf8; text-decoration: underline;">guide de gestion de stock pour PME</a>.
       </p>
 
       <h2 class="text-2xl font-bold text-white mt-8 mb-4">3. Pourquoi les tableurs Excel montrent vite leurs limites</h2>
@@ -82,7 +82,7 @@ export const articles: Article[] = [
       </p>
       
       <p>
-        Sur Excel, cela demande de mettre à jour manuellement chaque historique de vente, de recalculer les moyennes à la main, et de risquer l'erreur de formule au pire moment. C'est précisément à ce stade que les PME perdent un temps précieux ou ratent des alertes de réassort.
+        Sur Excel, cela demande de mettre à jour manuellement chaque historique de vente, de recalculer les moyennes à la main, et de risquer l'erreur de formule au pire moment. C'est précisément à ce stade que les PME perdent un temps précieux ou ratent des alertes de réassort. Si vous cherchez à vous affranchir de ces tableurs, découvrez notre page dédiée aux <a href="/solutions/alternative-excel-gestion-stock" style="color: #38bdf8; text-decoration: underline;">alternatives Excel pour la gestion de stock</a>.
       </p>
 
       <h2 class="text-2xl font-bold text-white mt-8 mb-4">4. Passez d'une gestion réactive à une stratégie prédictive</h2>
@@ -140,7 +140,7 @@ export const articles: Article[] = [
           <li><strong>Le projet pharaonique :</strong> Le déploiement d'un logiciel lourd, complexe, rigide, qui demande des mois de formation.</li>
       </ul>
       <p>
-        Heureusement, entre le bricolage sur Excel et la cathédrale logicielle, il existe un juste milieu : le pragmatisme des outils modernes taillés pour les PME.
+        Heureusement, entre le bricolage sur Excel et la cathédrale logicielle, il existe un juste milieu : le pragmatisme des outils modernes taillés pour les PME. Si vous souhaitez structurer vos approvisionnements sans complexité, jetez un œil à notre solution de <a href="/solutions/gestion-achats-pme" style="color: #38bdf8; text-decoration: underline;">gestion des achats pour PME</a>.
       </p>
 
       <h2 class="text-2xl font-bold text-white mt-8 mb-4">2. La peur du jugement et de la résistance interne</h2>

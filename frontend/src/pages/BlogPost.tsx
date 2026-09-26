@@ -6,36 +6,70 @@ import { articles } from "../data/articles";
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  
+
   const article = articles.find((a) => a.slug === slug);
 
+  // Cas où l'article n'existe pas (on garde juste un Helmet simple d'erreur)
   if (!article) {
     return (
       <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center">
         <Helmet>
           <title>Article introuvable | BuyLogic</title>
         </Helmet>
-        <h1 className="text-2xl font-bold mb-4">Oups, cet article n'existe pas.</h1>
-        <Link to="/blog" className="text-cyan-400 hover:underline">&larr; Retourner au blog</Link>
+        <h1 className="text-2xl font-bold mb-4">
+          Oups, cet article n'existe pas.
+        </h1>
+        <Link to="/blog" className="text-cyan-400 hover:underline">
+          &larr; Retourner au blog
+        </Link>
       </div>
     );
   }
 
+  // Cas où l'article existe : le JSON-LD est ici en toute sécurité
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-400 selection:text-slate-950">
       <Helmet>
         <title>{article.title} | Blog BuyLogic</title>
         <meta name="description" content={article.description} />
-        <link rel="canonical" href={`https://buylogic.fr/blog/${article.slug}`} />
+        <link
+          rel="canonical"
+          href={`https://buylogic.fr/blog/${article.slug}`}
+        />
+
+        {/* Données structurées JSON-LD pour Google */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            headline: article.title,
+            description: article.description,
+            datePublished: article.date,
+            author: {
+              "@type": "Organization",
+              name: "BuyLogic",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "BuyLogic",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://buylogic.fr/logo.png",
+              },
+            },
+          })}
+        </script>
       </Helmet>
 
       <Navbar />
 
       <main className="grow py-16 px-6">
-        {/* On limite un peu la largeur pour un confort de lecture optimal (max-w-4xl ou 5xl au lieu de 7xl) */}
         <article className="mx-auto max-w-6xl">
           {/* Bouton de retour */}
-          <Link to="/blog" className="text-sm font-semibold text-cyan-400 hover:underline mb-8 inline-flex items-center gap-2">
+          <Link
+            to="/blog"
+            className="text-sm font-semibold text-cyan-400 hover:underline mb-8 inline-flex items-center gap-2"
+          >
             <span>&larr;</span> Retour aux articles
           </Link>
 
@@ -53,8 +87,8 @@ export default function BlogPost() {
             {article.title}
           </h1>
 
-          {/* Corps de l'article injecté avec un texte plus grand (text-lg sm:text-xl) */}
-          <div 
+          {/* Corps de l'article */}
+          <div
             className="prose prose-invert max-w-none text-slate-300 space-y-6 leading-relaxed pt-6 border-t border-white/10 text-lg sm:text-xl"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />

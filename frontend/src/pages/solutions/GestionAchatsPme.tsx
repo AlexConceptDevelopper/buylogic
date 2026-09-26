@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 
 interface Product {
   id: string;
@@ -94,7 +96,7 @@ export default function GestionAchatsPme() {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-400 selection:text-slate-950">
       <Helmet>
         <title>
           Logiciel de Gestion des Achats PME : Commandes & Fournisseurs |
@@ -125,7 +127,10 @@ export default function GestionAchatsPme() {
         <meta property="og:type" content="website" />
       </Helmet>
 
-      <div className="min-h-screen bg-slate-950 text-slate-100 overflow-visible">
+      {/* Navbar officielle */}
+      <Navbar />
+
+      <main className="grow">
         <div className="mx-auto max-w-6xl px-6 py-12">
           {/* Navigation rapide retour */}
           <div className="mb-8">
@@ -553,8 +558,50 @@ export default function GestionAchatsPme() {
               Créer mon compte gratuit
             </Link>
           </div>
+
+          {/* Maillage Interne / Articles recommandés */}
+          <div className="mt-20 border-t border-white/10 pt-12 max-w-4xl mx-auto">
+            <h3 className="text-xl font-bold text-white mb-6">
+              Approfondir le sujet des achats en PME
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Link
+                to="/blog"
+                className="p-5 rounded-xl border border-white/10 bg-slate-900/60 hover:border-cyan-400/40 transition block group"
+              >
+                <span className="text-xs text-cyan-400 font-semibold uppercase tracking-wider">
+                  Blog BuyLogic
+                </span>
+                <h4 className="font-bold text-white mt-1 group-hover:text-cyan-300 transition">
+                  Comment structurer ses achats sans usine à gaz
+                </h4>
+                <p className="text-xs text-slate-400 mt-2">
+                  Découvrez nos méthodes pour fluidifier vos commandes
+                  fournisseurs.
+                </p>
+              </Link>
+              <Link
+                to="/solutions/gestion-stock-pme"
+                className="p-5 rounded-xl border border-white/10 bg-slate-900/60 hover:border-cyan-400/40 transition block group"
+              >
+                <span className="text-xs text-cyan-400 font-semibold uppercase tracking-wider">
+                  Solution Liée
+                </span>
+                <h4 className="font-bold text-white mt-1 group-hover:text-cyan-300 transition">
+                  Piloter sa gestion de stock PME
+                </h4>
+                <p className="text-xs text-slate-400 mt-2">
+                  Évitez les ruptures et suivez vos flux de marchandises en temps
+                  réel.
+                </p>
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
-    </>
+      </main>
+
+      {/* Footer officiel */}
+      <Footer />
+    </div>
   );
 }
