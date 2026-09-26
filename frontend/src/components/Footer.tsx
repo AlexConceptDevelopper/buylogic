@@ -9,11 +9,16 @@ export default function Footer() {
           <p className="text-xs text-slate-600">Une solution éditée par CubTaik.</p>
         </div>
         
-        <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
           <Link to="/solutions/gestion-achats-pme" className="transition hover:text-slate-300">Gestion Achats PME</Link>
           <Link to="/solutions/gestion-stock-pme" className="transition hover:text-slate-300">Gestion Stock PME</Link>
-          {/* Ajout du lien vers la page alternative Excel */}
           <Link to="/solutions/alternative-excel-gestion-stock" className="transition hover:text-slate-300">Alternative Excel Stock</Link>
+          
+          <Link to="/blog" className="group flex items-center gap-1.5 transition hover:text-slate-300">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+            <span>Blog</span>
+          </Link>
+
           <Link to="/mentions-legales" className="transition hover:text-slate-300">Mentions légales</Link>
           <Link to="/cgu" className="transition hover:text-slate-300">CGU</Link>
           <Link to="/confidentialite" className="transition hover:text-slate-300">Politique de confidentialité</Link>

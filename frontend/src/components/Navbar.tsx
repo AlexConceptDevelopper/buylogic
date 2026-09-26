@@ -67,6 +67,14 @@ export default function Navbar() {
                 Documentation
               </Link>
 
+              {/* Ajout du lien Blog */}
+              <Link
+                to="/blog"
+                className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
+              >
+                Blog
+              </Link>
+
               <Link
                 to="/login"
                 className="cursor-pointer rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-white/20 hover:bg-white/5"
@@ -210,6 +218,14 @@ export default function Navbar() {
                 className="text-sm text-slate-300 transition hover:text-white"
               >
                 Documentation
+              </Link>
+              {/* Ajout du lien Blog mobile */}
+              <Link
+                to="/blog"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm text-slate-300 transition hover:text-white"
+              >
+                Blog
               </Link>
               <Link
                 to="/login"

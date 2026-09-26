@@ -33,6 +33,8 @@ import VerifyEmailPage from "./pages/login/VerifyEmailPage";
 import GestionAchatsPme from "./pages/solutions/GestionAchatsPme";
 import GestionStockPme from "./pages/solutions/GestionStockPme";
 import AlternativeExcelStock from "./pages/solutions/AlternativeExcelStock";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 export default function App() {
   return (
@@ -55,6 +57,10 @@ export default function App() {
           <Route path="/solutions/gestion-achats-pme" element={<GestionAchatsPme />} />
           <Route path="/solutions/gestion-stock-pme" element={<GestionStockPme />} />
           <Route path="/solutions/alternative-excel-gestion-stock" element={<AlternativeExcelStock />} />
+
+          {/* Routes Blog */}
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
 
           {/* Private (Utilisateurs classiques) */}
           <Route element={<ProtectedRoute />}>
