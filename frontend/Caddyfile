@@ -1,0 +1,11 @@
+{
+    auto_https off
+}
+
+:80 {
+    root * /app/dist
+    file_server
+
+    # S'il y a un vrai fichier (comme sitemap.xml), il l'affiche. Sinon, il renvoie vers index.html pour React Router.
+    try_files {path} {path}/ /index.html
+}
