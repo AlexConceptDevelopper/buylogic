@@ -61,8 +61,6 @@ const publicDir = path.resolve('public');
   
   const targetPath = path.join(publicDir, 'sitemap.xml');
   fs.writeFileSync(targetPath, sitemap);
-  console.log(`✅ Sitemap généré avec succès dans : ${targetPath}`);
-  console.log(`🔍 Fichier présent ? ${fs.existsSync(targetPath)}`);
 }
 
 generateSitemap();
