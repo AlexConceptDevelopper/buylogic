@@ -44,46 +44,46 @@ export default function Navbar() {
 
         {/* Navigation Desktop */}
         <nav className="hidden items-center gap-8 md:flex">
+          {/* Liens publics toujours visibles (connecté ou non) */}
+          <a
+            href="#features"
+            className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
+          >
+            Fonctionnalités
+          </a>
+
+          <a
+            href="#how-it-works"
+            className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
+          >
+            Comment ça marche
+          </a>
+
+          <Link
+            to="/docs"
+            className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
+          >
+            Documentation
+          </Link>
+
+          <Link
+            to="/blog"
+            className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
+          >
+            Blog
+          </Link>
+
+          {/* Si non connecté : bouton Connexion */}
           {!isAuthenticated && (
-            <>
-              <a
-                href="#features"
-                className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
-              >
-                Fonctionnalités
-              </a>
-
-              <a
-                href="#how-it-works"
-                className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
-              >
-                Comment ça marche
-              </a>
-
-              <Link
-                to="/docs"
-                className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
-              >
-                Documentation
-              </Link>
-
-              {/* Ajout du lien Blog */}
-              <Link
-                to="/blog"
-                className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
-              >
-                Blog
-              </Link>
-
-              <Link
-                to="/login"
-                className="cursor-pointer rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-white/20 hover:bg-white/5"
-              >
-                Connexion
-              </Link>
-            </>
+            <Link
+              to="/login"
+              className="cursor-pointer rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-white/20 hover:bg-white/5"
+            >
+              Connexion
+            </Link>
           )}
 
+          {/* Si connecté : Menu Profil avec positionnement absolute propre */}
           {!loading && isAuthenticated && user && (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -127,7 +127,7 @@ export default function Navbar() {
               {profileOpen && (
                 <div
                   role="menu"
-                  className="fixed right-6 top-20 w-64 z-99999 rounded-2xl border border-white/10 bg-slate-900 p-2 shadow-2xl shadow-black/80 backdrop-blur-xl"
+                  className="absolute right-0 top-full mt-2 w-64 z-50 rounded-2xl border border-white/10 bg-slate-900 p-2 shadow-2xl shadow-black/80 backdrop-blur-xl"
                 >
                   <div className="border-b border-white/5 px-3 py-3">
                     <p className="text-sm font-semibold text-white">
@@ -189,55 +189,54 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Menu Mobile Déroulant positionné proprement sous le header avec un z-index élevé */}
+      {/* Menu Mobile Déroulant */}
       <div
         className={`absolute top-full left-0 w-full z-50 border-b border-white/10 bg-slate-950/95 shadow-2xl backdrop-blur-2xl transition-all duration-300 ease-in-out md:hidden ${
-          mobileMenuOpen ? "max-h-96 opacity-100 px-6 py-5 pointer-events-auto" : "max-h-0 opacity-0 px-6 py-0 border-none pointer-events-none overflow-hidden"
+          mobileMenuOpen ? "max-h-[500px] opacity-100 px-6 py-5 pointer-events-auto" : "max-h-0 opacity-0 px-6 py-0 border-none pointer-events-none overflow-hidden"
         }`}
       >
         <div className="flex flex-col space-y-4">
+          {/* Liens publics mobiles toujours visibles */}
+          <a
+            href="#features"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-sm text-slate-300 transition hover:text-white"
+          >
+            Fonctionnalités
+          </a>
+          <a
+            href="#how-it-works"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-sm text-slate-300 transition hover:text-white"
+          >
+            Comment ça marche
+          </a>
+          <Link
+            to="/docs"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-sm text-slate-300 transition hover:text-white"
+          >
+            Documentation
+          </Link>
+          <Link
+            to="/blog"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-sm text-slate-300 transition hover:text-white"
+          >
+            Blog
+          </Link>
+
           {!isAuthenticated ? (
-            <>
-              <a
-                href="#features"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm text-slate-300 transition hover:text-white"
-              >
-                Fonctionnalités
-              </a>
-              <a
-                href="#how-it-works"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm text-slate-300 transition hover:text-white"
-              >
-                Comment ça marche
-              </a>
-              <Link
-                to="/docs"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm text-slate-300 transition hover:text-white"
-              >
-                Documentation
-              </Link>
-              {/* Ajout du lien Blog mobile */}
-              <Link
-                to="/blog"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm text-slate-300 transition hover:text-white"
-              >
-                Blog
-              </Link>
-              <Link
-                to="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="mt-2 flex items-center justify-center rounded-xl bg-cyan-400 px-4 py-3 text-center text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
-              >
-                Connexion
-              </Link>
-            </>
+            <Link
+              to="/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="mt-2 flex items-center justify-center rounded-xl bg-cyan-400 px-4 py-3 text-center text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+            >
+              Connexion
+            </Link>
           ) : (
-            <>
-              <div className="border-b border-white/5 pb-3">
+            <div className="border-t border-white/10 pt-4 mt-2 flex flex-col space-y-3">
+              <div className="pb-1">
                 <p className="text-sm font-semibold text-white">
                   {user?.firstName} {user?.lastName}
                 </p>
@@ -260,7 +259,7 @@ export default function Navbar() {
               >
                 Déconnexion
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>
