@@ -25,11 +25,11 @@ export const article: Article = {
     <div class="my-8 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 p-2 shadow-xl">
         <img 
             src="/illustrations/Dashboard-arnaque-fournisseur.jpg" 
-            alt="Tableau de bord de sécurité affichant une alerte de tentative de modification frauduleuse de RIB" 
+            alt="Tableau de bord de gestion affichant la visibilité sur les profils fournisseurs et les commandes" 
             class="w-full rounded-xl object-cover"
         />
         <p class="mt-3 text-center text-xs text-slate-400 italic">
-            Détection automatique d'une anomalie et blocage d'un faux RIB sur un profil fournisseur.
+            Une vision centralisée des commandes et des fiches fournisseurs pour garder le contrôle de ses flux.
         </p>
     </div>
     
@@ -41,7 +41,7 @@ export const article: Article = {
 
     <ul class="list-disc pl-6 space-y-2 text-slate-300">
       <li><strong>Le fishing ultra-personnalisé (Spear-phishing) :</strong> Les fraudeurs étudient les réseaux sociaux professionnels, repèrent vos vrais fournisseurs de matériaux ou de services, et envoient un faux document visuellement parfait.</li>
-      <li><strong>La compromission de messagerie (BEC) :</strong> Ils s'introduisent discrètement dans une boîte mail (souvent par un mot de passe trop faible) et observent vos échanges en silence jusqu'au moment idéal pour intercepter une facture et modifier le RIB.</li>
+      <li><strong>La compromission de messagerie (BEC) :</strong> Ils s'introduisent discrètement dans une boîte mail (souvent par un mot de passe trop faible) et observent vos échanges en silence jusqu'au moment idéal pour intercepter une facture et modifier les instructions de paiement.</li>
       <li><strong>La pression à l'urgence :</strong> « C'est urgent pour valider la livraison du chantier de demain matin, merci de valider tout de suite. » Tout est fait pour court-circuiter votre bon sens.</li>
     </ul>
 
@@ -56,15 +56,15 @@ export const article: Article = {
     </p>
 
     <p>
-      Si un changement de RIB arrive par e-mail et que la personne qui valide le paiement n'a pas un historique clair sous les yeux, le piège se referme. La sécurité d'une entreprise ne repose pas sur la chance, mais sur des processus de validation rigoureux.
+      Si un changement de coordonnées arrive par e-mail et que la personne qui valide le paiement n'a pas un historique clair sous les yeux, le piège se referme. La sécurité d'une entreprise ne repose pas sur la chance, mais sur des processus de validation rigoureux.
     </p>
 
     <p>Concrètement, pour blinder une PME sans y passer des heures, il faut agir sur trois piliers :</p>
 
     <ul class="list-disc pl-6 space-y-2 text-slate-300">
-      <li><strong>La centralisation des données fournisseurs :</strong> Centraliser les coordonnées bancaires dans un espace sécurisé où toute modification d'un RIB déclenche une alerte immédiate.</li>
+      <li><strong>La centralisation des fiches fournisseurs :</strong> Regrouper les coordonnées et l'historique des échanges dans un espace unique et structuré.</li>
       <li><strong>Le double regard (validation croisée) :</strong> Ne jamais laisser une seule personne émettre et valider un paiement important sans traçabilité.</li>
-      <li><strong>L'historique des réceptions :</strong> S'assurer que la facture que l'on s'apprête à régler correspond bien à une commande réelle et validée en amont. Pour aller plus loin sur la sécurisation de vos flux, vous pouvez consulter notre guide sur la <a href="/solutions/gestion-stock-pme" style="color: #38bdf8; text-decoration: underline;">gestion des approvisionnements en PME</a>.</li>
+      <li><strong>L'historique des réceptions :</strong> S'assurer que la facture que l'on s'apprête à régler correspond bien à une commande réelle validée en amont. Pour aller plus loin sur la sécurisation de vos flux, vous pouvez consulter notre guide sur la <a href="/solutions/gestion-stock-pme" style="color: #38bdf8; text-decoration: underline;">gestion des approvisionnements en PME</a>.</li>
     </ul>
 
     <!-- Encadré Conseil / À retenir -->
@@ -77,20 +77,20 @@ export const article: Article = {
     </p>
     </div>
 
-    <h2 class="text-2xl font-bold text-white mt-8 mb-4">3. Sécuriser ses achats sans alourdir son quotidien avec BuyLogic</h2>
+    <h2 class="text-2xl font-bold text-white mt-8 mb-4">3. Structurer ses achats sans alourdir son quotidien avec BuyLogic</h2>
 
     <p>
       Protéger son entreprise ne doit pas se transformer en une lourdeur administrative supplémentaire. C'est tout l'enjeu d'une solution moderne de pilotage des achats.
     </p>
 
     <p>
-      En structurant le parcours d'achat — de la commande initiale auprès du fournisseur jusqu'à la réception de la facture —, un outil comme <a href="/solutions/gestion-achats-pme" style="color: #38bdf8; text-decoration: underline;">BuyLogic</a> vous offre une visibilité totale :
+      Rappelons-le : BuyLogic est un outil de pilotage des achats et des stocks, pas une plateforme bancaire ou un logiciel de facturation. Il ne gère pas les RIB ni les virements, et c'est volontaire pour vous laisser le contrôle via vos outils financiers dédiés. En revanche, en structurant tout le parcours en amont — de la commande initiale jusqu'à la réception —, un outil comme <a href="/solutions/gestion-achats-pme" style="color: #38bdf8; text-decoration: underline;">BuyLogic</a> vous offre une visibilité totale :
     </p>
 
     <ol class="list-decimal pl-6 space-y-2 text-slate-300">
-      <li><strong>Traçabilité des fournisseurs :</strong> Vos références et historiques d'achats sont centralisés et sécurisés au même endroit.</li>
-      <li><strong>Cohérence des flux :</strong> Chaque facture est rapprochée de sa commande d'origine, ce qui rend l'apparition d'un montant ou d'un IBAN suspect immédiatement visible.</li>
-      <li><strong>Sérénité au bureau :</strong> Finies les incertitudes du vendredi après-midi, vos process sont carrés et vous pilotez votre trésorerie en toute confiance. Pour comprendre comment basculer sereinement vers ces méthodes, lisez notre article sur <a href="/blog/digitalisation-achats-pme-peur-transition" style="color: #38bdf8; text-decoration: underline;">la peur de la digitalisation en PME</a>.</li>
+      <li><strong>Traçabilité des fournisseurs :</strong> Vos références, coordonnées de contact et historiques d'achats sont centralisés et sécurisés au même endroit.</li>
+      <li><strong>Cohérence des flux :</strong> Chaque facture reçue est rapprochée de sa commande d'origine, ce qui rend toute incohérence immédiatement visible avant d'effectuer un règlement dans votre outil bancaire.</li>
+      <li><strong>Sérénité au bureau :</strong> Finies les incertitudes du vendredi après-midi, vos process sont carrés et vous pilotez votre activité en toute confiance. Pour comprendre comment basculer sereinement vers ces méthodes, lisez notre article sur <a href="/blog/digitalisation-achats-pme-peur-transition" style="color: #38bdf8; text-decoration: underline;">la peur de la digitalisation en PME</a>.</li>
     </ol>
 
     <h2 class="text-2xl font-bold text-white mt-8 mb-4">4. Restez vigilants, restez maîtres de votre trésorerie</h2>
@@ -100,7 +100,7 @@ export const article: Article = {
     </p>
 
     <p>
-      En prenant les devants dès aujourd'hui sur la sécurisation de vos processus d'achats, vous protégez non seulement votre trésorerie, mais vous offrez aussi à votre structure la stabilité qu'elle mérite pour grandir sereinement.
+      En prenant les devants dès aujourd'hui sur la structuration de vos processus d'achats, vous protégez non seulement votre trésorerie, mais vous offrez aussi à votre structure la stabilité qu'elle mérite pour grandir sereinement.
     </p>
 
     <!-- FAQ Section -->
@@ -122,9 +122,9 @@ export const article: Article = {
       </div>
 
       <div class="rounded-xl border border-white/10 bg-slate-900/60 p-6">
-        <h3 class="text-xl font-semibold text-white mb-3">Les logiciels de gestion protègent-ils vraiment contre la fraude ?</h3>
+        <h3 class="text-xl font-semibold text-white mb-3">BuyLogic gère-t-il les paiements et les RIB des fournisseurs ?</h3>
         <p class="text-base text-slate-300 leading-relaxed">
-          Un bon logiciel ne remplace pas la vigilance humaine, mais il structure les données et impose un cadre. En centralisant les profils fournisseurs et en croisant les bons de commande avec les factures reçues, il devient beaucoup plus difficile pour une anomalie ou un faux document de passer inaperçu au milieu de la pile.
+          Non, BuyLogic est un logiciel de pilotage des achats, des stocks et de la chaîne opérationnelle, et ne stocke pas de données bancaires (RIB/IBAN) ni n'effectue de virements. La gestion financière et les règlements restent pilotés depuis votre banque ou votre logiciel de comptabilité sécurisé. BuyLogic intervient en amont pour sécuriser et tracer vos commandes et vos réceptions de marchandises.
         </p>
       </div>
     </div>

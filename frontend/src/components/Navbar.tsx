@@ -192,7 +192,7 @@ export default function Navbar() {
       {/* Menu Mobile Déroulant */}
       <div
         className={`absolute top-full left-0 w-full z-50 border-b border-white/10 bg-slate-950/95 shadow-2xl backdrop-blur-2xl transition-all duration-300 ease-in-out md:hidden ${
-          mobileMenuOpen ? "max-h-[500px] opacity-100 px-6 py-5 pointer-events-auto" : "max-h-0 opacity-0 px-6 py-0 border-none pointer-events-none overflow-hidden"
+          mobileMenuOpen ? "max-h-125 opacity-100 px-6 py-5 pointer-events-auto" : "max-h-0 opacity-0 px-6 py-0 border-none pointer-events-none overflow-hidden"
         }`}
       >
         <div className="flex flex-col space-y-4">
