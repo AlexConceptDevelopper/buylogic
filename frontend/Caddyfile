@@ -2,10 +2,9 @@
     auto_https off
 }
 
-:${env.PORT} {
+:{env.PORT} {
     root * /app/dist
     file_server
 
-    # Laisse passer les fichiers physiques (comme sitemap.xml), sinon renvoie vers index.html pour React Router
     try_files {path} {path}/ /index.html
 }
