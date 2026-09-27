@@ -54,13 +54,15 @@ function generateSitemap() {
 
 </urlset>`;
 
-  const publicDir = path.resolve('public');
+const publicDir = path.resolve('public');
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir);
   }
   
-  fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), sitemap);
-  console.log(`✅ Sitemap généré avec succès (${staticPages.length} pages statiques + ${articles.length} articles) !`);
+  const targetPath = path.join(publicDir, 'sitemap.xml');
+  fs.writeFileSync(targetPath, sitemap);
+  console.log(`✅ Sitemap généré avec succès dans : ${targetPath}`);
+  console.log(`🔍 Fichier présent ? ${fs.existsSync(targetPath)}`);
 }
 
 generateSitemap();
