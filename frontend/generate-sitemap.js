@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { articles } from './src/data/articles.ts';
 
-const DOMAIN = 'https://buylogic.fr';
+const DOMAIN = 'https://www.buylogic.fr';
 const today = new Date().toISOString().split('T')[0]; // Date du jour (ex: 2026-09-26)
 
 // Liste exacte de tes pages statiques avec leurs priorités et fréquences d'origine
