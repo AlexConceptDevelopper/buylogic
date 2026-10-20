@@ -14,15 +14,18 @@ import com.buylogic.model.Notification;
 import com.buylogic.repository.global.NotificationRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+
+    public NotificationService(NotificationRepository notificationRepository, NotificationMapper notificationMapper) {
+        this.notificationRepository = notificationRepository;
+        this.notificationMapper = notificationMapper;
+    }
 
     public List<NotificationDTO> getAll() {
         JwtPrincipal principal = getCurrentPrincipal();

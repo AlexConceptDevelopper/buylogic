@@ -8,14 +8,16 @@ import org.springframework.web.bind.annotation.*;
 import com.buylogic.dto.ProductionRecommendationDTO;
 import com.buylogic.service.ProductionRecommendationService;
 
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/production-recommendations")
-@RequiredArgsConstructor
 public class ProductionRecommendationController {
 
     private final ProductionRecommendationService productionRecommendationService;
+
+    public ProductionRecommendationController(ProductionRecommendationService productionRecommendationService) {
+        this.productionRecommendationService = productionRecommendationService;
+    }
 
     @GetMapping
     public ResponseEntity<List<ProductionRecommendationDTO>> getAll() {

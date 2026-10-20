@@ -20,16 +20,19 @@ import com.buylogic.repository.global.ProductRepository;
 import com.buylogic.repository.global.StockMovementRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StockMovementService {
 
         private final StockMovementRepository stockMovementRepository;
         private final StockMovementMapper stockMovementMapper;
         private final ProductRepository productRepository;
+
+        public StockMovementService(StockMovementRepository stockMovementRepository, StockMovementMapper stockMovementMapper, ProductRepository productRepository) {
+                this.stockMovementRepository = stockMovementRepository;
+                this.stockMovementMapper = stockMovementMapper;
+                this.productRepository = productRepository;
+        }
 
         public List<StockMovementDTO> getAll() {
 

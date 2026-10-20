@@ -14,15 +14,18 @@ import com.buylogic.dto.company.CompanyUpdateDTO;
 import com.buylogic.service.CompanyService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/companies")
-@RequiredArgsConstructor
 @Validated
 public class CompanyController {
 
     private final CompanyService companyService;
+
+    public CompanyController(CompanyService companyService) {
+        this.companyService = companyService;
+    }
+
 
     @GetMapping
     public ResponseEntity<List<CompanyDTO>> getAll() {

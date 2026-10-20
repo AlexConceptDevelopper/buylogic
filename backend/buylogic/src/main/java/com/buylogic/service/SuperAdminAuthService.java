@@ -10,16 +10,19 @@ import com.buylogic.model.SuperAdmin;
 import com.buylogic.repository.global.SuperAdminRepository;
 import com.buylogic.security.JwtUtil;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SuperAdminAuthService {
 
     private final SuperAdminRepository superAdminRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+
+    public SuperAdminAuthService(SuperAdminRepository superAdminRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+        this.superAdminRepository = superAdminRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+    }
 
     public String authenticate(SuperAdminLoginDTO loginDTO) {
         String email = loginDTO.getEmail().trim().toLowerCase();

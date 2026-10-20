@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,8 +14,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Consumption {
+
+    public Consumption(Integer idConsumption, Product product, BigDecimal quantity, LocalDate consumptionDate, String source, String customerName, LocalDateTime createdAt) {
+        this.idConsumption = idConsumption;
+        this.product = product;
+        this.quantity = quantity;
+        this.consumptionDate = consumptionDate;
+        this.source = source;
+        this.customerName = customerName;
+        this.createdAt = createdAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

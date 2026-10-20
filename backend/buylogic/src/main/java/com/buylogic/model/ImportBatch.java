@@ -10,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,8 +24,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ImportBatch {
+
+    public ImportBatch(Integer idImportBatch, Integer idCompany, String fileName, String fileHash, Integer importedCount, LocalDateTime importedAt) {
+        this.idImportBatch = idImportBatch;
+        this.idCompany = idCompany;
+        this.fileName = fileName;
+        this.fileHash = fileHash;
+        this.importedCount = importedCount;
+        this.importedAt = importedAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

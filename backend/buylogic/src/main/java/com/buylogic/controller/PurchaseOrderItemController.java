@@ -10,14 +10,15 @@ import com.buylogic.dto.purchaseorderitem.PurchaseOrderItemDTO;
 import com.buylogic.dto.purchaseorderitem.PurchaseOrderItemUpdate;
 import com.buylogic.service.PurchaseOrderItemService;
 
-import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequestMapping("/purchase-order-items")
-@RequiredArgsConstructor
 public class PurchaseOrderItemController {
 
     private final PurchaseOrderItemService purchaseOrderItemService;
+
+    public PurchaseOrderItemController(PurchaseOrderItemService purchaseOrderItemService) {
+        this.purchaseOrderItemService = purchaseOrderItemService;
+    }
 
     @GetMapping
     public ResponseEntity<List<PurchaseOrderItemDTO>> getAll() {

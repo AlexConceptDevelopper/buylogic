@@ -22,15 +22,18 @@ import org.springframework.security.config.annotation.authentication.configurati
 
 import com.buylogic.security.JwtAuthFilter;
 
-import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
+
 public class SecurityConfig {
 
         private final JwtAuthFilter jwtAuthFilter;
+
+        public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+                this.jwtAuthFilter = jwtAuthFilter;
+        }
 
         @Bean
         public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

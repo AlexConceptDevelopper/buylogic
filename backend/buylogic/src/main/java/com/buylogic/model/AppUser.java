@@ -6,7 +6,6 @@ import java.util.List;
 import com.buylogic.model.enums.Role;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,8 +15,24 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class AppUser {
+
+    public AppUser(Integer idUser, Company company, String email, String passwordHash, String firstName, String lastName, String department, Role role, Boolean active, LocalDateTime createdAt, LocalDateTime updatedAt, List<Notification> notifications, String resetToken, LocalDateTime resetTokenExpiresAt) {
+        this.idUser = idUser;
+        this.company = company;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.department = department;
+        this.role = role;
+        this.active = active;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.notifications = notifications;
+        this.resetToken = resetToken;
+        this.resetTokenExpiresAt = resetTokenExpiresAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

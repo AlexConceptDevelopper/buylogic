@@ -24,10 +24,8 @@ import com.buylogic.repository.global.ImportBatchRepository;
 import com.buylogic.repository.global.ProductRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ConsumptionService {
 
@@ -38,6 +36,21 @@ public class ConsumptionService {
     private final ImportBatchRepository importBatchRepository;
     private final PurchaseRecommendationService purchaseRecommendationService;
     private final ProductionRecommendationService productionRecommendationService;
+
+    public ConsumptionService(ConsumptionRepository consumptionRepository, ConsumptionMapper consumptionMapper,
+                    ProductRepository productRepository, StockMovementService stockMovementService,
+                    ImportBatchRepository importBatchRepository,
+                    PurchaseRecommendationService purchaseRecommendationService,
+                    ProductionRecommendationService productionRecommendationService) {
+            this.consumptionRepository = consumptionRepository;
+            this.consumptionMapper = consumptionMapper;
+            this.productRepository = productRepository;
+            this.stockMovementService = stockMovementService;
+            this.importBatchRepository = importBatchRepository;
+            this.purchaseRecommendationService = purchaseRecommendationService;
+            this.productionRecommendationService = productionRecommendationService;
+    }
+    
 
     public List<ConsumptionDTO> getAll() {
         Integer companyId = getCurrentCompanyId();

@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,8 +14,27 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class PurchaseRecommendation {
+
+    public PurchaseRecommendation(Integer idRecommendation, Company company, Product product, Supplier supplier, String status, BigDecimal recommendedQuantity, BigDecimal currentStock, BigDecimal safetyStock, BigDecimal reorderPoint, BigDecimal estimatedDailyConsumption, BigDecimal estimatedLeadTimeDays, LocalDate estimatedStockoutDate, BigDecimal estimatedPurchaseAmount, BigDecimal confidenceScore, String reason, LocalDateTime createdAt, LocalDateTime resolvedAt) {
+        this.idRecommendation = idRecommendation;
+        this.company = company;
+        this.product = product;
+        this.supplier = supplier;
+        this.status = status;
+        this.recommendedQuantity = recommendedQuantity;
+        this.currentStock = currentStock;
+        this.safetyStock = safetyStock;
+        this.reorderPoint = reorderPoint;
+        this.estimatedDailyConsumption = estimatedDailyConsumption;
+        this.estimatedLeadTimeDays = estimatedLeadTimeDays;
+        this.estimatedStockoutDate = estimatedStockoutDate;
+        this.estimatedPurchaseAmount = estimatedPurchaseAmount;
+        this.confidenceScore = confidenceScore;
+        this.reason = reason;
+        this.createdAt = createdAt;
+        this.resolvedAt = resolvedAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

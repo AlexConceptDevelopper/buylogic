@@ -21,10 +21,8 @@ import com.buylogic.repository.global.PurchaseOrderItemRepository;
 import com.buylogic.repository.global.PurchaseOrderRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PurchaseOrderItemService {
 
@@ -32,6 +30,15 @@ public class PurchaseOrderItemService {
 	private final PurchaseOrderRepository purchaseOrderRepository;
 	private final ProductRepository productRepository;
 	private final PurchaseOrderItemMapper purchaseOrderItemMapper;
+
+	public PurchaseOrderItemService(PurchaseOrderItemRepository purchaseOrderItemRepository,
+			PurchaseOrderRepository purchaseOrderRepository, ProductRepository productRepository,
+			PurchaseOrderItemMapper purchaseOrderItemMapper) {
+		this.purchaseOrderItemRepository = purchaseOrderItemRepository;
+		this.purchaseOrderRepository = purchaseOrderRepository;
+		this.productRepository = productRepository;
+		this.purchaseOrderItemMapper = purchaseOrderItemMapper;
+	}
 
 	public List<PurchaseOrderItemDTO> getAll() {
 		Integer companyId = getCurrentCompanyId();

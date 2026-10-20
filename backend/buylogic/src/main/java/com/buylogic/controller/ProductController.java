@@ -16,15 +16,17 @@ import com.buylogic.dto.stockmouvement.StockAdjustmentDTO;
 import com.buylogic.service.ProductService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/products")
-@RequiredArgsConstructor
 @Validated
 public class ProductController {
 
         private final ProductService productService;
+
+        public ProductController(ProductService productService) {
+                this.productService = productService;
+        }
 
         @GetMapping
         public ResponseEntity<List<ProductDTO>> getAll() {

@@ -2,7 +2,6 @@ package com.buylogic.dto.purchaseorderitem;
 
 import java.math.BigDecimal;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,8 +9,15 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class PurchaseOrderItemCreate {
+    
+    public PurchaseOrderItemCreate(Integer idPurchaseOrder, Integer idProduct, BigDecimal quantityOrdered, BigDecimal quantityReceived, BigDecimal unitPrice) {
+        this.idPurchaseOrder = idPurchaseOrder;
+        this.idProduct = idProduct;
+        this.quantityOrdered = quantityOrdered;
+        this.quantityReceived = quantityReceived;
+        this.unitPrice = unitPrice;
+    }
 
     private Integer idPurchaseOrder;
     private Integer idProduct;

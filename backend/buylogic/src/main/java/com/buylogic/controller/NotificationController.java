@@ -8,15 +8,17 @@ import org.springframework.web.bind.annotation.*;
 import com.buylogic.dto.NotificationDTO;
 import com.buylogic.service.NotificationService;
 
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/notifications")
-@RequiredArgsConstructor
 public class NotificationController {
 
     private final NotificationService notificationService;
 
+    public NotificationController(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+    
     @GetMapping
     public ResponseEntity<List<NotificationDTO>> getAll() {
         return ResponseEntity.ok(

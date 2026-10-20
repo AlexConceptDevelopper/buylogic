@@ -15,15 +15,17 @@ import com.buylogic.dto.consumption.ConsumptionImportDTO;
 import com.buylogic.service.ConsumptionService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/consumptions")
-@RequiredArgsConstructor
 @Validated
 public class ConsumptionController {
 
     private final ConsumptionService consumptionService;
+    
+    public ConsumptionController(ConsumptionService consumptionService) {
+        this.consumptionService = consumptionService;
+    }
 
     @GetMapping
     public ResponseEntity<List<ConsumptionDTO>> getAll() {

@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,8 +14,20 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class SupplierProductUpdateDTO {
+
+    public SupplierProductUpdateDTO(Integer idProduct, Integer idSupplier, String supplierReference, BigDecimal unitPrice, BigDecimal minimumOrderQuantity, Integer expectedLeadTimeDays, BigDecimal packagingQuantity, String packagingUnit, Boolean fractionable, Boolean active) {
+        this.idProduct = idProduct;
+        this.idSupplier = idSupplier;
+        this.supplierReference = supplierReference;
+        this.unitPrice = unitPrice;
+        this.minimumOrderQuantity = minimumOrderQuantity;
+        this.expectedLeadTimeDays = expectedLeadTimeDays;
+        this.packagingQuantity = packagingQuantity;
+        this.packagingUnit = packagingUnit;
+        this.fractionable = fractionable;
+        this.active = active;
+    }
 
     @NotNull
     private Integer idProduct;

@@ -7,7 +7,6 @@ import java.util.List;
 import com.buylogic.model.enums.ProductType;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,8 +16,29 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Product {
+
+    public Product(Integer idProduct, Company company, String reference, String name, String description, String unit, Boolean fractional, BigDecimal currentStock, Boolean active, LocalDateTime createdAt, LocalDateTime updatedAt, List<SupplierProduct> supplierProducts, List<StockMovement> stockMovements, List<Consumption> consumptions, List<PurchaseOrderItem> purchaseOrderItems, List<PurchaseRecommendation> purchaseRecommendations, ProductType type, List<ProductComposition> components, List<ProductComposition> usedInProducts) {
+        this.idProduct = idProduct;
+        this.company = company;
+        this.reference = reference;
+        this.name = name;
+        this.description = description;
+        this.unit = unit;
+        this.fractional = fractional;
+        this.currentStock = currentStock;
+        this.active = active;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.supplierProducts = supplierProducts;
+        this.stockMovements = stockMovements;
+        this.consumptions = consumptions;
+        this.purchaseOrderItems = purchaseOrderItems;
+        this.purchaseRecommendations = purchaseRecommendations;
+        this.type = type;
+        this.components = components;
+        this.usedInProducts = usedInProducts;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,8 +13,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class StockMovement {
+
+    public StockMovement(Integer idStockMovement, Product product, String movementType, BigDecimal quantity, LocalDateTime movementDate, String reference, LocalDateTime createdAt) {
+        this.idStockMovement = idStockMovement;
+        this.product = product;
+        this.movementType = movementType;
+        this.quantity = quantity;
+        this.movementDate = movementDate;
+        this.reference = reference;
+        this.createdAt = createdAt;
+    }   
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

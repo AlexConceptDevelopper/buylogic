@@ -8,7 +8,6 @@ import java.util.List;
 import com.buylogic.model.enums.OrderStatus;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,8 +17,24 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class PurchaseOrder {
+
+    public PurchaseOrder(Integer idPurchaseOrder, Company company, Supplier supplier, String orderNumber, OrderStatus status, LocalDateTime orderedAt, String arcNumber, LocalDate expectedDeliveryDate, LocalDateTime receivedAt, BigDecimal totalAmount, LocalDateTime createdAt, LocalDateTime updatedAt, Boolean isAutoRecommended, List<PurchaseOrderItem> items) {
+        this.idPurchaseOrder = idPurchaseOrder;
+        this.company = company;
+        this.supplier = supplier;
+        this.orderNumber = orderNumber;
+        this.status = status;
+        this.orderedAt = orderedAt;
+        this.arcNumber = arcNumber;
+        this.expectedDeliveryDate = expectedDeliveryDate;
+        this.receivedAt = receivedAt;
+        this.totalAmount = totalAmount;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.isAutoRecommended = isAutoRecommended;
+        this.items = items;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

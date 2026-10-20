@@ -11,14 +11,16 @@ import com.buylogic.model.CompanyConfiguration;
 import com.buylogic.repository.global.CompanyConfigurationRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CompanyConfigurationService {
 
     private final CompanyConfigurationRepository companyConfigurationRepository;
+
+    public CompanyConfigurationService(CompanyConfigurationRepository companyConfigurationRepository) {
+        this.companyConfigurationRepository = companyConfigurationRepository;
+    }
 
     public CompanyConfigurationDTO getCurrent() {
         Integer companyId = getCurrentCompanyId();

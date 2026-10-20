@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,8 +15,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class PurchaseOrderItem {
+
+    public PurchaseOrderItem(Integer idPurchaseOrderItem, PurchaseOrder purchaseOrder, Product product, BigDecimal quantityOrdered, BigDecimal quantityReceived, BigDecimal unitPrice, LocalDateTime createdAt) {
+        this.idPurchaseOrderItem = idPurchaseOrderItem;
+        this.purchaseOrder = purchaseOrder;
+        this.product = product;
+        this.quantityOrdered = quantityOrdered;
+        this.quantityReceived = quantityReceived;
+        this.unitPrice = unitPrice;
+        this.createdAt = createdAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

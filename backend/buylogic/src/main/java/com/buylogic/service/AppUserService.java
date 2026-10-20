@@ -21,16 +21,20 @@ import com.buylogic.model.enums.Role;
 import com.buylogic.repository.global.AppUserRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AppUserService {
 
     private final AppUserRepository appUserRepository;
     private final AppUserMapper appUserMapper;
     private final PasswordEncoder passwordEncoder;
+
+    public AppUserService(AppUserRepository appUserRepository, AppUserMapper appUserMapper, PasswordEncoder passwordEncoder) {
+        this.appUserRepository = appUserRepository;
+        this.appUserMapper = appUserMapper;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public List<AppUserDTO> getAll() {
         JwtPrincipal principal = getCurrentPrincipal();

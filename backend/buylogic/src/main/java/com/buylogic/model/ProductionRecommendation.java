@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,8 +14,23 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ProductionRecommendation {
+
+    public ProductionRecommendation(Integer idProductionRecommendation, Company company, Product product, String status, BigDecimal recommendedQuantity, BigDecimal currentStock, BigDecimal safetyStock, BigDecimal estimatedDailyConsumption, LocalDate estimatedStockoutDate, BigDecimal confidenceScore, String reason, LocalDateTime createdAt, LocalDateTime resolvedAt) {
+        this.idProductionRecommendation = idProductionRecommendation;
+        this.company = company;
+        this.product = product;
+        this.status = status;
+        this.recommendedQuantity = recommendedQuantity;
+        this.currentStock = currentStock;
+        this.safetyStock = safetyStock;
+        this.estimatedDailyConsumption = estimatedDailyConsumption;
+        this.estimatedStockoutDate = estimatedStockoutDate;
+        this.confidenceScore = confidenceScore;
+        this.reason = reason;
+        this.createdAt = createdAt;
+        this.resolvedAt = resolvedAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

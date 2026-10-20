@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,8 +13,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ProductComposition {
+
+    public ProductComposition(Integer idProductComposition, Product parentProduct, Product childProduct, BigDecimal quantity, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.idProductComposition = idProductComposition;
+        this.parentProduct = parentProduct;
+        this.childProduct = childProduct;
+        this.quantity = quantity;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

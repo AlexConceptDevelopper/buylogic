@@ -3,7 +3,6 @@ package com.buylogic.model;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,8 +12,18 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class SuperAdmin {
+
+    public SuperAdmin(Integer idSuperAdmin, String email, String passwordHash, String firstName, String lastName, Boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.idSuperAdmin = idSuperAdmin;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.active = active;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

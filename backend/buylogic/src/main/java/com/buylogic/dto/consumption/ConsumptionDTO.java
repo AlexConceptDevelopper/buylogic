@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,8 +11,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ConsumptionDTO {
+
+    public ConsumptionDTO(Integer idConsumption, Integer idProduct, BigDecimal quantity, LocalDate consumptionDate, String source, LocalDateTime createdAt) {
+        this.idConsumption = idConsumption;
+        this.idProduct = idProduct;
+        this.quantity = quantity;
+        this.consumptionDate = consumptionDate;
+        this.source = source;
+        this.createdAt = createdAt;
+    }
 
     private Integer idConsumption;
     private Integer idProduct;

@@ -26,10 +26,8 @@ import com.buylogic.repository.global.StockMovementRepository;
 import com.buylogic.repository.global.ProductCompositionRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductService {
 
@@ -38,6 +36,18 @@ public class ProductService {
     private final StockMovementRepository stockMovementRepository;
     private final ProductMapper productMapper;
     private final CompanyRepository companyRepository;
+
+    public ProductService(ProductRepository productRepository,
+                          ProductCompositionRepository productCompositionRepository,
+                          StockMovementRepository stockMovementRepository,
+                          ProductMapper productMapper,
+                          CompanyRepository companyRepository) {
+        this.productRepository = productRepository;
+        this.productCompositionRepository = productCompositionRepository;
+        this.stockMovementRepository = stockMovementRepository;
+        this.productMapper = productMapper;
+        this.companyRepository = companyRepository;
+    }
 
     public List<ProductDTO> getAll() {
         Integer companyId = getCurrentCompanyId();

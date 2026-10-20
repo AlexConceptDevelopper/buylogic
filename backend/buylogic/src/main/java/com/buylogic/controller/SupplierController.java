@@ -13,15 +13,17 @@ import com.buylogic.dto.supplier.SupplierUpdateDTO;
 import com.buylogic.service.SupplierService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/suppliers")
-@RequiredArgsConstructor
 @Validated
 public class SupplierController {
 
     private final SupplierService supplierService;
+
+    public SupplierController(SupplierService supplierService) {
+        this.supplierService = supplierService;
+    }
 
     @GetMapping
     public ResponseEntity<List<SupplierDTO>> getAll() {

@@ -3,7 +3,6 @@ package com.buylogic.model;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,8 +12,18 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Notification {
+
+    public Notification(Integer idNotification, AppUser user, String type, String title, String message, PurchaseRecommendation recommendation, LocalDateTime readAt, LocalDateTime createdAt) {
+        this.idNotification = idNotification;
+        this.user = user;
+        this.type = type;
+        this.title = title;
+        this.message = message;
+        this.recommendation = recommendation;
+        this.readAt = readAt;
+        this.createdAt = createdAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

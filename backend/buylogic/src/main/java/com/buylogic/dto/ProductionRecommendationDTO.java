@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,8 +11,25 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ProductionRecommendationDTO {
+
+    public ProductionRecommendationDTO(Integer idProductionRecommendation, Integer idCompany, Integer idProduct, String productReference, String productName, String status, BigDecimal recommendedQuantity, BigDecimal currentStock, BigDecimal safetyStock, BigDecimal estimatedDailyConsumption, LocalDate estimatedStockoutDate, BigDecimal confidenceScore, String reason, LocalDateTime createdAt, LocalDateTime resolvedAt) {
+        this.idProductionRecommendation = idProductionRecommendation;
+        this.idCompany = idCompany;
+        this.idProduct = idProduct;
+        this.productReference = productReference;
+        this.productName = productName;
+        this.status = status;
+        this.recommendedQuantity = recommendedQuantity;
+        this.currentStock = currentStock;
+        this.safetyStock = safetyStock;
+        this.estimatedDailyConsumption = estimatedDailyConsumption;
+        this.estimatedStockoutDate = estimatedStockoutDate;
+        this.confidenceScore = confidenceScore;
+        this.reason = reason;
+        this.createdAt = createdAt;
+        this.resolvedAt = resolvedAt;
+    }
 
     private Integer idProductionRecommendation;
     private Integer idCompany;

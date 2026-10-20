@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,8 +15,20 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ProductUpdateDTO {
+
+    public ProductUpdateDTO(Integer idCompany, String reference, String name, String description, String unit, Boolean fractional, BigDecimal currentStock, Boolean active, String type, List<ProductCompositionDTO> components) {
+        this.idCompany = idCompany;
+        this.reference = reference;
+        this.name = name;
+        this.description = description;
+        this.unit = unit;
+        this.fractional = fractional;
+        this.currentStock = currentStock;
+        this.active = active;
+        this.type = type;
+        this.components = components;
+    }
 
     @NotNull
     private Integer idCompany;

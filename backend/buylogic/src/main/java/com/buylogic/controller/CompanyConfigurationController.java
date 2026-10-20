@@ -8,14 +8,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.buylogic.dto.company.CompanyConfigurationDTO;
 import com.buylogic.service.CompanyConfigurationService;
 
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/company-configuration")
-@RequiredArgsConstructor
 public class CompanyConfigurationController {
 
     private final CompanyConfigurationService companyConfigurationService;
+
+    public CompanyConfigurationController(CompanyConfigurationService companyConfigurationService) {
+        this.companyConfigurationService = companyConfigurationService;
+    }
 
     @GetMapping
     public ResponseEntity<CompanyConfigurationDTO> getCurrent() {

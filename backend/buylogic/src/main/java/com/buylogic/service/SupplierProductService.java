@@ -21,10 +21,7 @@ import com.buylogic.repository.global.SupplierProductRepository;
 import com.buylogic.repository.global.SupplierRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SupplierProductService {
 
@@ -32,6 +29,13 @@ public class SupplierProductService {
     private final SupplierProductMapper supplierProductMapper;
     private final ProductRepository productRepository;
     private final SupplierRepository supplierRepository;
+
+    public SupplierProductService(SupplierProductRepository supplierProductRepository, SupplierProductMapper supplierProductMapper, ProductRepository productRepository, SupplierRepository supplierRepository) {
+        this.supplierProductRepository = supplierProductRepository;
+        this.supplierProductMapper = supplierProductMapper;
+        this.productRepository = productRepository;
+        this.supplierRepository = supplierRepository;
+    }
 
     public List<SupplierProductDTO> getAll() {
         Integer companyId = getCurrentCompanyId();

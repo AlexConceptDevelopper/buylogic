@@ -24,10 +24,8 @@ import com.buylogic.repository.global.ProductRepository;
 import com.buylogic.repository.global.PurchaseRecommendationRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PurchaseRecommendationService {
 
@@ -38,6 +36,16 @@ public class PurchaseRecommendationService {
 
     private static final BigDecimal SAFETY_DAYS = new BigDecimal("2");
     private static final BigDecimal TARGET_COVERAGE_DAYS = new BigDecimal("7");
+
+    public PurchaseRecommendationService(ProductRepository productRepository,
+                                         PurchaseRecommendationRepository purchaseRecommendationRepository,
+                                         ConsumptionRepository consumptionRepository,
+                                         PurchaseRecommendationMapper purchaseRecommendationMapper) {
+        this.productRepository = productRepository;
+        this.purchaseRecommendationRepository = purchaseRecommendationRepository;
+        this.consumptionRepository = consumptionRepository;
+        this.purchaseRecommendationMapper = purchaseRecommendationMapper;
+    }
 
     public List<PurchaseRecommendationDTO> getAll() {
         Integer companyId = getCurrentCompanyId();

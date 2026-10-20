@@ -23,10 +23,8 @@ import com.buylogic.repository.global.ProductRepository;
 import com.buylogic.repository.global.ProductionRecommendationRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductionRecommendationService {
 
@@ -34,6 +32,16 @@ public class ProductionRecommendationService {
     private final ProductionRecommendationRepository productionRecommendationRepository;
     private final ConsumptionRepository consumptionRepository;
     private final ProductionRecommendationMapper productionRecommendationMapper;
+
+    public ProductionRecommendationService(ProductRepository productRepository,
+                                           ProductionRecommendationRepository productionRecommendationRepository,
+                                           ConsumptionRepository consumptionRepository,
+                                           ProductionRecommendationMapper productionRecommendationMapper) {
+        this.productRepository = productRepository;
+        this.productionRecommendationRepository = productionRecommendationRepository;
+        this.consumptionRepository = consumptionRepository;
+        this.productionRecommendationMapper = productionRecommendationMapper;
+    }
 
     private static final BigDecimal SAFETY_DAYS = new BigDecimal("2");
     private static final BigDecimal TARGET_COVERAGE_DAYS = new BigDecimal("7");

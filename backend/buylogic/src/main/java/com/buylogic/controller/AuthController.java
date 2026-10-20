@@ -6,7 +6,7 @@ import com.buylogic.dto.auth.RegisterRequest;
 import com.buylogic.dto.auth.RegisterResponse;
 import com.buylogic.service.AuthService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+
 
 import java.util.Map;
 
@@ -15,10 +15,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(

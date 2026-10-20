@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,8 +13,21 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Supplier {
+
+    public Supplier(Integer idSupplier, Company company, String name, String email, String phone, String address, Boolean active, LocalDateTime createdAt, LocalDateTime updatedAt, List<SupplierProduct> supplierProducts, List<PurchaseOrder> purchaseOrders) {
+        this.idSupplier = idSupplier;
+        this.company = company;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.address = address;
+        this.active = active;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.supplierProducts = supplierProducts;
+        this.purchaseOrders = purchaseOrders;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

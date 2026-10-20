@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,8 +15,23 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class SupplierProduct {
+
+    public SupplierProduct(Integer idSupplierProduct, Product product, Supplier supplier, String supplierReference, BigDecimal unitPrice, BigDecimal minimumOrderQuantity, Integer expectedLeadTimeDays, BigDecimal packagingQuantity, String packagingUnit, Boolean fractionable, Boolean active, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.idSupplierProduct = idSupplierProduct;
+        this.product = product;
+        this.supplier = supplier;
+        this.supplierReference = supplierReference;
+        this.unitPrice = unitPrice;
+        this.minimumOrderQuantity = minimumOrderQuantity;
+        this.expectedLeadTimeDays = expectedLeadTimeDays;
+        this.packagingQuantity = packagingQuantity;
+        this.packagingUnit = packagingUnit;
+        this.fractionable = fractionable;
+        this.active = active;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

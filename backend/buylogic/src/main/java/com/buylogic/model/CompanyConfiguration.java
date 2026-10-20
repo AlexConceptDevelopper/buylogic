@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import com.buylogic.model.enums.ProductManagementMode;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,8 +14,15 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class CompanyConfiguration {
+
+    public CompanyConfiguration(Integer idCompanyConfiguration, Company company, ProductManagementMode productManagementMode, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.idCompanyConfiguration = idCompanyConfiguration;
+        this.company = company;
+        this.productManagementMode = productManagementMode;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -13,14 +13,16 @@ import com.buylogic.dto.appuser.AppUserUpdateDTO;
 import com.buylogic.service.AppUserService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class AppUserController {
 
     private final AppUserService appUserService;
+
+    public AppUserController(AppUserService appUserService) {
+        this.appUserService = appUserService;
+    }
 
     @GetMapping
     public ResponseEntity<List<AppUserDTO>> getAll() {

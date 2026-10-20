@@ -4,16 +4,23 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class AppUserCreateDTO {
+
+    public AppUserCreateDTO() {}
+
+    public AppUserCreateDTO(String email, String password, String firstName, String lastName, String department, String role) {
+        this.email = email;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.department = department;
+        this.role = role;
+    }
 
     @NotBlank
     @Email

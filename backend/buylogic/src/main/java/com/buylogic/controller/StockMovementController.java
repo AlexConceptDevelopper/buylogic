@@ -13,15 +13,17 @@ import com.buylogic.dto.stockmouvement.StockMovementDTO;
 import com.buylogic.service.StockMovementService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/stock-movements")
-@RequiredArgsConstructor
 @Validated
 public class StockMovementController {
 
     private final StockMovementService stockMovementService;
+
+    public StockMovementController(StockMovementService stockMovementService) {
+        this.stockMovementService = stockMovementService;
+    }
 
     @GetMapping
     public ResponseEntity<List<StockMovementDTO>> getAll() {

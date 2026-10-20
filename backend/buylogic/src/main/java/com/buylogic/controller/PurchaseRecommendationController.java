@@ -8,14 +8,15 @@ import org.springframework.web.bind.annotation.*;
 import com.buylogic.dto.PurchaseRecommendationDTO;
 import com.buylogic.service.PurchaseRecommendationService;
 
-import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequestMapping("/recommendations")
-@RequiredArgsConstructor
 public class PurchaseRecommendationController {
 
     private final PurchaseRecommendationService purchaseRecommendationService;
+
+    public PurchaseRecommendationController(PurchaseRecommendationService purchaseRecommendationService) {
+        this.purchaseRecommendationService = purchaseRecommendationService;
+    }
 
     @GetMapping
     public ResponseEntity<List<PurchaseRecommendationDTO>> getAll() {

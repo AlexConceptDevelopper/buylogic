@@ -2,7 +2,6 @@ package com.buylogic.dto.consumption;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,8 +9,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ConsumptionImportDTO {
+
+    public ConsumptionImportDTO(String fileName, String fileHash, List<ConsumptionImportRowDTO> rows) {
+        this.fileName = fileName;
+        this.fileHash = fileHash;
+        this.rows = rows;
+    }
 
     private String fileName;
     private String fileHash;

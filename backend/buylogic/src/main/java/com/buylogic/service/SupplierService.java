@@ -19,16 +19,19 @@ import com.buylogic.repository.global.CompanyRepository;
 import com.buylogic.repository.global.SupplierRepository;
 import com.buylogic.security.JwtAuthFilter.JwtPrincipal;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SupplierService {
 
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
     private final CompanyRepository companyRepository;
+
+    public SupplierService(SupplierRepository supplierRepository, SupplierMapper supplierMapper, CompanyRepository companyRepository) {
+        this.supplierRepository = supplierRepository;
+        this.supplierMapper = supplierMapper;
+        this.companyRepository = companyRepository;
+    }
 
     public List<SupplierDTO> getAll() {
         Integer companyId = getCurrentCompanyId();
