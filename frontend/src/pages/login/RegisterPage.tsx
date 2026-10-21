@@ -78,10 +78,13 @@ export default function RegisterPage() {
   async function handleFinalSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
 
+    // const isDevBypass = import.meta.env.DEV;
+
     if (!productManagementMode) {
       setError("Veuillez sélectionner le mode de gestion des produits.");
       return;
     }
+    // const finalToken = turnstileToken || "DEV_BYPASS_TOKEN";
 
     if (!turnstileToken) {
       setError("Veuillez valider le captcha Turnstile.");

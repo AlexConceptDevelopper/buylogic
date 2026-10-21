@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Ne pas indexer les routes privées applicatives
+Disallow: /dashboard
+Disallow: /products
+Disallow: /suppliers
+Disallow: /stock
+Disallow: /purchase-orders
+Disallow: /params
+Disallow: /super-admin
+
+Sitemap: https://www.buylogic.fr/sitemap.xml

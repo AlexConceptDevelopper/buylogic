@@ -173,8 +173,8 @@ export default function AlternativeExcelStock() {
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
                     <span>
-                      Accès sécurisé Cloud depuis n'importe quel poste ou tablette
-                      en entrepôt.
+                      Accès sécurisé Cloud depuis n'importe quel poste ou
+                      tablette en entrepôt.
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
@@ -249,8 +249,8 @@ export default function AlternativeExcelStock() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Sérénité Achats</h3>
               <p className="text-slate-400 text-sm">
-                Passez d'une ligne d'alerte de stock directement à l'édition d'un
-                bon de commande PDF propre en quelques secondes.
+                Passez d'une ligne d'alerte de stock directement à l'édition
+                d'un bon de commande PDF propre en quelques secondes.
               </p>
             </div>
           </div>
@@ -261,8 +261,8 @@ export default function AlternativeExcelStock() {
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="text-center">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Pourquoi le passage d'Excel à un logiciel SaaS est incontournable
-                pour structurer sa PME
+                Pourquoi le passage d'Excel à un logiciel SaaS est
+                incontournable pour structurer sa PME
               </h2>
             </div>
 
@@ -279,30 +279,46 @@ export default function AlternativeExcelStock() {
               <p>
                 Le principal écueil d'un fichier Excel de stock réside dans son
                 opacité et l'absence de contrôle de cohérence natif. Une simple
-                cellule écrasée par erreur, une formule de somme mal étirée sur de
-                nouvelles lignes, et c'est tout un inventaire qui se retrouve
+                cellule écrasée par erreur, une formule de somme mal étirée sur
+                de nouvelles lignes, et c'est tout un inventaire qui se retrouve
                 faussé, entraînant des commandes fournisseurs inadaptées, de la
-                trésorerie bloquée ou, pire, des clients déçus suite à une rupture
-                imprévue.
+                trésorerie bloquée ou, pire, des clients déçus suite à une
+                rupture imprévue.
               </p>
               <p>
-                Adopter un outil comme <strong>BuyLogic</strong> ne demande pas de
-                compétences techniques particulières. Pensé pour s'interfacer
+                Adopter un outil comme <strong>BuyLogic</strong> ne demande pas
+                de compétences techniques particulières. Pensé pour s'interfacer
                 directement dans vos habitudes de travail, il supprime la charge
                 mentale liée à la maintenance de fichiers complexes et offre à
-                votre équipe la visibilité et la fiabilité indispensables pour se
-                concentrer sur l'essentiel : développer l'activité.
+                votre équipe la visibilité et la fiabilité indispensables pour
+                se concentrer sur l'essentiel : développer l'activité.
               </p>
             </div>
           </div>
         </section>
 
         {/* Maillage Interne */}
+        {/* Maillage Interne */}
         <div className="my-20 border-t border-slate-800 pt-12 max-w-4xl mx-auto px-4">
           <h3 className="text-xl font-bold text-white mb-6">
             Aller plus loin dans l'optimisation logistique
           </h3>
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Link
+              to="/solutions/logiciel-achat-pme-industrie"
+              className="p-5 rounded-xl border border-slate-800 bg-slate-900/40 hover:border-cyan-400/40 transition block group"
+            >
+              <span className="text-xs text-cyan-400 font-semibold uppercase tracking-wider">
+                Secteur Industrie
+              </span>
+              <h4 className="font-bold text-white mt-1 group-hover:text-cyan-300 transition">
+                PME Industrielles & Ateliers
+              </h4>
+              <p className="text-xs text-slate-400 mt-2">
+                Gérez vos pièces détachées et matières sans vous noyer dans un
+                ERP lourd.
+              </p>
+            </Link>
             <Link
               to="/solutions/gestion-achats-pme"
               className="p-5 rounded-xl border border-slate-800 bg-slate-900/40 hover:border-blue-500/40 transition block group"

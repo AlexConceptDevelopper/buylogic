@@ -74,6 +74,23 @@ export const article: Article = {
       Vous devez donc <strong>toujours</strong> garder un matelas de 40 pièces en stock. Dès que votre niveau descend à ce seuil critique, l'alerte de réapprovisionnement doit se déclencher immédiatement. Pour aller plus loin dans la structuration de vos entrepôts, vous pouvez consulter notre <a href="/solutions/gestion-stock-pme" style="color: #38bdf8; text-decoration: underline;">guide de gestion de stock pour PME</a>.
     </p>
 
+    <!-- BANNIÈRE INTERMÉDIAIRE : OUTIL GRATUIT GENERATEUR BON DE COMMANDE -->
+    <div class="my-10 rounded-2xl border border-cyan-500/30 bg-linear-to-r from-slate-900 via-slate-900 to-cyan-950 p-6 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div class="space-y-1 text-left">
+        <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">Outil Métier 100% Gratuit</span>
+        <h4 class="text-lg font-bold text-white">Votre seuil d'alerte est atteint ?</h4>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Passez votre commande fournisseur immédiatement. Utilisez notre générateur pour éditer, télécharger en PDF ou envoyer votre bon de commande par e-mail sans inscription.
+        </p>
+      </div>
+      <a 
+        href="/outils/generateur-bon-de-commande-pdf-gratuit" 
+        class="shrink-0 inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-5 py-3 text-xs font-bold text-slate-950 transition hover:bg-cyan-300 shadow-lg shadow-cyan-400/20 text-nowrap"
+      >
+        Générer un bon de commande gratuit &rarr;
+      </a>
+    </div>
+
     <h2 class="text-2xl font-bold text-white mt-8 mb-4">3. Pourquoi les tableurs Excel montrent vite leurs limites</h2>
 
     <p>
@@ -81,7 +98,7 @@ export const article: Article = {
     </p>
     
     <p>
-      Sur Excel, cela demande de mettre à jour manuellement chaque historique de vente, de recalculer les moyennes à la main, et de risquer l'erreur de formule au pire moment. C'est précisément à ce stade que les PME perdent un temps précieux ou ratent des alertes de réassort. Si vous cherchez à vous affranchir de ces tableurs, découvrez notre page dédiée aux <a href="/solutions/alternative-excel-gestion-stock" style="color: #38bdf8; text-decoration: underline;">alternatives Excel pour la gestion de stock</a>.
+      Sur Excel, cela demande de mettre à jour manuellement chaque historique de vente, de recalculer les moyennes à la hand, et de risquer l'erreur de formule au pire moment. C'est précisément à ce stade que les PME perdent un temps précieux ou ratent des alertes de réassort. Si vous cherchez à vous affranchir de ces tableurs, découvrez notre page dédiée aux <a href="/solutions/alternative-excel-gestion-stock" style="color: #38bdf8; text-decoration: underline;">alternatives Excel pour la gestion de stock</a>.
     </p>
 
     <h2 class="text-2xl font-bold text-white mt-8 mb-4">4. Passez d'une gestion réactive à une stratégie prédictive</h2>

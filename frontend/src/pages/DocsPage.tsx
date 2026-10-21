@@ -8,6 +8,7 @@ import SupplierManagementDoc from "../components/docs/SupplierManagementDoc";
 import StockManagementDoc from "../components/docs/StockManagementDoc";
 import PredictiveEngineDoc from "../components/docs/PredictiveEngineDoc";
 import CommandesDoc from "../components/docs/CommandesDoc";
+import { Helmet } from "react-helmet";
 
 interface Article {
   id: string;
@@ -212,6 +213,14 @@ export default function DocsPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white selection:bg-cyan-500 selection:text-slate-950 overflow-x-hidden">
+      <Helmet>
+        <title>Documentation & Centre d'Aide | BuyLogic</title>
+        <meta
+          name="description"
+          content="Guides d'utilisation de BuyLogic : gestion des stocks, commandes fournisseurs, import CSV et moteur de réapprovisionnement prédictif."
+        />
+        <link rel="canonical" href="https://buylogic.fr/docs" />
+      </Helmet>
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -left-40 -top-40 h-125 w-125 rounded-full bg-cyan-500/10 blur-[120px]" />
         <div className="absolute right-[-10%] top-1/3 h-125 w-125 rounded-full bg-blue-600/10 blur-[140px]" />

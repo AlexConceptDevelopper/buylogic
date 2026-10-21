@@ -564,20 +564,20 @@ export default function GestionAchatsPme() {
             <h3 className="text-xl font-bold text-white mb-6">
               Approfondir le sujet des achats en PME
             </h3>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-3 gap-4">
               <Link
-                to="/blog"
+                to="/solutions/logiciel-achat-pme-industrie"
                 className="p-5 rounded-xl border border-white/10 bg-slate-900/60 hover:border-cyan-400/40 transition block group"
               >
                 <span className="text-xs text-cyan-400 font-semibold uppercase tracking-wider">
-                  Blog BuyLogic
+                  Secteur Industrie
                 </span>
                 <h4 className="font-bold text-white mt-1 group-hover:text-cyan-300 transition">
-                  Comment structurer ses achats sans usine à gaz
+                  Logiciel d'Achat PME Industrielle
                 </h4>
                 <p className="text-xs text-slate-400 mt-2">
-                  Découvrez nos méthodes pour fluidifier vos commandes
-                  fournisseurs.
+                  Optimisez vos approvisionnements atelier et maintenance sans
+                  ERP.
                 </p>
               </Link>
               <Link
@@ -591,8 +591,22 @@ export default function GestionAchatsPme() {
                   Piloter sa gestion de stock PME
                 </h4>
                 <p className="text-xs text-slate-400 mt-2">
-                  Évitez les ruptures et suivez vos flux de marchandises en temps
-                  réel.
+                  Évitez les ruptures et suivez vos flux de marchandises en
+                  temps réel.
+                </p>
+              </Link>
+              <Link
+                to="/blog"
+                className="p-5 rounded-xl border border-white/10 bg-slate-900/60 hover:border-cyan-400/40 transition block group"
+              >
+                <span className="text-xs text-cyan-400 font-semibold uppercase tracking-wider">
+                  Blog BuyLogic
+                </span>
+                <h4 className="font-bold text-white mt-1 group-hover:text-cyan-300 transition">
+                  Structurer ses achats PME
+                </h4>
+                <p className="text-xs text-slate-400 mt-2">
+                  Nos guides et méthodes pour fluidifier vos commandes.
                 </p>
               </Link>
             </div>

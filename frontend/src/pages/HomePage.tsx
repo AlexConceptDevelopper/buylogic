@@ -8,10 +8,20 @@ import BenefitsSection from "../components/home/BenefitsSection";
 import Navbar from "../components/Navbar";
 import TrialOffer from "../components/home/TrialOffer";
 import Footer from "../components/Footer";
+import { Helmet } from "react-helmet";
+import FaqSection from "../components/home/FaqSection";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white selection:bg-cyan-500 selection:text-slate-950 overflow-x-hidden">
+      <Helmet>
+        <title>BuyLogic — Logiciel d'Achat & Gestion des Stocks pour PME</title>
+        <meta
+          name="description"
+          content="Logiciel de gestion des achats et approvisionnements PME. L'alternative à Excel pour automatiser vos commandes fournisseurs, éviter les ruptures et piloter vos stocks."
+        />
+        <link rel="canonical" href="https://buylogic.fr/" />
+      </Helmet>
       {/* Effets de lumière dynamiques et subtils */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -left-40 -top-40 h-125 w-125 rounded-full bg-cyan-500/15 blur-[120px]" />
@@ -23,13 +33,14 @@ export default function HomePage() {
 
       <main className="relative space-y-20 pb-20">
         <HeroSection />
-        <TrialOffer />
         <DashboardPreview />
         <BenefitsSection />
         <FeaturesSection />
-        <BusinessModelsSection />
         <HowItWorksSection />
         <CompatibilityBanner />
+        <BusinessModelsSection />
+        <FaqSection/>
+        <TrialOffer />
       </main>
 
       <Footer />

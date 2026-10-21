@@ -1,266 +1,215 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import {
+  ChevronDown,
+  FileText,
+  BookOpen,
+  HelpCircle,
+  Factory,
+  FileSpreadsheet,
+  ShoppingCart,
+  Package,
+  Calculator,
+} from "lucide-react";
 
 export default function Navbar() {
-  const { user, isAuthenticated, loading, logout } = useAuth();
-
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Fermer le menu profil desktop si on clique en dehors
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setProfileOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const [solutionsOpen, setSolutionsOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/90 backdrop-blur-xl">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-        <Link
-          to="/"
-          className="flex cursor-pointer items-center gap-3"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-400/20">
-            <span className="text-lg font-black">B</span>
-          </div>
-
-          <div>
-            <p className="text-lg font-bold tracking-tight text-white">
-              BuyLogic
-            </p>
-
-            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500">
-              Acheter au bon moment
-            </p>
-          </div>
-        </Link>
-
-        {/* Navigation Desktop */}
-        <nav className="hidden items-center gap-8 md:flex">
-          {/* Liens publics toujours visibles (connecté ou non) */}
-          <a
-            href="#features"
-            className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
-          >
-            Fonctionnalités
-          </a>
-
-          <a
-            href="#how-it-works"
-            className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
-          >
-            Comment ça marche
-          </a>
-
-          <Link
-            to="/docs"
-            className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
-          >
-            Documentation
+    <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-white/10 print:hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo Brand */}
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-cyan-400 rounded-xl flex items-center justify-center text-slate-950 font-black text-xl shadow-md shadow-cyan-400/20">
+              B
+            </div>
+            <div>
+              <span className="font-black text-white text-lg tracking-tight block leading-none">
+                BuyLogic
+              </span>
+              <span className="text-[9px] font-bold text-slate-400 tracking-wider uppercase block mt-0.5">
+                LOGICIEL D'ACHAT & STOCKS PME
+              </span>
+            </div>
           </Link>
 
-          <Link
-            to="/blog"
-            className="cursor-pointer text-sm text-slate-400 transition hover:text-white"
-          >
-            Blog
-          </Link>
-
-          {/* Si non connecté : bouton Connexion */}
-          {!isAuthenticated && (
-            <Link
-              to="/login"
-              className="cursor-pointer rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-white/20 hover:bg-white/5"
+          {/* Navigation Centrale (Aérée) */}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+            {/* Dropdown Solutions */}
+            <div
+              className="relative"
+              onMouseEnter={() => setSolutionsOpen(true)}
+              onMouseLeave={() => setSolutionsOpen(false)}
             >
-              Connexion
-            </Link>
-          )}
-
-          {/* Si connecté : Menu Profil avec positionnement absolute propre */}
-          {!loading && isAuthenticated && user && (
-            <div className="relative" ref={dropdownRef}>
-              <button
-                type="button"
-                aria-expanded={profileOpen}
-                aria-haspopup="menu"
-                onClick={() => setProfileOpen((value) => !value)}
-                className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/3 px-3 py-2 transition hover:border-white/20 hover:bg-white/5"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-400 text-sm font-black text-slate-950">
-                  {user.firstName?.charAt(0) || ""}
-                  {user.lastName?.charAt(0) || ""}
-                </div>
-
-                <div className="hidden text-left sm:block">
-                  <p className="text-sm font-semibold text-white">
-                    {user.firstName} {user.lastName}
-                  </p>
-
-                  <p className="text-[11px] uppercase tracking-wider text-slate-500">
-                    {user.role}
-                  </p>
-                </div>
-
-                <svg
-                  className={`h-4 w-4 text-slate-500 transition ${
-                    profileOpen ? "rotate-180" : ""
-                  }`}
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+              <button className="flex items-center gap-1 hover:text-white py-2 cursor-pointer transition">
+                <span>Solutions</span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${solutionsOpen ? "rotate-180 text-cyan-400" : ""}`}
+                />
               </button>
 
-              {profileOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 top-full mt-2 w-64 z-50 rounded-2xl border border-white/10 bg-slate-900 p-2 shadow-2xl shadow-black/80 backdrop-blur-xl"
-                >
-                  <div className="border-b border-white/5 px-3 py-3">
-                    <p className="text-sm font-semibold text-white">
-                      {user.firstName} {user.lastName}
-                    </p>
-
-                    <p className="mt-1 truncate text-xs text-slate-500">
-                      {user.email}
-                    </p>
-                  </div>
-
+              {solutionsOpen && (
+                <div className="absolute top-full left-0 w-64 bg-slate-900 border border-white/10 rounded-xl p-2 shadow-2xl space-y-1 backdrop-blur-xl">
                   <Link
-                    to="/dashboard"
-                    role="menuitem"
-                    onClick={() => setProfileOpen(false)}
-                    className="mt-2 block cursor-pointer rounded-xl px-3 py-2.5 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white"
+                    to="/solutions/gestion-achats-pme"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-800 transition text-xs text-slate-300 hover:text-white"
                   >
-                    Tableau de bord
+                    <ShoppingCart className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <div className="font-bold">Gestion des Achats</div>
+                      <div className="text-[10px] text-slate-400">
+                        Commandes & Fournisseurs
+                      </div>
+                    </div>
                   </Link>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProfileOpen(false);
-                      logout();
-                    }}
-                    className="mt-1 w-full cursor-pointer rounded-xl px-3 py-2.5 text-left text-sm text-red-300 transition hover:bg-red-400/5 hover:text-red-200"
+                  <Link
+                    to="/solutions/gestion-stock-pme"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-800 transition text-xs text-slate-300 hover:text-white"
                   >
-                    Déconnexion
-                  </button>
+                    <Package className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <div className="font-bold">Gestion des Stocks</div>
+                      <div className="text-[10px] text-slate-400">
+                        Suivi temps réel & alertes
+                      </div>
+                    </div>
+                  </Link>
+                  <Link
+                    to="/solutions/logiciel-achat-pme-industrie"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-800 transition text-xs text-slate-300 hover:text-white"
+                  >
+                    <Factory className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <div className="font-bold">
+                        PME Industrielle & Ateliers
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        Pour pièces détachées & MRO
+                      </div>
+                    </div>
+                  </Link>
+                  <Link
+                    to="/solutions/alternative-excel-gestion-stock"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-800 transition text-xs text-slate-300 hover:text-white"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <div className="font-bold">Alternative Excel</div>
+                      <div className="text-[10px] text-slate-400">
+                        Remplacer vos tableurs
+                      </div>
+                    </div>
+                  </Link>
                 </div>
               )}
             </div>
-          )}
-        </nav>
 
-        {/* Bouton Sandwich Mobile */}
-        <button
-          type="button"
-          aria-label="Ouvrir le menu"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="relative flex h-10 w-10 cursor-pointer flex-col items-center justify-center rounded-lg border border-white/10 text-slate-300 transition hover:border-white/20 hover:bg-white/5 md:hidden"
-        >
-          <span
-            className={`block h-0.5 w-5 bg-current transition-transform duration-300 ${
-              mobileMenuOpen ? "translate-y-2 rotate-45" : ""
-            }`}
-          />
-          <span
-            className={`my-1.5 block h-0.5 w-5 bg-current transition-opacity duration-300 ${
-              mobileMenuOpen ? "opacity-0" : ""
-            }`}
-          />
-          <span
-            className={`block h-0.5 w-5 bg-current transition-transform duration-300 ${
-              mobileMenuOpen ? "-translate-y-2 -rotate-45" : ""
-            }`}
-          />
-        </button>
-      </div>
+            {/* Dropdown Ressources */}
+            <div
+              className="relative"
+              onMouseEnter={() => setResourcesOpen(true)}
+              onMouseLeave={() => setResourcesOpen(false)}
+            >
+              <button className="flex items-center gap-1 hover:text-white py-2 cursor-pointer transition">
+                <span>Ressources</span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${resourcesOpen ? "rotate-180 text-cyan-400" : ""}`}
+                />
+              </button>
 
-      {/* Menu Mobile Déroulant */}
-      <div
-        className={`absolute top-full left-0 w-full z-50 border-b border-white/10 bg-slate-950/95 shadow-2xl backdrop-blur-2xl transition-all duration-300 ease-in-out md:hidden ${
-          mobileMenuOpen ? "max-h-125 opacity-100 px-6 py-5 pointer-events-auto" : "max-h-0 opacity-0 px-6 py-0 border-none pointer-events-none overflow-hidden"
-        }`}
-      >
-        <div className="flex flex-col space-y-4">
-          {/* Liens publics mobiles toujours visibles */}
-          <a
-            href="#features"
-            onClick={() => setMobileMenuOpen(false)}
-            className="text-sm text-slate-300 transition hover:text-white"
-          >
-            Fonctionnalités
-          </a>
-          <a
-            href="#how-it-works"
-            onClick={() => setMobileMenuOpen(false)}
-            className="text-sm text-slate-300 transition hover:text-white"
-          >
-            Comment ça marche
-          </a>
-          <Link
-            to="/docs"
-            onClick={() => setMobileMenuOpen(false)}
-            className="text-sm text-slate-300 transition hover:text-white"
-          >
-            Documentation
-          </Link>
-          <Link
-            to="/blog"
-            onClick={() => setMobileMenuOpen(false)}
-            className="text-sm text-slate-300 transition hover:text-white"
-          >
-            Blog
-          </Link>
+              {resourcesOpen && (
+                <div className="absolute top-full left-0 w-72 bg-slate-900 border border-white/10 rounded-xl p-2 shadow-2xl space-y-1 backdrop-blur-xl">
+                  <Link
+                    to="/docs"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-800 transition text-xs text-slate-300 hover:text-white"
+                  >
+                    <HelpCircle className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <div className="font-bold">Documentation</div>
+                      <div className="text-[10px] text-slate-400">
+                        Guides d'utilisation & API
+                      </div>
+                    </div>
+                  </Link>
+                  <Link
+                    to="/blog"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-800 transition text-xs text-slate-300 hover:text-white"
+                  >
+                    <BookOpen className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <div className="font-bold">Blog Logistique</div>
+                      <div className="text-[10px] text-slate-400">
+                        Conseils & méthodes PME
+                      </div>
+                    </div>
+                  </Link>
+                  <Link
+                    to="/outils/calculateur-stock-securite"
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 transition text-xs text-slate-300 hover:text-white border border-cyan-500/20 bg-cyan-500/5 mt-1"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Calculator className="w-4 h-4 text-cyan-400" />
+                      <div>
+                        <div className="font-bold text-cyan-300">
+                          Calculateur Stock de Sécurité
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          Outil de calcul interactif
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-400 text-slate-950">
+                      Gratuit
+                    </span>
+                  </Link>
+                  <Link
+                    to="/outils/generateur-bon-de-commande-pdf-gratuit"
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 transition text-xs text-slate-300 hover:text-white border border-cyan-500/20 bg-cyan-500/5 mt-1"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FileText className="w-4 h-4 text-cyan-400" />
+                      <div>
+                        <div className="font-bold text-cyan-300">
+                          Générateur Bon de Commande
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          Création PDF gratuite
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-400 text-slate-950">
+                      Gratuit
+                    </span>
+                  </Link>
+                </div>
+              )}
+            </div>
 
-          {!isAuthenticated ? (
+            <Link
+              to="/#comment-ca-marche"
+              className="hover:text-white transition"
+            >
+              Comment ça marche
+            </Link>
+          </nav>
+
+          {/* Boutons Connexion / Action */}
+          <div className="flex items-center gap-3">
             <Link
               to="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="mt-2 flex items-center justify-center rounded-xl bg-cyan-400 px-4 py-3 text-center text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+              className="px-4 py-2 text-xs font-bold text-slate-200 border border-white/10 hover:border-white/20 rounded-xl transition hover:bg-slate-900"
             >
               Connexion
             </Link>
-          ) : (
-            <div className="border-t border-white/10 pt-4 mt-2 flex flex-col space-y-3">
-              <div className="pb-1">
-                <p className="text-sm font-semibold text-white">
-                  {user?.firstName} {user?.lastName}
-                </p>
-                <p className="text-xs text-slate-500">{user?.email}</p>
-              </div>
-              <Link
-                to="/dashboard"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm text-slate-300 transition hover:text-white"
-              >
-                Tableau de bord
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  logout();
-                }}
-                className="text-left text-sm text-red-400 transition hover:text-red-300 cursor-pointer"
-              >
-                Déconnexion
-              </button>
-            </div>
-          )}
+            <Link
+              to="/register"
+              className="hidden sm:inline-flex px-4 py-2 text-xs font-bold text-slate-950 bg-cyan-400 hover:bg-cyan-300 rounded-xl transition shadow-md shadow-cyan-400/20"
+            >
+              Essai Gratuit
+            </Link>
+          </div>
         </div>
       </div>
     </header>

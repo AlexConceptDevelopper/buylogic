@@ -35,6 +35,9 @@ import GestionStockPme from "./pages/solutions/GestionStockPme";
 import AlternativeExcelStock from "./pages/solutions/AlternativeExcelStock";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import LogicielAchatPmeIndustrie from "./pages/solutions/LogicielAchatPmeIndustrie";
+import GenerateurBonCommande from "./pages/outils/GenerateurBonCommande";
+import CalculateurStockPage from "./pages/outils/CalculateurStockPage";
 
 export default function App() {
   return (
@@ -52,11 +55,14 @@ export default function App() {
           <Route path="/cgu" element={<TermsOfService />} />
           <Route path="/confidentialite" element={<PrivacyPolicy />} />
           <Route path="/docs" element={<DocsPage />} /> 
+          <Route path="/outils/generateur-bon-de-commande-pdf-gratuit" element={<GenerateurBonCommande />} />
+          <Route path="/outils/calculateur-stock-securite" element={<CalculateurStockPage />} />
 
           {/* Routes solutions / SEO */}
           <Route path="/solutions/gestion-achats-pme" element={<GestionAchatsPme />} />
           <Route path="/solutions/gestion-stock-pme" element={<GestionStockPme />} />
           <Route path="/solutions/alternative-excel-gestion-stock" element={<AlternativeExcelStock />} />
+          <Route path="/solutions/logiciel-achat-pme-industrie" element={<LogicielAchatPmeIndustrie />} />
 
           {/* Routes Blog */}
           <Route path="/blog" element={<Blog />} />
