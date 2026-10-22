@@ -1,7 +1,7 @@
 # Étape 1 : Build de l'application avec Maven
 FROM eclipse-temurin:24-jdk AS build
 WORKDIR /app
-COPY buylogic/ .
+COPY . .
 RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
