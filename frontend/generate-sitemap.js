@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { articles } from './src/data/articles';
+import { articles } from './src/data/articles.ts';
 
 const DOMAIN = 'https://www.buylogic.fr';
 const today = new Date().toISOString().split('T')[0];
