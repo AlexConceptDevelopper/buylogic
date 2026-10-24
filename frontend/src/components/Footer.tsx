@@ -9,7 +9,15 @@ export default function Footer() {
           <p className="text-white font-bold text-lg">BuyLogic</p>
           <p className="text-sm">© 2026 BuyLogic. Tous droits réservés.</p>
           <p className="text-xs text-slate-400">
-            Une solution éditée par CubTaik{" "}
+            Une solution éditée par{" "}
+            <a 
+              href="https://www.cubtaik.fr" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-slate-300 hover:text-cyan-400 font-semibold underline transition"
+            >
+              CubTaik
+            </a>
           </p>
         </div>
 
