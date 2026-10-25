@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-white/10 bg-slate-950 text-slate-300 print:hidden text-xs">
-      <div className="mx-auto max-w-7xl px-6 py-12">
-        {/* GRILLE 4 COLONNES SUR DESKTOP */}
+    <footer className="relative border-t border-white/10 bg-slate-950 text-slate-300 print:hidden text-xs w-full">
+      {/* Conteneur principal en w-full avec un padding horizontal généreux */}
+      <div className="w-full px-6 sm:px-10 lg:px-16 py-12">
+        
+        {/* GRILLE 4 COLONNES PLEINE LARGEUR */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           
           {/* COLONNE 1 : BRAND & ÉDITEUR */}
@@ -71,7 +73,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* COLONNE 4 : LÉGAL & RÉSEAUX SOCIALS */}
+          {/* COLONNE 4 : LÉGAL & RÉSEAUX SOCIAUX */}
           <div className="space-y-3">
             <p className="text-white font-semibold text-xs uppercase tracking-wider">Informations Légales</p>
             <ul className="space-y-2 text-slate-400 mb-4">
@@ -92,7 +94,7 @@ export default function Footer() {
               </li>
             </ul>
 
-            {/* Réseaux Sociaux en bas de la 4ème colonne */}
+            {/* Réseaux Sociaux */}
             <div className="pt-2">
               <p className="text-white font-semibold text-[11px] mb-2">Suivez-nous</p>
               <div className="flex items-center gap-2">
@@ -135,7 +137,7 @@ export default function Footer() {
 
         </div>
 
-        {/* BARRE DU BAS : COPYRIGHT */}
+        {/* BARRE DU BAS : COPYRIGHT PLEINE LARGEUR */}
         <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-slate-500 text-[11px] gap-2">
           <p>© 2026 BuyLogic. Tous droits réservés.</p>
           <p>Logiciel de gestion de stock & d'achats PME</p>
