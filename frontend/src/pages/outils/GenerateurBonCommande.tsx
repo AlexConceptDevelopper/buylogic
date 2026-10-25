@@ -339,7 +339,7 @@ export default function GenerateurBonCommande() {
           <div className="mt-12 bg-linear-to-r from-slate-900 via-slate-900 to-cyan-950 border border-cyan-500/30 rounded-2xl p-8 print:hidden text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
             <div className="space-y-2 max-w-xl">
               <h3 className="text-lg font-bold text-white">
-                Marre de créer vos bons de commande à la hand ?
+                Marre de créer vos bons de commande à la main ?
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 <strong>BuyLogic</strong> génère automatiquement vos bons de commande PDF en un clic quand vos stocks atteignent le seuil critique.
