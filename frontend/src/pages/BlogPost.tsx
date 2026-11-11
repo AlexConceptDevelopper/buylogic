@@ -84,42 +84,54 @@ export default function BlogPost() {
             <span>{article.readTime}</span>
           </div>
 
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl mb-6 leading-tight">
+          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl mb-8 leading-tight">
             {article.title}
           </h1>
-
-          {/* Barre de partage social dynamique pour TOUS les articles */}
-          <div className="flex flex-wrap items-center gap-3 mb-8 p-4 rounded-xl bg-slate-900 border border-white/10 text-sm">
-            <span className="text-slate-400 font-medium">Partager cet article :</span>
-            <a
-              href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
-            >
-              LinkedIn
-            </a>
-            <a
-              href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
-            >
-              X (Twitter)
-            </a>
-            <a
-              href={`mailto:?subject=${encodedTitle}&body=Découvre cet article intéressant : ${currentUrl}`}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
-            >
-              E-mail
-            </a>
-          </div>
 
           {/* Corps de l'article */}
           <div
             className="prose prose-invert max-w-none text-slate-300 space-y-6 leading-relaxed pt-6 border-t border-white/10 text-lg sm:text-xl"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
+
+          {/* Barre de partage social dynamique en BAS de page */}
+          <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 p-6 rounded-2xl bg-slate-900 border border-white/10 text-sm">
+            <span className="text-slate-300 font-semibold text-base">
+              Vous avez aimé cet article ? Partagez-le :
+            </span>
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors font-medium"
+              >
+                LinkedIn
+              </a>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors font-medium"
+              >
+                Facebook
+              </a>
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors font-medium"
+              >
+                X (Twitter)
+            </a>
+              <a
+                href={`mailto:?subject=${encodedTitle}&body=Découvre cet article intéressant : ${currentUrl}`}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors font-medium"
+              >
+                E-mail
+              </a>
+            </div>
+          </div>
         </article>
       </main>
 
