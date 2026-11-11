@@ -5,7 +5,7 @@ import { article as factureElectronique } from "./blog/facture-electronique-arti
 import { article as arnaquesFournisseurs } from "./blog/arnaques-fournisseurs-virements-pme-comment-proteger-achats.ts";
 import { article as maverickBuying } from "./blog/stopper-maverick-buying-achats-sauvages-pme.ts";
 import { article as otif } from "./blog/mesurer-performance-fournisseur-indicateur-otif-pme.ts";
-import { article as gestionLitiges } from "./blog/gestion-litiges-fournisseurs-factures-reliquats.tsx";
+import { article as gestionLitiges } from "./blog/gestion-litiges-fournisseurs-factures-reliquats.ts";
 
 export const articles: Article[] = [
   stockSecurite,
