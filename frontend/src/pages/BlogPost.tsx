@@ -38,6 +38,13 @@ export default function BlogPost() {
         <meta name="description" content={article.description} />
         <link rel="canonical" href={currentUrl} />
 
+        {/* Balises Open Graph dynamiques pour Facebook, LinkedIn, etc. */}
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={article.title} />
+        <meta property="og:description" content={article.description} />
+        <meta property="og:url" content={currentUrl} />
+        <meta property="og:site_name" content="BuyLogic" />
+
         {/* Données structurées JSON-LD pour Google */}
         <script type="application/ld+json">
           {JSON.stringify({
@@ -94,17 +101,22 @@ export default function BlogPost() {
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
 
-          {/* Barre de partage social dynamique en BAS de page */}
-          <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 p-6 rounded-2xl bg-slate-900 border border-white/10 text-sm">
-            <span className="text-slate-300 font-semibold text-base">
-              Vous avez aimé cet article ? Partagez-le :
-            </span>
+          {/* Barre de partage social dynamique et colorée en BAS de page */}
+          <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap items-center justify-between gap-6 p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/40 border border-cyan-500/20 shadow-2xl">
+            <div>
+              <span className="text-white font-bold text-lg block mb-1">
+                Vous avez trouvé cet article utile ?
+              </span>
+              <p className="text-slate-400 text-sm">
+                Partagez-le avec votre réseau et vos collaborateurs.
+              </p>
+            </div>
             <div className="flex flex-wrap items-center gap-3">
               <a
                 href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors font-medium"
+                className="px-4 py-2.5 rounded-xl bg-[#0A66C2]/20 hover:bg-[#0A66C2]/40 text-[#0A66C2] border border-[#0A66C2]/30 transition-colors font-semibold text-sm flex items-center gap-2"
               >
                 LinkedIn
               </a>
@@ -112,7 +124,7 @@ export default function BlogPost() {
                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors font-medium"
+                className="px-4 py-2.5 rounded-xl bg-[#1877F2]/20 hover:bg-[#1877F2]/40 text-[#1877F2] border border-[#1877F2]/30 transition-colors font-semibold text-sm flex items-center gap-2"
               >
                 Facebook
               </a>
@@ -120,13 +132,13 @@ export default function BlogPost() {
                 href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors font-medium"
+                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors font-semibold text-sm flex items-center gap-2"
               >
                 X (Twitter)
-            </a>
+              </a>
               <a
                 href={`mailto:?subject=${encodedTitle}&body=Découvre cet article intéressant : ${currentUrl}`}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors font-medium"
+                className="px-4 py-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30 transition-colors font-semibold text-sm flex items-center gap-2"
               >
                 E-mail
               </a>
