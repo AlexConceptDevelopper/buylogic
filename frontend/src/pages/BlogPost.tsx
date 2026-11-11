@@ -9,7 +9,7 @@ export default function BlogPost() {
 
   const article = articles.find((a) => a.slug === slug);
 
-  // Cas où l'article n'existe pas (on garde juste un Helmet simple d'erreur)
+  // Cas où l'article n'existe pas
   if (!article) {
     return (
       <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center">
@@ -26,16 +26,17 @@ export default function BlogPost() {
     );
   }
 
-  // Cas où l'article existe : le JSON-LD est ici en toute sécurité
+  // URL absolue dynamique de l'article en cours pour le partage
+  const currentUrl = `https://buylogic.fr/blog/${article.slug}`;
+  const encodedTitle = encodeURIComponent(article.title);
+  const encodedUrl = encodeURIComponent(currentUrl);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-400 selection:text-slate-950">
       <Helmet>
         <title>{article.title} | Blog BuyLogic</title>
         <meta name="description" content={article.description} />
-        <link
-          rel="canonical"
-          href={`https://buylogic.fr/blog/${article.slug}`}
-        />
+        <link rel="canonical" href={currentUrl} />
 
         {/* Données structurées JSON-LD pour Google */}
         <script type="application/ld+json">
@@ -83,9 +84,36 @@ export default function BlogPost() {
             <span>{article.readTime}</span>
           </div>
 
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl mb-8 leading-tight">
+          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl mb-6 leading-tight">
             {article.title}
           </h1>
+
+          {/* Barre de partage social dynamique pour TOUS les articles */}
+          <div className="flex flex-wrap items-center gap-3 mb-8 p-4 rounded-xl bg-slate-900 border border-white/10 text-sm">
+            <span className="text-slate-400 font-medium">Partager cet article :</span>
+            <a
+              href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+            >
+              LinkedIn
+            </a>
+            <a
+              href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+            >
+              X (Twitter)
+            </a>
+            <a
+              href={`mailto:?subject=${encodedTitle}&body=Découvre cet article intéressant : ${currentUrl}`}
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+            >
+              E-mail
+            </a>
+          </div>
 
           {/* Corps de l'article */}
           <div
