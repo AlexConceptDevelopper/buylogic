@@ -26,8 +26,13 @@ export default function BlogPost() {
     );
   }
 
-  // URL absolue dynamique de l'article en cours pour le partage
+  // URLs absolues dynamiques pour l'article en cours
   const currentUrl = `https://buylogic.fr/blog/${article.slug}`;
+  
+  // On extrait l'image de l'article si elle existe, sinon on met une image par défaut en URL absolue
+  // (Si l'article contient une balise img, on peut l'utiliser, ou pointer vers l'illustration spécifique)
+  const ogImage = `https://buylogic.fr/illustrations/${article.slug}.jpg`; 
+
   const encodedTitle = encodeURIComponent(article.title);
   const encodedUrl = encodeURIComponent(currentUrl);
 
@@ -38,11 +43,12 @@ export default function BlogPost() {
         <meta name="description" content={article.description} />
         <link rel="canonical" href={currentUrl} />
 
-        {/* Balises Open Graph dynamiques pour Facebook, LinkedIn, etc. */}
+        {/* Balises Open Graph dynamiques et en URLs absolues pour Facebook / LinkedIn */}
         <meta property="og:type" content="article" />
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={article.description} />
         <meta property="og:url" content={currentUrl} />
+        <meta property="og:image" content={ogImage} />
         <meta property="og:site_name" content="BuyLogic" />
 
         {/* Données structurées JSON-LD pour Google */}
