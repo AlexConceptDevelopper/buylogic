@@ -6,6 +6,7 @@ import { article as arnaquesFournisseurs } from "./blog/arnaques-fournisseurs-vi
 import { article as maverickBuying } from "./blog/stopper-maverick-buying-achats-sauvages-pme.ts";
 import { article as otif } from "./blog/mesurer-performance-fournisseur-indicateur-otif-pme.ts";
 import { article as gestionLitiges } from "./blog/gestion-litiges-fournisseurs-factures-reliquats.ts";
+import { article as criseAchats } from "./blog/negoce-materiaux-crise-achats-sauvent-marge.ts";
 
 export const articles: Article[] = [
   stockSecurite,
@@ -15,4 +16,5 @@ export const articles: Article[] = [
   maverickBuying,
   otif,
   gestionLitiges,
+  criseAchats,
 ];
