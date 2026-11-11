@@ -16,5 +16,5 @@ export const articles: Article[] = [
   maverickBuying,
   otif,
   gestionLitiges,
-  
+  criseAchats,
 ];
