@@ -56,7 +56,7 @@ export const article: Article = {
     <div class="my-12 p-8 rounded-2xl bg-linear-to-r from-cyan-950/80 to-slate-900 border border-cyan-500/30 text-center">
       <h3 class="text-2xl font-bold text-white mb-3">Reprenez le contrôle de vos marges avec BuyLogic</h3>
       <p class="text-slate-300 mb-6 max-w-2xl mx-auto">Pilotez vos tarifs fournisseurs, automatisez vos rapprochements de factures et purgez vos stocks dormants depuis une seule plateforme centralisée taillée pour les PME.</p>
-      <a href="/tarifs" class="inline-block bg-cyan-400 text-slate-950 font-bold px-8 py-3 rounded-xl hover:bg-cyan-300 transition-colors shadow-lg shadow-cyan-400/20">
+      <a href="/register" class="inline-block bg-cyan-400 text-slate-950 font-bold px-8 py-3 rounded-xl hover:bg-cyan-300 transition-colors shadow-lg shadow-cyan-400/20">
         Découvrir nos offres d'abonnement
       </a>
     </div>
