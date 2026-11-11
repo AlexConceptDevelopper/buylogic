@@ -26,12 +26,9 @@ export default function BlogPost() {
     );
   }
 
-  // URLs absolues dynamiques pour l'article en cours
-  const currentUrl = `https://buylogic.fr/blog/${article.slug}`;
-  
-  // On extrait l'image de l'article si elle existe, sinon on met une image par défaut en URL absolue
-  // (Si l'article contient une balise img, on peut l'utiliser, ou pointer vers l'illustration spécifique)
-  const ogImage = `https://buylogic.fr/illustrations/${article.slug}.jpg`; 
+  // URLs absolues avec www pour correspondre exactement à la redirection du site
+  const currentUrl = `https://www.buylogic.fr/blog/${article.slug}`;
+  const ogImage = `https://www.buylogic.fr/logo.png`; 
 
   const encodedTitle = encodeURIComponent(article.title);
   const encodedUrl = encodeURIComponent(currentUrl);
@@ -43,7 +40,7 @@ export default function BlogPost() {
         <meta name="description" content={article.description} />
         <link rel="canonical" href={currentUrl} />
 
-        {/* Balises Open Graph dynamiques et en URLs absolues pour Facebook / LinkedIn */}
+        {/* Balises Open Graph dynamiques avec URLs absolues et www */}
         <meta property="og:type" content="article" />
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={article.description} />
@@ -68,7 +65,7 @@ export default function BlogPost() {
               name: "BuyLogic",
               logo: {
                 "@type": "ImageObject",
-                url: "https://buylogic.fr/logo.png",
+                url: "https://www.buylogic.fr/logo.png",
               },
             },
           })}
@@ -108,7 +105,7 @@ export default function BlogPost() {
           />
 
           {/* Barre de partage social dynamique et colorée en BAS de page */}
-          <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap items-center justify-between gap-6 p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/40 border border-cyan-500/20 shadow-2xl">
+          <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap items-center justify-between gap-6 p-8 rounded-3xl bg-linear-to-r from-slate-900 via-slate-900 to-cyan-950/40 border shadow-2xl">
             <div>
               <span className="text-white font-bold text-lg block mb-1">
                 Vous avez trouvé cet article utile ?
