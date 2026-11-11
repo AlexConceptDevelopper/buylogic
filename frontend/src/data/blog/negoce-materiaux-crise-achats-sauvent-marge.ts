@@ -23,7 +23,7 @@ export const article: Article = {
     <h2 class="text-2xl font-bold text-white mt-8 mb-4">1. L'illusion du volume : pourquoi la guerre des prix à la vente est suicidaire</h2>
     <p>Accorder 5% ou 10% de remise supplémentaire à un artisan pour remporter une commande de gros œuvre peut sembler indolore sur le moment. Pourtant, le calcul financier est implacable :</p>
     <ul class="list-disc pl-6 space-y-2 my-4">
-      <li><strong>Le piège de la compensation :</strong> Si votre marge brute habituelle est de 25%, une baisse de prix de 5% exige de vendre <strong>25% de volume en plus</strong> uniquement pour maintenir le même niveau de marge en Euros. Dans un marché BTP qui tourne au ralentir, ce volume supplémentaire n'existe tout simplement pas.</li>
+      <li><strong>Le piège de la compensation :</strong> Si votre marge brute habituelle est de 25%, une baisse de prix de 5% exige de vendre <strong>25% de volume en plus</strong> uniquement pour maintenir le même niveau de marge en Euros. Dans un marché BTP qui tourne au ralenti, ce volume supplémentaire n'existe tout simplement pas.</li>
       <li><strong>La destruction de la valeur perçue :</strong> En habituant vos clients récurrents à des rabais exceptionnels, vous créez un précédent dont il sera impossible de sortir au retour de la reprise. Vous dévalorisez votre stock et vos services associés (logistique de chantier, déchargement grue, conseils techniques).</li>
     </ul>
 
