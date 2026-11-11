@@ -21,7 +21,7 @@ export const article: Article = {
 
     <!-- Illustration d'illustration pour casser la linéarité -->
     <div class="my-8 rounded-2xl overflow-hidden border border-white/10 bg-slate-900/50 p-4">
-      <img src="illustrations/gestion-litige.jpg" alt="Contrôle des marchandises et gestion des litiges fournisseurs en entrepôt" class="w-full h-auto rounded-xl object-cover" />
+      <img src="/illustrations/gestion-litige.jpg" alt="Contrôle des marchandises et gestion des litiges fournisseurs en entrepôt" class="w-full h-auto rounded-xl object-cover" />
       <p class="text-xs text-slate-400 text-center mt-3">Un contrôle rigoureux dès le quai de réception est la première étape pour sécuriser vos avoirs.</p>
     </div>
 
