@@ -26,9 +26,9 @@ export default function BlogPost() {
     );
   }
 
-  // URLs absolues avec www pour correspondre exactement à la redirection du site
+  // URLs absolues avec www et l'image spécifique de l'article en cours
   const currentUrl = `https://www.buylogic.fr/blog/${article.slug}`;
-  const ogImage = `https://www.buylogic.fr/logo.png`; 
+  const ogImage = `https://www.buylogic.fr/illustrations/${article.slug}.jpg`; 
 
   const encodedTitle = encodeURIComponent(article.title);
   const encodedUrl = encodeURIComponent(currentUrl);
@@ -40,7 +40,7 @@ export default function BlogPost() {
         <meta name="description" content={article.description} />
         <link rel="canonical" href={currentUrl} />
 
-        {/* Balises Open Graph dynamiques avec URLs absolues et www */}
+        {/* Balises Open Graph dynamiques avec URLs absolues et image de l'article */}
         <meta property="og:type" content="article" />
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={article.description} />
