@@ -22,7 +22,26 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(
-            ResourceNotFoundException exception) {
+            ResourceNotFoundException exception, HttpServletRequest request) {
+
+        // Enregistre l'alerte métier en WARNING et non en critique
+        try {
+            String ipAddress = request.getRemoteAddr();
+            String details = exception.getMessage() != null ? exception.getMessage() : "Ressource introuvable";
+            if (details.length() > 255) {
+                details = details.substring(0, 252) + "...";
+            }
+
+            adminService.createAuditLog(
+                "RESOURCE_NOT_FOUND",
+                "System / Business",
+                ipAddress != null ? ipAddress : "Internal",
+                AuditLog.AuditStatus.WARNING,
+                "Route: " + request.getRequestURI() + " | Ressource introuvable : " + details
+            );
+        } catch (Exception logEx) {
+            System.err.println("Impossible d'enregistrer le log de non-trouvé : " + logEx.getMessage());
+        }
 
         ApiError error = new ApiError(
             LocalDateTime.now(),
@@ -60,20 +79,47 @@ public class GlobalExceptionHandler {
                 .getFieldErrors()
                 .stream()
                 .findFirst()
-                .map(error ->
-                    error.getField() + " : " + error.getDefaultMessage()
-                )
+                .map(error -> error.getField() + " : " + error.getDefaultMessage())
                 .orElse("Invalid request.");
 
         ApiError error = new ApiError(
-            LocalDateTime.now(),
-            HttpStatus.BAD_REQUEST.value(),
-            HttpStatus.BAD_REQUEST.getReasonPhrase(),
-            message
-        );
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                message);
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(error);
+    }
+    
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthenticationException(
+            org.springframework.security.core.AuthenticationException exception, HttpServletRequest request) {
+
+        // Enregistre un simple avertissement (WARNING) et non un crash critique
+        try {
+            String ipAddress = request.getRemoteAddr();
+            adminService.createAuditLog(
+                "AUTH_FAILED",
+                "System / Auth",
+                ipAddress != null ? ipAddress : "Internal",
+                AuditLog.AuditStatus.WARNING,
+                "Route: " + request.getRequestURI() + " | Tentative de connexion échouée (identifiants invalides)"
+            );
+        } catch (Exception logEx) {
+            System.err.println("Impossible d'enregistrer le log d'auth : " + logEx.getMessage());
+        }
+
+        ApiError error = new ApiError(
+            LocalDateTime.now(),
+            HttpStatus.UNAUTHORIZED.value(),
+            HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+            "Email ou mot de passe incorrect."
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
                 .body(error);
     }
 
